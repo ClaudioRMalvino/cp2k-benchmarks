@@ -16,13 +16,17 @@ if [ "$TARGET_BRANCH" == "optimized" ]; then
     PROJECT_ROOT="/home/raid/crm98/cp2k"
     BENCHMARK_ROOT="/home/raid/crm98/cp2k-benchmarks/cp2k_optimized/NNP"
     OUTDIR="/local/data/public/crm98/cp2k-benchmarks/cp2k_optimized/NNP/NNP_size_scaling_${LABEL}_${TIMESTAMP}"
+    INSTALL_LIB="/local/data/public/crm98/original_cp2k/install/lib"
 else
     CP2K_EXE="/home/raid/crm98/cp2k_binaries/phy-cerberus/cp2k_master.psmp"
     LABEL="upstream-master"
     PROJECT_ROOT="/home/raid/crm98/cp2k-upstream-master"
     BENCHMARK_ROOT="/home/raid/crm98/cp2k-benchmarks/cp2k_master/NNP"
     OUTDIR="/local/data/public/crm98/cp2k-benchmarks/cp2k_master/NNP/NNP_size_scaling_${LABEL}_${TIMESTAMP}"
+    INSTALL_LIB="/local/data/public/crm98/cp2k-buildtree/install/lib"
 fi
+# Ensure this branch's libcp2k.so.2026.1 is loaded, not the other branch's
+export LD_LIBRARY_PATH="$INSTALL_LIB:${LD_LIBRARY_PATH:-}"
 
 BASE_INP="${BENCHMARK_ROOT}/H2O-64_NNP_MD.inp"
 NNP_DATA="${PROJECT_ROOT}/data/NNP"
