@@ -26,6 +26,8 @@ cp /local/data/public/crm98/original_cp2k/tools/toolchain/install/setup ~/cp2k_b
 
 cd /home/raid/crm98/cp2k-benchmarks/scripts/
 
+echo ""
+
 echo "=== SIZE SCALING ==="
 ./run_nnp_size_scaling_slurm.sh master
 ./run_nnp_size_scaling_slurm.sh optimized
