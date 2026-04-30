@@ -14,12 +14,12 @@ if [ "$TARGET_BRANCH" == "optimized" ]; then
     CP2K_EXE="/home/raid/crm98/cp2k_binaries/phy-cerberus/cp2k_feature_verlet_cells.psmp"
     LABEL="feature-nnp-verlet-cells"
     PROJECT_ROOT="/home/raid/crm98/cp2k"
-    BENCHMARK_ROOT="/home/raid/crm98/cp2k_benchmarks/cp2k_optimized/NNP"
+    BENCHMARK_ROOT="/local/data/public/crm98/cp2k_benchmarks/cp2k_optimized/NNP"
 else
     CP2K_EXE="/home/raid/crm98/cp2k_binaries/phy-cerberus/cp2k_master.psmp"
     LABEL="upstream-master"
     PROJECT_ROOT="/home/raid/crm98/cp2k-upstream-master"
-    BENCHMARK_ROOT="/home/raid/crm98/cp2k_benchmarks/cp2k_master/NNP"
+    BENCHMARK_ROOT="/local/data/public/crm98/cp2k_benchmarks/cp2k_master/NNP"
 fi
 
 BASE_INP="${BENCHMARK_ROOT}/H2O-64_NNP_MD.inp"
