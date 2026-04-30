@@ -90,7 +90,13 @@ mkdir -p "$BUILD_DIR" "$INSTALL_DIR"
 
 if [ "$NEED_CONFIGURE" -eq 1 ]; then
   echo "Configuring build tree..."
-  eval cmake -S . -B "\"$BUILD_DIR\"" -DCMAKE_INSTALL_PREFIX="\"$INSTALL_DIR\"" $CMAKE_OPTS
+  cmake -S . -B "$BUILD_DIR" \
+    -DCMAKE_INSTALL_PREFIX="$INSTALL_DIR" \
+    $CMAKE_OPTS \
+    -DCMAKE_BUILD_TYPE=Release \
+    "-DCMAKE_Fortran_FLAGS=-march=native -funroll-loops -ftree-vectorize" \
+    "-DCMAKE_C_FLAGS=-march=native" \
+    "-DCMAKE_CXX_FLAGS=-march=native"
 else
   echo "Skipping configure, no CMake input changes detected."
 fi

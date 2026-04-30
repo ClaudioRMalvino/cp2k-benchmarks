@@ -43,7 +43,13 @@ if [ -z "$CMAKE_OPTS" ]; then
   CMAKE_OPTS="-DCP2K_DATA_DIR=$SCRATCH_REPO/data -DCP2K_USE_EVERYTHING=ON -DCP2K_USE_DLAF=OFF -DCP2K_USE_PEXSI=OFF -DCP2K_USE_DFTD4=OFF"
 fi
 
-eval cmake -S . -B build -DCMAKE_INSTALL_PREFIX=./install $CMAKE_OPTS
+cmake -S . -B build \
+  -DCMAKE_INSTALL_PREFIX=./install \
+  $CMAKE_OPTS \
+  -DCMAKE_BUILD_TYPE=Release \
+  "-DCMAKE_Fortran_FLAGS=-march=native -funroll-loops -ftree-vectorize" \
+  "-DCMAKE_C_FLAGS=-march=native" \
+  "-DCMAKE_CXX_FLAGS=-march=native"
 cmake --build build --target install -j "$JOBS"
 
 echo

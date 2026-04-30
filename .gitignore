@@ -10,6 +10,10 @@
 *.exe
 *.o
 
+# Ignore plots
+*.png
+*.pdf
+
 # Ignore NNP data symlinks/folders inside the core and size scaling run directories
 **/mpi*_omp*/NNP
 **/N_*/NNP
