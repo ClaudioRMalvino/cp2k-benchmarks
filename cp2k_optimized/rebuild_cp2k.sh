@@ -90,6 +90,9 @@ mkdir -p "$BUILD_DIR" "$INSTALL_DIR"
 
 if [ "$NEED_CONFIGURE" -eq 1 ]; then
   echo "Configuring build tree..."
+  # Remove stale cache so CMake doesn't reject a source-path mismatch
+  rm -f "$BUILD_DIR/CMakeCache.txt"
+  rm -rf "$BUILD_DIR/CMakeFiles"
   cmake -S . -B "$BUILD_DIR" \
     -DCMAKE_INSTALL_PREFIX="$INSTALL_DIR" \
     $CMAKE_OPTS \
