@@ -14,18 +14,18 @@ if [ "$TARGET_BRANCH" == "optimized" ]; then
     CP2K_EXE="/home/raid/crm98/cp2k_binaries/phy-cerberus/cp2k_feature_verlet_cells.psmp"
     LABEL="feature-nnp-verlet-cells"
     PROJECT_ROOT="/home/raid/crm98/cp2k"
-    BENCHMARK_ROOT="/local/data/public/crm98/cp2k_benchmarks/cp2k_optimized/NNP"
+    BENCHMARK_ROOT="/home/raid/crm98/cp2k_benchmarks/cp2k_optimized/NNP"
+    OUTDIR="/local/data/public/crm98/cp2k_benchmarks/cp2k_optimized/NNP/NNP_core_scaling_${LABEL}_${TIMESTAMP}"
 else
     CP2K_EXE="/home/raid/crm98/cp2k_binaries/phy-cerberus/cp2k_master.psmp"
     LABEL="upstream-master"
     PROJECT_ROOT="/home/raid/crm98/cp2k-upstream-master"
-    BENCHMARK_ROOT="/local/data/public/crm98/cp2k_benchmarks/cp2k_master/NNP"
+    BENCHMARK_ROOT="/home/raid/crm98/cp2k_benchmarks/cp2k_master/NNP"
+    OUTDIR="/local/data/public/crm98/cp2k_benchmarks/cp2k_master/NNP/NNP_core_scaling_${LABEL}_${TIMESTAMP}"
 fi
 
 BASE_INP="${BENCHMARK_ROOT}/H2O-64_NNP_MD.inp"
 NNP_DATA="${PROJECT_ROOT}/data/NNP" 
-
-OUTDIR="${BENCHMARK_ROOT}/NNP_core_scaling_${LABEL}_${TIMESTAMP}"
 
 # --- Variables ---
 N_MOLECULES=${N_MOLECULES:-64}
@@ -68,7 +68,7 @@ for omp in $OMP_LIST; do
     printf "%-10s %-10s %-12s " "$mpi" "$omp" "$total"
 
     # Execute CP2K
-    (cd "$rundir" && mpiexec -n "$mpi" "$CP2K_EXE" -i run.inp >cp2k.out 2>&1) || true
+    (cd "$rundir" && mpiexec -n "$mpi" --bind-to core "$CP2K_EXE" -i run.inp >cp2k.out 2>&1) || true
 
     # 1. Check if the run finished successfully
     if grep -q "PROGRAM ENDED" "${rundir}/cp2k.out" 2>/dev/null; then

@@ -14,18 +14,18 @@ if [ "$TARGET_BRANCH" == "optimized" ]; then
     CP2K_EXE="/home/raid/crm98/cp2k_binaries/phy-cerberus/cp2k_feature_verlet_cells.psmp"
     LABEL="feature-nnp-verlet-cells"
     PROJECT_ROOT="/home/raid/crm98/cp2k"
-    BENCHMARK_ROOT="/local/data/public/crm98/cp2k_benchmarks/cp2k_optimized/NNP"
+    BENCHMARK_ROOT="/home/raid/crm98/cp2k-benchmarks/cp2k_optimized/NNP"
+    OUTDIR="/local/data/public/crm98/cp2k-benchmarks/cp2k_optimized/NNP/NNP_size_scaling_${LABEL}_${TIMESTAMP}"
 else
     CP2K_EXE="/home/raid/crm98/cp2k_binaries/phy-cerberus/cp2k_master.psmp"
     LABEL="upstream-master"
     PROJECT_ROOT="/home/raid/crm98/cp2k-upstream-master"
-    BENCHMARK_ROOT="/local/data/public/crm98/cp2k_benchmarks/cp2k_master/NNP"
+    BENCHMARK_ROOT="/home/raid/crm98/cp2k-benchmarks/cp2k_master/NNP"
+    OUTDIR="/local/data/public/crm98/cp2k-benchmarks/cp2k_master/NNP/NNP_size_scaling_${LABEL}_${TIMESTAMP}"
 fi
 
 BASE_INP="${BENCHMARK_ROOT}/H2O-64_NNP_MD.inp"
-NNP_DATA="${PROJECT_ROOT}/data/NNP" 
-
-OUTDIR="${BENCHMARK_ROOT}/NNP_size_scaling_${LABEL}_${TIMESTAMP}"
+NNP_DATA="${PROJECT_ROOT}/data/NNP"
 
 # --- Variables ---
 MPI_RANKS=36
@@ -93,7 +93,7 @@ PYEOF
   ln -sfn "$NNP_DATA" "${rundir}/NNP"
 
   # Execute CP2K inside the run directory
-  (cd "$rundir" && mpiexec -n "$MPI_RANKS" "$CP2K_EXE" -i run.inp > cp2k_${size}.out 2>&1) || true
+  (cd "$rundir" && mpiexec -n "$MPI_RANKS" --bind-to core "$CP2K_EXE" -i run.inp > cp2k_${size}.out 2>&1) || true
 
   if grep -q "PROGRAM ENDED" "${rundir}/cp2k_${size}.out" 2>/dev/null; then
     wt=$(grep -E "^ CP2K +[0-9]" "${rundir}/cp2k_${size}.out" | awk '{print $NF}' | tail -1)
