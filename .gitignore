@@ -1,0 +1,18 @@
+# Ignore massive CP2K trajectory and restart files
+*.xyz
+*.restart
+*.restart.bak*
+*.ener
+*.data
+
+# Ignore compiled binaries (just in case)
+*.psmp
+*.exe
+*.o
+
+# Ignore NNP data symlinks/folders inside the core and size scaling run directories
+**/mpi*_omp*/NNP
+**/N_*/NNP
+
+# Ignore log files IF they are huge (comment this out if you want to keep .out files)
+#*.out
