@@ -22,8 +22,6 @@ CORE_OPT = "/home/raid/crm98/cp2k_benchmarks/cp2k_optimized/NNP/NNP_core_scaling
 os.makedirs(PLOT_DIR, exist_ok=True)
 
 # --- Helper Function to Read Data ---
-# Since your bash script writes headers starting with "#", pandas can safely ignore 
-# those metadata lines using comment='#' and we can assign the clean column names manually.
 def load_csv(filepath, columns):
     if not os.path.exists(filepath):
         print(f"WARNING: File not found: {filepath}")
