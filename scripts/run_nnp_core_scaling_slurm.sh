@@ -13,7 +13,7 @@ TIMESTAMP=$(date +%d-%m_%H-%M)
 if [ "$TARGET_BRANCH" == "optimized" ]; then
     CP2K_EXE="/home/raid/crm98/cp2k_binaries/phy-cerberus/cp2k_feature_verlet_cells.psmp"
     PROJECT_ROOT="/home/raid/crm98/cp2k"
-    LABEL=$(git -C "$PROJECT_ROOT" rev-parse --abbrev-ref HEAD)
+    LABEL=$(git -C "$PROJECT_ROOT" rev-parse --abbrev-ref HEAD | tr '/' '-')
     BENCHMARK_ROOT="/home/raid/crm98/cp2k-benchmarks/cp2k_optimized/NNP"
     OUTDIR="/local/data/public/crm98/cp2k-benchmarks/results/cp2k_optimized/NNP/NNP_core_scaling_${LABEL}_${TIMESTAMP}"
     INSTALL_LIB="/local/data/public/crm98/original_cp2k/install/lib"

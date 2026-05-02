@@ -1,201 +1,0 @@
-SCRATCH_USER:  crm98
-SCRATCH_ROOT:  /local/data/public
-SCRATCH_REPO:  /local/data/public/crm98/cp2k-buildtree
-TOOLCHAIN:     /local/data/public/crm98/original_cp2k
-JOBS:          32
-
-Cloning upstream-master source to scratch...
-Cloning into '/local/data/public/crm98/cp2k-buildtree'...
-done.
-Updating files:   3% (332/8414)Updating files:   4% (337/8414)Updating files:   5% (421/8414)Updating files:   6% (505/8414)Updating files:   7% (589/8414)Updating files:   8% (674/8414)Updating files:   9% (758/8414)Updating files:  10% (842/8414)Updating files:  11% (926/8414)Updating files:  12% (1010/8414)Updating files:  13% (1094/8414)Updating files:  14% (1178/8414)Updating files:  15% (1263/8414)Updating files:  16% (1347/8414)Updating files:  17% (1431/8414)Updating files:  18% (1515/8414)Updating files:  19% (1599/8414)Updating files:  20% (1683/8414)Updating files:  21% (1767/8414)Updating files:  22% (1852/8414)Updating files:  23% (1936/8414)Updating files:  24% (2020/8414)Updating files:  25% (2104/8414)Updating files:  26% (2188/8414)Updating files:  27% (2272/8414)Updating files:  28% (2356/8414)Updating files:  29% (2441/8414)Updating files:  30% (2525/8414)Updating files:  31% (2609/8414)Updating files:  32% (2693/8414)Updating files:  33% (2777/8414)Updating files:  34% (2861/8414)Updating files:  35% (2945/8414)Updating files:  36% (3030/8414)Updating files:  37% (3114/8414)Updating files:  38% (3198/8414)Updating files:  39% (3282/8414)Updating files:  40% (3366/8414)Updating files:  41% (3450/8414)Updating files:  42% (3534/8414)Updating files:  43% (3619/8414)Updating files:  44% (3703/8414)Updating files:  45% (3787/8414)Updating files:  46% (3871/8414)Updating files:  47% (3955/8414)Updating files:  48% (4039/8414)Updating files:  49% (4123/8414)Updating files:  50% (4207/8414)Updating files:  51% (4292/8414)Updating files:  52% (4376/8414)Updating files:  53% (4460/8414)Updating files:  54% (4544/8414)Updating files:  55% (4628/8414)Updating files:  56% (4712/8414)Updating files:  57% (4796/8414)Updating files:  58% (4881/8414)Updating files:  59% (4965/8414)Updating files:  60% (5049/8414)Updating files:  61% (5133/8414)Updating files:  62% (5217/8414)Updating files:  63% (5301/8414)Updating files:  64% (5385/8414)Updating files:  65% (5470/8414)Updating files:  66% (5554/8414)Updating files:  67% (5638/8414)Updating files:  68% (5722/8414)Updating files:  69% (5806/8414)Updating files:  70% (5890/8414)Updating files:  71% (5974/8414)Updating files:  72% (6059/8414)Updating files:  73% (6143/8414)Updating files:  74% (6227/8414)Updating files:  75% (6311/8414)Updating files:  76% (6395/8414)Updating files:  77% (6479/8414)Updating files:  78% (6563/8414)Updating files:  79% (6648/8414)Updating files:  80% (6732/8414)Updating files:  81% (6816/8414)Updating files:  82% (6900/8414)Updating files:  83% (6984/8414)Updating files:  84% (7068/8414)Updating files:  85% (7152/8414)Updating files:  86% (7237/8414)Updating files:  87% (7321/8414)Updating files:  88% (7405/8414)Updating files:  89% (7489/8414)Updating files:  90% (7573/8414)Updating files:  91% (7657/8414)Updating files:  92% (7741/8414)Updating files:  93% (7826/8414)Updating files:  94% (7910/8414)Updating files:  95% (7994/8414)Updating files:  96% (8078/8414)Updating files:  97% (8162/8414)Updating files:  98% (8246/8414)Updating files:  99% (8330/8414)Updating files: 100% (8414/8414)Updating files: 100% (8414/8414), done.
--- The Fortran compiler identification is GNU 13.3.0
--- The C compiler identification is GNU 13.3.0
--- The CXX compiler identification is GNU 13.3.0
--- Detecting Fortran compiler ABI info
--- Detecting Fortran compiler ABI info - done
--- Check for working Fortran compiler: /usr/bin/gfortran - skipped
--- Detecting C compiler ABI info
--- Detecting C compiler ABI info - done
--- Check for working C compiler: /usr/bin/gcc - skipped
--- Detecting C compile features
--- Detecting C compile features - done
--- Detecting CXX compiler ABI info
--- Detecting CXX compiler ABI info - done
--- Check for working CXX compiler: /usr/bin/g++ - skipped
--- Detecting CXX compile features
--- Detecting CXX compile features - done
--- Found PkgConfig: /usr/bin/pkg-config (found version "1.8.1")
--- Found Python: /lsc/opt/miniforge3/bin/python3.10 (found version "3.10.14") found components: Interpreter
--- Found MPI_C: /usr/lib/x86_64-linux-gnu/libmpi.so (found version "3.1")
--- Found MPI_CXX: /usr/lib/x86_64-linux-gnu/libmpi_cxx.so (found version "3.1")
--- Found MPI_Fortran: /usr/lib/x86_64-linux-gnu/libmpi_usempif08.so (found version "3.1")
--- Found MPI: TRUE (found version "3.1") found components: C CXX Fortran
--- Performing Test CMAKE_HAVE_LIBC_PTHREAD
--- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Success
--- Found Threads: TRUE
--- Found MPI: TRUE (found version "3.1") found components: CXX C Fortran
--- Found OpenMP_CXX: -fopenmp (found version "4.5")
--- Found OpenMP_C: -fopenmp (found version "4.5")
--- Found OpenMP_Fortran: -fopenmp (found version "4.5")
--- Found OpenMP: TRUE (found version "4.5") found components: CXX C Fortran
--- Could NOT find MKL (missing: CP2K_MKL_INCLUDE_DIRS) 
--- Checking for module 'openblas'
---   Found openblas, version 0.3.26
--- Found OpenBLAS: /usr/include/x86_64-linux-gnu
--- Found Blas: /usr/lib/x86_64-linux-gnu/openblas-pthread/libopenblas.so
--- Found Lapack: /usr/lib/x86_64-linux-gnu/openblas-pthread/libopenblas.so
--- Checking for module 'scalapack'
---   Found scalapack, version 2.2.3
--- Found SCALAPACK: /local/data/public/crm98/original_cp2k/tools/toolchain/install/scalapack-2.2.3/lib/libscalapack.a;/usr/lib/x86_64-linux-gnu/openmpi/lib/libmpi.so;/usr/lib/x86_64-linux-gnu/openblas-pthread/liblapack.so;/usr/lib/x86_64-linux-gnu/openblas-pthread/libblas.so
-
-------------------------------------------------------------
--                          OPENMP                          -
-------------------------------------------------------------
-
--- Found OpenMP_Fortran: -fopenmp (found version "4.5")
--- Found OpenMP_C: -fopenmp (found version "4.5")
--- Found OpenMP_CXX: -fopenmp (found version "4.5")
--- Found OpenMP: TRUE (found version "4.5") found components: Fortran C CXX
-
-------------------------------------------------------------
--                          DBCSR                           -
-------------------------------------------------------------
-
-CMake Error at CMakeLists.txt:621 (find_package):
-  Could not find a package configuration file provided by "DBCSR" (requested
-  version 2.9) with any of the following names:
-
-    DBCSR.cps
-    dbcsr.cps
-    DBCSRConfig.cmake
-    dbcsr-config.cmake
-
-  Add the installation prefix of "DBCSR" to CMAKE_PREFIX_PATH or set
-  "DBCSR_DIR" to a directory containing one of the above files.  If "DBCSR"
-  provides a separate development package or SDK, be sure it has been
-  installed.
-
-
--- Configuring incomplete, errors occurred!
-cp: cannot stat '/local/data/public/crm98/cp2k-buildtree/install/bin/cp2k.psmp': No such file or directory
-SCRATCH_USER:  crm98
-SCRATCH_ROOT:  /local/data/public
-SCRATCH_REPO:  /local/data/public/crm98/original_cp2k
-HOME_REPO:     /home/raid/crm98/cp2k
-JOBS:          16
-
-Syncing source from home to scratch...
-.d..t...... src/
->fcst...... src/nnp_acsf.F
->fcst...... src/splines_methods.F
-CP2K_FORCE_CONFIGURE=1, will reconfigure.
-Configuring build tree...
--- The Fortran compiler identification is GNU 13.3.0
--- The C compiler identification is GNU 13.3.0
--- The CXX compiler identification is GNU 13.3.0
--- Detecting Fortran compiler ABI info
--- Detecting Fortran compiler ABI info - done
--- Check for working Fortran compiler: /usr/bin/gfortran - skipped
--- Detecting C compiler ABI info
--- Detecting C compiler ABI info - done
--- Check for working C compiler: /usr/bin/gcc - skipped
--- Detecting C compile features
--- Detecting C compile features - done
--- Detecting CXX compiler ABI info
--- Detecting CXX compiler ABI info - done
--- Check for working CXX compiler: /usr/bin/g++ - skipped
--- Detecting CXX compile features
--- Detecting CXX compile features - done
--- Found PkgConfig: /usr/bin/pkg-config (found version "1.8.1")
--- Found Python: /lsc/opt/miniforge3/bin/python3.10 (found version "3.10.14") found components: Interpreter
--- Found MPI_C: /usr/lib/x86_64-linux-gnu/libmpi.so (found version "3.1")
--- Found MPI_CXX: /usr/lib/x86_64-linux-gnu/libmpi_cxx.so (found version "3.1")
--- Found MPI_Fortran: /usr/lib/x86_64-linux-gnu/libmpi_usempif08.so (found version "3.1")
--- Found MPI: TRUE (found version "3.1") found components: C CXX Fortran
--- Performing Test CMAKE_HAVE_LIBC_PTHREAD
--- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Success
--- Found Threads: TRUE
--- Found MPI: TRUE (found version "3.1") found components: CXX C Fortran
--- Found OpenMP_CXX: -fopenmp (found version "4.5")
--- Found OpenMP_C: -fopenmp (found version "4.5")
--- Found OpenMP_Fortran: -fopenmp (found version "4.5")
--- Found OpenMP: TRUE (found version "4.5") found components: CXX C Fortran
--- Could NOT find MKL (missing: CP2K_MKL_INCLUDE_DIRS) 
--- Checking for module 'openblas'
---   Found openblas, version 0.3.26
--- Found OpenBLAS: /usr/include/x86_64-linux-gnu
--- Found Blas: /usr/lib/x86_64-linux-gnu/openblas-pthread/libopenblas.so
--- Found Lapack: /usr/lib/x86_64-linux-gnu/openblas-pthread/libopenblas.so
--- Checking for module 'scalapack'
---   Found scalapack, version 2.2.3
--- Found SCALAPACK: /local/data/public/crm98/original_cp2k/tools/toolchain/install/scalapack-2.2.3/lib/libscalapack.a;/usr/lib/x86_64-linux-gnu/openmpi/lib/libmpi.so;/usr/lib/x86_64-linux-gnu/openblas-pthread/liblapack.so;/usr/lib/x86_64-linux-gnu/openblas-pthread/libblas.so
-
-------------------------------------------------------------
--                          OPENMP                          -
-------------------------------------------------------------
-
--- Found OpenMP_Fortran: -fopenmp (found version "4.5")
--- Found OpenMP_C: -fopenmp (found version "4.5")
--- Found OpenMP_CXX: -fopenmp (found version "4.5")
--- Found OpenMP: TRUE (found version "4.5") found components: Fortran C CXX
-
-------------------------------------------------------------
--                          DBCSR                           -
-------------------------------------------------------------
-
-CMake Error at CMakeLists.txt:624 (find_package):
-  Could not find a package configuration file provided by "DBCSR" (requested
-  version 2.9) with any of the following names:
-
-    DBCSR.cps
-    dbcsr.cps
-    DBCSRConfig.cmake
-    dbcsr-config.cmake
-
-  Add the installation prefix of "DBCSR" to CMAKE_PREFIX_PATH or set
-  "DBCSR_DIR" to a directory containing one of the above files.  If "DBCSR"
-  provides a separate development package or SDK, be sure it has been
-  installed.
-
-
--- Configuring incomplete, errors occurred!
-cp: cannot stat '/local/data/public/crm98/original_cp2k/install/bin/cp2k.psmp': No such file or directory
-=== SIZE SCALING ===
-Starting NNP size scaling benchmark on branch: upstream-master
-Molecules    Repeated Tiles  Walltime (s)   
----------------------------------------------------
-64           1 1 1           FAILED         
-256          2 2 1           FAILED         
-512          2 2 2           FAILED         
-1024         4 2 2           FAILED         
-2048         4 4 2           FAILED         
-4096         4 4 4           FAILED         
-Starting NNP size scaling benchmark on branch: feature-nnp-verlet-cells
-Molecules    Repeated Tiles  Walltime (s)   
----------------------------------------------------
-64           1 1 1           FAILED         
-256          2 2 1           FAILED         
-512          2 2 2           FAILED         
-1024         4 2 2           FAILED         
-2048         4 4 2           FAILED         
-4096         4 4 4           FAILED         
-
-=== CORE SCALING ===
-Starting core scaling benchmark (System size: 64) on branch: upstream-master
-MPI_Ranks  OMP_Threads Total_Cores  Walltime(s)    Speedup    Efficiency
-------------------------------------------------------------------------
-1          1          1            FAILED         N/A        N/A       
-2          1          2            FAILED         N/A        N/A       
-4          1          4            FAILED         N/A        N/A       
-8          1          8            FAILED         N/A        N/A       
-16         1          16           FAILED         N/A        N/A       
-32         1          32           FAILED         N/A        N/A       
-Starting core scaling benchmark (System size: 64) on branch: feature-nnp-verlet-cells
-MPI_Ranks  OMP_Threads Total_Cores  Walltime(s)    Speedup    Efficiency
-------------------------------------------------------------------------
-1          1          1            FAILED         N/A        N/A       
-2          1          2            FAILED         N/A        N/A       
-4          1          4            FAILED         N/A        N/A       
-8          1          8            FAILED         N/A        N/A       
-16         1          16           FAILED         N/A        N/A       
-32         1          32           FAILED         N/A        N/A       
