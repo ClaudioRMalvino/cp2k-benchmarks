@@ -3,13 +3,16 @@
 #SBATCH --partition=csc-mphil
 #SBATCH --clusters=CSC
 #SBATCH --account=crm98
-#SBATCH --ntasks=36
+#SBATCH --ntasks=18
+#SBATCH --cpus-per-task=2
 #SBATCH --mem-per-cpu=2G
 #SBATCH --time=00:25:00
 #SBATCH --output=/home/raid/crm98/cp2k-benchmarks/logs/Master_Scaling_%j.out
 #SBATCH --mail-type=ALL
 
 mkdir -p /home/raid/crm98/cp2k-benchmarks/logs/
+
+export OMP_NUM_THREADS=2
 
 # --- Build upstream/master (clean build, always reconfigures via rm -rf build) ---
 cd /home/raid/crm98/cp2k-benchmarks/cp2k_master/

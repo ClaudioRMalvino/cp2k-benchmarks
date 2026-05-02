@@ -32,8 +32,8 @@ BASE_INP="${BENCHMARK_ROOT}/H2O-64_NNP_MD.inp"
 NNP_DATA="${PROJECT_ROOT}/data/NNP"
 
 # --- Variables ---
-MPI_RANKS=36
-export OMP_NUM_THREADS=1
+MPI_RANKS=18
+export OMP_NUM_THREADS=2
 STEPS=100
 
 mkdir -p "$OUTDIR"
@@ -45,6 +45,7 @@ cat <<EOF >"$CSV_FILE"
 # branch:    $LABEL
 # exe:       $CP2K_EXE
 # MPI ranks: $MPI_RANKS
+# OMP threads: $OMP_NUM_THREADS
 # steps:     $STEPS
 # n_molecules,walltime_s
 EOF
@@ -97,7 +98,7 @@ PYEOF
   ln -sfn "$NNP_DATA" "${rundir}/NNP"
 
   # Execute CP2K inside the run directory
-  (cd "$rundir" && mpiexec -n "$MPI_RANKS" --bind-to core "$CP2K_EXE" -i run.inp > cp2k_${size}.out 2>&1) || true
+  (cd "$rundir" && mpiexec -n "$MPI_RANKS" --bind-to core --cpus-per-proc "$OMP_NUM_THREADS" "$CP2K_EXE" -i run.inp > cp2k_${size}.out 2>&1) || true
 
   if grep -q "PROGRAM ENDED" "${rundir}/cp2k_${size}.out" 2>/dev/null; then
     wt=$(grep -E "^ CP2K +[0-9]" "${rundir}/cp2k_${size}.out" | awk '{print $NF}' | tail -1)

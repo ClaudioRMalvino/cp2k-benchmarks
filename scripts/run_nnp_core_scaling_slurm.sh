@@ -33,8 +33,8 @@ NNP_DATA="${PROJECT_ROOT}/data/NNP"
 
 # --- Variables ---
 N_MOLECULES=${N_MOLECULES:-64}
-MPI_LIST=${MPI_LIST:-"1 2 4 8 16 32"}
-OMP_LIST=${OMP_LIST:-"1"}
+MPI_LIST=${MPI_LIST:-"1 2 4 8 16 18"}
+OMP_LIST=${OMP_LIST:-"2"}
 STEPS=${STEPS:-100}
 
 mkdir -p "$OUTDIR"
@@ -46,6 +46,7 @@ cat <<EOF >"$CSV_FILE"
 # exe:         $CP2K_EXE
 # N_molecules: $N_MOLECULES
 # steps:       $STEPS
+# omp_threads: $OMP_NUM_THREADS
 # mpi_ranks,omp_threads,total_cores,walltime_s,speedup
 EOF
 
@@ -72,7 +73,7 @@ for omp in $OMP_LIST; do
     printf "%-10s %-10s %-12s " "$mpi" "$omp" "$total"
 
     # Execute CP2K
-    (cd "$rundir" && mpiexec -n "$mpi" --bind-to core "$CP2K_EXE" -i run.inp >cp2k.out 2>&1) || true
+    (cd "$rundir" && mpiexec -n "$mpi" --bind-to core --cpus-per-proc "$omp" "$CP2K_EXE" -i run.inp >cp2k.out 2>&1) || true
 
     # 1. Check if the run finished successfully
     if grep -q "PROGRAM ENDED" "${rundir}/cp2k.out" 2>/dev/null; then
