@@ -49,9 +49,21 @@ export CPATH="$TOOLCHAIN_REPO/tools/toolchain/install/include:${CPATH:-}"
 
 rm -rf build install
 
+# Locate DBCSRConfig.cmake explicitly — CMake 4.x case-sensitive search misses
+# the lowercase 'dbcsr' directory name under CMAKE_PREFIX_PATH on some systems.
+DBCSR_CMAKE_DIR=""
+for d in "$TOOLCHAIN_REPO/tools/toolchain/install"/dbcsr-*/lib/cmake/dbcsr; do
+  [ -f "$d/DBCSRConfig.cmake" ] && DBCSR_CMAKE_DIR="$d" && break
+done
+if [ -z "$DBCSR_CMAKE_DIR" ]; then
+  echo "ERROR: DBCSRConfig.cmake not found under $TOOLCHAIN_REPO/tools/toolchain/install"
+  exit 1
+fi
+echo "DBCSR cmake:   $DBCSR_CMAKE_DIR"
+
 CMAKE_OPTS="${CP2K_CMAKE_OPTIONS:-}"
 if [ -z "$CMAKE_OPTS" ]; then
-  CMAKE_OPTS="-DCP2K_DATA_DIR=$SCRATCH_REPO/data -DCP2K_USE_MPI=ON -DCP2K_USE_DBCSR_CONFIG=ON -DCP2K_USE_DLAF=OFF -DCP2K_USE_PEXSI=OFF -DCP2K_USE_DFTD4=OFF -DCP2K_USE_ELPA=OFF -DCP2K_USE_SIRIUS=OFF"
+  CMAKE_OPTS="-DCP2K_DATA_DIR=$SCRATCH_REPO/data -DCP2K_USE_MPI=ON -DCP2K_USE_DBCSR_CONFIG=ON -DDBCSR_DIR=$DBCSR_CMAKE_DIR -DCP2K_USE_DLAF=OFF -DCP2K_USE_PEXSI=OFF -DCP2K_USE_DFTD4=OFF -DCP2K_USE_ELPA=OFF -DCP2K_USE_SIRIUS=OFF"
 fi
 
 cmake -S . -B build \
