@@ -1,0 +1,8 @@
+/home/raid/crm98/cp2k_binaries/phy-cerberus/cp2k_master.psmp: error while loading shared libraries: libcp2k.so.2026.1: cannot open shared object file: No such file or directory
+/home/raid/crm98/cp2k_binaries/phy-cerberus/cp2k_master.psmp: error while loading shared libraries: libcp2k.so.2026.1: cannot open shared object file: No such file or directory
+/home/raid/crm98/cp2k_binaries/phy-cerberus/cp2k_master.psmp: error while loading shared libraries: libcp2k.so.2026.1: cannot open shared object file: No such file or directory
+--------------------------------------------------------------------------
+Primary job  terminated normally, but 1 process returned
+a non-zero exit code. Per user-direction, the job has been aborted.
+--------------------------------------------------------------------------
+/home/raid/crm98/cp2k_binaries/phy-cerberus/cp2k_master.psmp: error while loading shared libraries: libcp2k.so.2026.1: cannot open shared object file: No such file or directory
