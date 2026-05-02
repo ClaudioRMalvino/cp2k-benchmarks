@@ -1,0 +1,1960 @@
+ DBCSR| CPU Multiplication driver                                           XSMM (U)
+ DBCSR| Multrec recursion limit                                              512 (U)
+ DBCSR| Multiplication stack size                                           1000 (D)
+ DBCSR| Maximum elements for images                                    UNLIMITED (U)
+ DBCSR| Multiplicative factor virtual images                                   1 (U)
+ DBCSR| Use multiplication densification                                       T (D)
+ DBCSR| Multiplication size stacks                                             3 (U)
+ DBCSR| Use memory pool for CPU allocation                                     F (U)
+ DBCSR| Number of 3D layers                                               SINGLE (U)
+ DBCSR| Use MPI memory allocation                                              F (U)
+ DBCSR| Use RMA algorithm                                                      F (U)
+ DBCSR| Use Communication thread                                               T (U)
+ DBCSR| Communication thread load                                             87 (D)
+ DBCSR| MPI: My process id                                                     0
+ DBCSR| MPI: Number of processes                                              36
+ DBCSR| OMP: Current number of threads                                         1
+ DBCSR| OMP: Max number of threads                                             1
+ DBCSR| Split modifier for TAS multiplication algorithm                  1.0E+00 (U)
+
+
+  **** **** ******  **  PROGRAM STARTED AT               2026-05-02 15:45:48.665
+ ***** ** ***  *** **   PROGRAM STARTED ON                         phy-cerberus4
+ **    ****   ******    PROGRAM STARTED BY                                 crm98
+ ***** **    ** ** **   PROGRAM PROCESS ID                               1225379
+  **** **  *******  **  PROGRAM STARTED IN /lsc/zeushome/crm98/cp2k-benchmarks/r
+                                           esults/cp2k_optimized/NNP/NNP_size_sc
+                                           aling_feature-nnp-verlet-cells_02-05_
+                                           15-45/N_256
+
+ CP2K| version string:                 CP2K version 2026.1 (Development Version)
+ CP2K| source code revision number:                                   151b7d1223
+ CP2K| cp2kflags: omp libint fftw3 libxc parallel scalapack mpi_f08 cosma ace de
+ CP2K|            epmd xsmm plumed2 spglib libdftd4 dftd4_v3 mctc-lib tblite lib
+ CP2K|            bvori libbqb libtorch mimic hdf5 trexio libsmeagol greenx
+ CP2K| is freely available from                            https://www.cp2k.org/
+ CP2K| Program compiled at                                   2026-05-02 15:35:30
+ CP2K| Program compiled on                                         phy-cerberus4
+ CP2K| Program compiled for                                               x86_64
+ CP2K| Data directory path           /local/data/public/crm98/original_cp2k/data
+ CP2K| Input file name                                                   run.inp
+
+ GLOBAL| Force Environment number                                              1
+ GLOBAL| Basis set file name                                           BASIS_SET
+ GLOBAL| Potential file name                                           POTENTIAL
+ GLOBAL| MM Potential file name                                     MM_POTENTIAL
+ GLOBAL| Coordinate file name                                      __STD_INPUT__
+ GLOBAL| Method name                                                        CP2K
+ GLOBAL| Project name                                              H2O-64_NNP_MD
+ GLOBAL| Run type                                                             MD
+ GLOBAL| FFT library                                                       FFTW3
+ GLOBAL| Diagonalization library                                       ScaLAPACK
+ GLOBAL| Cholesky decomposition library                                ScaLAPACK
+ GLOBAL| DGEMM library                                                      BLAS
+ GLOBAL| Orthonormality check for eigenvectors                          DISABLED
+ GLOBAL| Matrix multiplication library                                     COSMA
+ GLOBAL| All-to-all communication in single precision                          F
+ GLOBAL| FFTs using library dependent lengths                                  F
+ GLOBAL| Grid backend                                                       AUTO
+ GLOBAL| Global print level                                                  LOW
+ GLOBAL| MPI I/O enabled                                                       T
+ GLOBAL| Total number of message passing processes                            36
+ GLOBAL| Number of distributed systems (nodes)                                 1
+ GLOBAL| Number of threads for this process                                    1
+ GLOBAL| This output is from process                                           0
+ GLOBAL| OpenMP stack size per thread (OMP_STACKSIZE)                    default
+ GLOBAL| CPU model name                              Intel(R) Xeon(R) Gold 5418Y
+ GLOBAL| CPUID                                                              1003
+
+ MEMORY| system memory details [Kb]
+ MEMORY|                        rank 0           min           max       average
+ MEMORY| MemTotal            263594404     263594404     263594404     263594404
+ MEMORY| MemFree              46885196      46885196      46885196      46885196
+ MEMORY| Buffers               2797528       2797528       2797528       2797528
+ MEMORY| Cached              196218472     196218472     196218472     196218472
+ MEMORY| Slab                  9215276       9215276       9215276       9215276
+ MEMORY| SReclaimable          7586348       7586348       7586348       7586348
+ MEMORY| MemLikelyFree       253487544     253487544     253487544     253487544
+
+
+ GENERATE|  Preliminary Number of Bonds generated:                             0
+ GENERATE|  Achieved consistency in connectivity generation.
+ 
+ NNP| Neural Network Potential Force Environment
+ NNP| Reading NNP input from file: NNP/bulkH2O-jcp2020-cnnp/nnp-1/input.nn
+ NNP| Activation functions:  1  1  3
+ NNP| short range atomic symmetry functions element H :
+ NNP|   1 H   2 H             0.001  0.000 12.000
+ NNP|   2 H   2 O             0.001  0.000 12.000
+ NNP|   3 H   2 H             0.010  0.000 12.000
+ NNP|   4 H   2 O             0.010  0.000 12.000
+ NNP|   5 H   2 H             0.030  0.000 12.000
+ NNP|   6 H   2 O             0.030  0.000 12.000
+ NNP|   7 H   2 H             0.060  0.000 12.000
+ NNP|   8 H   2 O             0.060  0.000 12.000
+ NNP|   9 H   2 O             0.150  0.900 12.000
+ NNP|  10 H   2 H             0.150  1.900 12.000
+ NNP|  11 H   2 O             0.300  0.900 12.000
+ NNP|  12 H   2 H             0.300  1.900 12.000
+ NNP|  13 H   2 O             0.600  0.900 12.000
+ NNP|  14 H   2 H             0.600  1.900 12.000
+ NNP|  15 H   2 O             1.500  0.900 12.000
+ NNP|  16 H   2 H             1.500  1.900 12.000
+ NNP|   1 H   3 O  O   0.001 -1.000  4.000 12.000
+ NNP|   2 H   3 O  O   0.001  1.000  4.000 12.000
+ NNP|   3 H   3 H  O   0.010 -1.000  4.000 12.000
+ NNP|   4 H   3 H  O   0.010  1.000  4.000 12.000
+ NNP|   5 H   3 H  O   0.030 -1.000  1.000 12.000
+ NNP|   6 H   3 O  O   0.030 -1.000  1.000 12.000
+ NNP|   7 H   3 H  O   0.030  1.000  1.000 12.000
+ NNP|   8 H   3 O  O   0.030  1.000  1.000 12.000
+ NNP|   9 H   3 H  O   0.070 -1.000  1.000 12.000
+ NNP|  10 H   3 H  O   0.070  1.000  1.000 12.000
+ NNP|  11 H   3 H  O   0.200  1.000  1.000 12.000
+ NNP| short range atomic symmetry functions element O :
+ NNP|   1 O   2 H             0.001  0.000 12.000
+ NNP|   2 O   2 O             0.001  0.000 12.000
+ NNP|   3 O   2 H             0.010  0.000 12.000
+ NNP|   4 O   2 O             0.010  0.000 12.000
+ NNP|   5 O   2 H             0.030  0.000 12.000
+ NNP|   6 O   2 O             0.030  0.000 12.000
+ NNP|   7 O   2 H             0.060  0.000 12.000
+ NNP|   8 O   2 O             0.060  0.000 12.000
+ NNP|   9 O   2 H             0.150  0.900 12.000
+ NNP|  10 O   2 O             0.150  4.000 12.000
+ NNP|  11 O   2 H             0.300  0.900 12.000
+ NNP|  12 O   2 O             0.300  4.000 12.000
+ NNP|  13 O   2 H             0.600  0.900 12.000
+ NNP|  14 O   2 O             0.600  4.000 12.000
+ NNP|  15 O   2 H             1.500  0.900 12.000
+ NNP|  16 O   2 O             1.500  4.000 12.000
+ NNP|   1 O   3 H  O   0.001 -1.000  4.000 12.000
+ NNP|   2 O   3 O  O   0.001 -1.000  4.000 12.000
+ NNP|   3 O   3 H  O   0.001  1.000  4.000 12.000
+ NNP|   4 O   3 O  O   0.001  1.000  4.000 12.000
+ NNP|   5 O   3 H  H   0.010 -1.000  4.000 12.000
+ NNP|   6 O   3 H  H   0.010  1.000  4.000 12.000
+ NNP|   7 O   3 H  H   0.030 -1.000  1.000 12.000
+ NNP|   8 O   3 H  O   0.030 -1.000  1.000 12.000
+ NNP|   9 O   3 O  O   0.030 -1.000  1.000 12.000
+ NNP|  10 O   3 H  H   0.030  1.000  1.000 12.000
+ NNP|  11 O   3 H  O   0.030  1.000  1.000 12.000
+ NNP|  12 O   3 O  O   0.030  1.000  1.000 12.000
+ NNP|  13 O   3 H  H   0.070 -1.000  1.000 12.000
+ NNP|  14 O   3 H  H   0.070  1.000  1.000 12.000
+ NNP| Neural network specification for element H :
+ NNP|  27 nodes in layer  1
+ NNP|  20 nodes in layer  2
+ NNP|  20 nodes in layer  3
+ NNP|   1 nodes in layer  4
+ NNP| Neural network specification for element O :
+ NNP|  30 nodes in layer  1
+ NNP|  20 nodes in layer  2
+ NNP|  20 nodes in layer  3
+ NNP|   1 nodes in layer  4
+ NNP| Reading scaling information from file: NNP/bulkH2O-jcp2020-cnnp/nnp-1/input.nn
+ NNP| Initializing weights for model:            1
+ NNP| Reading weights from file: NNP/bulkH2O-jcp2020-cnnp/nnp-1/weights.001.data
+ NNP| Reading weights from file: NNP/bulkH2O-jcp2020-cnnp/nnp-1/weights.008.data
+ NNP| NNP force environment initialized
+
+ MD_PAR| Molecular dynamics protocol (MD input parameters)
+ MD_PAR| Ensemble type                                                       NVT
+ MD_PAR| Number of time steps                                                100
+ MD_PAR| Time step [fs]                                                 0.500000
+ MD_PAR| Temperature [K]                                              300.000000
+ MD_PAR| Temperature tolerance [K]                                      0.000000
+ MD_PAR| Print MD information every                                    1 step(s)
+ MD_PAR| File type   Print frequency [steps]                          File names
+ MD_PAR| Coordinates          1                          H2O-64_NNP_MD-pos-1.xyz
+ MD_PAR| Velocities           1                          H2O-64_NNP_MD-vel-1.xyz
+ MD_PAR| Energies             1                             H2O-64_NNP_MD-1.ener
+ MD_PAR| Dump                20                          H2O-64_NNP_MD-1.restart
+
+ ROT| Rotational analysis information
+ ROT| Principal axes and moments of inertia [a.u.]
+ ROT|                           1                   2                   3
+ ROT| Eigenvalues      5.34188199784E+09   6.40982321354E+09   7.62147148063E+09
+ ROT|      x              0.933773226542      0.320060949624      0.160089193635
+ ROT|      y             -0.344957371663      0.924070531689      0.164614896652
+ ROT|      z             -0.095246906135     -0.208936930652      0.973279705882
+ ROT| Number of rotovibrational vectors                                        6
+
+ DOF| Calculation of degrees of freedom
+ DOF| Number of atoms                                                        768
+ DOF| Number of intramolecular constraints                                     0
+ DOF| Number of intermolecular constraints                                     0
+ DOF| Invariants (translations + rotations)                                    3
+ DOF| Degrees of freedom                                                    2301
+
+ DOF| Restraints information
+ DOF| Number of intramolecular restraints                                      0
+ DOF| Number of intermolecular restraints                                      0
+
+ THERMOSTAT| Thermostat information for PARTICLES
+ THERMOSTAT| Type of thermostat            Canonical Sampling/Velocity Rescaling
+ THERMOSTAT| CSVR time constant [fs]                                   30.000000
+ THERMOSTAT| Initial kinetic energy                           0.000000000000E+00
+ THERMOSTAT| End of thermostat information for PARTICLES
+
+ MD_VEL| Velocities initialization
+ MD_VEL| Initial temperature [K]                                      300.000000
+ MD_VEL| COM velocity            -0.0000000000     0.0000000000    -0.0000000000
+
+ ENERGY| Total FORCE_EVAL ( NNP ) energy [hartree]         15007.795693525255047
+
+ MD_INI| MD initialization
+ MD_INI| Potential energy [hartree]                           0.150077956935E+05
+ MD_INI| Kinetic energy [hartree]                             0.109302631574E+01
+ MD_INI| Temperature [K]                                              300.000000
+ MD_INI| Cell volume [bohr^3]                                 5.171557832354E+04
+ MD_INI| Cell volume [ang^3]                                  7.663457952000E+03
+ MD_INI| Cell lengths [bohr]      4.69407971E+01  4.69407971E+01  2.34703986E+01
+ MD_INI| Cell lengths [ang]       2.48400000E+01  2.48400000E+01  1.24200000E+01
+ MD_INI| Cell angles [deg]        9.00000000E+01  9.00000000E+01  9.00000000E+01
+
+ ENERGY| Total FORCE_EVAL ( NNP ) energy [hartree]         15007.394572250461351
+
+ MD| ***************************************************************************
+ MD| Step number                                                               1
+ MD| Time [fs]                                                          0.500000
+ MD| Conserved quantity [hartree]                             0.150085938488E+05
+ MD| ---------------------------------------------------------------------------
+ MD|                                          Instantaneous             Averages
+ MD| CPU time per MD step [s]                      0.068366             0.068366
+ MD| Energy drift per atom [K]          -0.121240617339E+03   0.000000000000E+00
+ MD| Potential energy [hartree]          0.150073945723E+05   0.150073945723E+05
+ MD| Kinetic energy [hartree]            0.119862214542E+01   0.119862214542E+01
+ MD| Temperature [K]                             328.982604           328.982604
+ MD| ***************************************************************************
+ MD| Estimated peak process memory after this step [MiB]                     267
+
+ ENERGY| Total FORCE_EVAL ( NNP ) energy [hartree]         15007.134193211975798
+
+ MD| ***************************************************************************
+ MD| Step number                                                               2
+ MD| Time [fs]                                                          1.000000
+ MD| Conserved quantity [hartree]                             0.150085836061E+05
+ MD| ---------------------------------------------------------------------------
+ MD|                                          Instantaneous             Averages
+ MD| CPU time per MD step [s]                      0.031809             0.050088
+ MD| Energy drift per atom [K]          -0.125452080975E+03  -0.627260404876E+02
+ MD| Potential energy [hartree]          0.150071341932E+05   0.150072643827E+05
+ MD| Kinetic energy [hartree]            0.145504382178E+01   0.132683298360E+01
+ MD| Temperature [K]                             399.361973           364.172289
+ MD| ***************************************************************************
+ MD| Estimated peak process memory after this step [MiB]                     267
+
+ ENERGY| Total FORCE_EVAL ( NNP ) energy [hartree]         15006.556532373713708
+
+ MD| ***************************************************************************
+ MD| Step number                                                               3
+ MD| Time [fs]                                                          1.500000
+ MD| Conserved quantity [hartree]                             0.150082368273E+05
+ MD| ---------------------------------------------------------------------------
+ MD|                                          Instantaneous             Averages
+ MD| CPU time per MD step [s]                      0.038403             0.046193
+ MD| Energy drift per atom [K]          -0.268035335343E+03  -0.131162472106E+03
+ MD| Potential energy [hartree]          0.150065565324E+05   0.150070284326E+05
+ MD| Kinetic energy [hartree]            0.167895587128E+01   0.144420727949E+01
+ MD| Temperature [K]                             460.818513           396.387697
+ MD| ***************************************************************************
+ MD| Estimated peak process memory after this step [MiB]                     267
+
+ ENERGY| Total FORCE_EVAL ( NNP ) energy [hartree]         15006.594403830815281
+
+ MD| ***************************************************************************
+ MD| Step number                                                               4
+ MD| Time [fs]                                                          2.000000
+ MD| Conserved quantity [hartree]                             0.150082424476E+05
+ MD| ---------------------------------------------------------------------------
+ MD|                                          Instantaneous             Averages
+ MD| CPU time per MD step [s]                      0.037544             0.044031
+ MD| Energy drift per atom [K]          -0.265724481320E+03  -0.164802974410E+03
+ MD| Potential energy [hartree]          0.150065944038E+05   0.150069199254E+05
+ MD| Kinetic energy [hartree]            0.163874086424E+01   0.149284067568E+01
+ MD| Temperature [K]                             449.780808           409.735975
+ MD| ***************************************************************************
+ MD| Estimated peak process memory after this step [MiB]                     267
+
+ ENERGY| Total FORCE_EVAL ( NNP ) energy [hartree]         15006.734283910840531
+
+ MD| ***************************************************************************
+ MD| Step number                                                               5
+ MD| Time [fs]                                                          2.500000
+ MD| Conserved quantity [hartree]                             0.150082840022E+05
+ MD| ---------------------------------------------------------------------------
+ MD|                                          Instantaneous             Averages
+ MD| CPU time per MD step [s]                      0.040002             0.043225
+ MD| Energy drift per atom [K]          -0.248638658188E+03  -0.181570111165E+03
+ MD| Potential energy [hartree]          0.150067342839E+05   0.150068827971E+05
+ MD| Kinetic energy [hartree]            0.153782793523E+01   0.150183812759E+01
+ MD| Temperature [K]                             422.083507           412.205481
+ MD| ***************************************************************************
+ MD| Estimated peak process memory after this step [MiB]                     267
+
+ ENERGY| Total FORCE_EVAL ( NNP ) energy [hartree]         15006.805524035702547
+
+ MD| ***************************************************************************
+ MD| Step number                                                               6
+ MD| Time [fs]                                                          3.000000
+ MD| Conserved quantity [hartree]                             0.150086177609E+05
+ MD| ---------------------------------------------------------------------------
+ MD|                                          Instantaneous             Averages
+ MD| CPU time per MD step [s]                      0.039840             0.042661
+ MD| Energy drift per atom [K]          -0.111408787110E+03  -0.169876557156E+03
+ MD| Potential energy [hartree]          0.150068055240E+05   0.150068699183E+05
+ MD| Kinetic energy [hartree]            0.179464074515E+01   0.155063856385E+01
+ MD| Temperature [K]                             492.570230           425.599606
+ MD| ***************************************************************************
+ MD| Estimated peak process memory after this step [MiB]                     267
+
+ ENERGY| Total FORCE_EVAL ( NNP ) energy [hartree]         15006.860229035750308
+
+ MD| ***************************************************************************
+ MD| Step number                                                               7
+ MD| Time [fs]                                                          3.500000
+ MD| Conserved quantity [hartree]                             0.150091599345E+05
+ MD| ---------------------------------------------------------------------------
+ MD|                                          Instantaneous             Averages
+ MD| CPU time per MD step [s]                      0.041282             0.042464
+ MD| Energy drift per atom [K]           0.111513954582E+03  -0.129677912622E+03
+ MD| Potential energy [hartree]          0.150068602290E+05   0.150068685341E+05
+ MD| Kinetic energy [hartree]            0.225364631751E+01   0.165106824294E+01
+ MD| Temperature [K]                             618.552258           453.164270
+ MD| ***************************************************************************
+ MD| Estimated peak process memory after this step [MiB]                     267
+
+ ENERGY| Total FORCE_EVAL ( NNP ) energy [hartree]         15006.643268462961714
+
+ MD| ***************************************************************************
+ MD| Step number                                                               8
+ MD| Time [fs]                                                          4.000000
+ MD| Conserved quantity [hartree]                             0.150091864899E+05
+ MD| ---------------------------------------------------------------------------
+ MD|                                          Instantaneous             Averages
+ MD| CPU time per MD step [s]                      0.042070             0.042415
+ MD| Energy drift per atom [K]           0.122432594892E+03  -0.981640991828E+02
+ MD| Potential energy [hartree]          0.150066432685E+05   0.150068403759E+05
+ MD| Kinetic energy [hartree]            0.247723949009E+01   0.175433964884E+01
+ MD| Temperature [K]                             679.921276           481.508896
+ MD| ***************************************************************************
+ MD| Estimated peak process memory after this step [MiB]                     267
+
+ ENERGY| Total FORCE_EVAL ( NNP ) energy [hartree]         15006.913746841373722
+
+ MD| ***************************************************************************
+ MD| Step number                                                               9
+ MD| Time [fs]                                                          4.500000
+ MD| Conserved quantity [hartree]                             0.150094979242E+05
+ MD| ---------------------------------------------------------------------------
+ MD|                                          Instantaneous             Averages
+ MD| CPU time per MD step [s]                      0.038583             0.041989
+ MD| Energy drift per atom [K]           0.250483449858E+03  -0.594254826226E+02
+ MD| Potential energy [hartree]          0.150069137468E+05   0.150068485282E+05
+ MD| Kinetic energy [hartree]            0.251385340651E+01   0.183873006636E+01
+ MD| Temperature [K]                             689.970599           504.671308
+ MD| ***************************************************************************
+ MD| Estimated peak process memory after this step [MiB]                     267
+
+ ENERGY| Total FORCE_EVAL ( NNP ) energy [hartree]         15005.847786505895783
+
+ MD| ***************************************************************************
+ MD| Step number                                                              10
+ MD| Time [fs]                                                          5.000000
+ MD| Conserved quantity [hartree]                             0.150084491998E+05
+ MD| ---------------------------------------------------------------------------
+ MD|                                          Instantaneous             Averages
+ MD| CPU time per MD step [s]                      0.034006             0.041191
+ MD| Energy drift per atom [K]          -0.180715208074E+03  -0.715544551677E+02
+ MD| Potential energy [hartree]          0.150058477865E+05   0.150067484540E+05
+ MD| Kinetic energy [hartree]            0.252112775764E+01   0.190696983548E+01
+ MD| Temperature [K]                             691.967171           523.400894
+ MD| ***************************************************************************
+ MD| Estimated peak process memory after this step [MiB]                     267
+
+ ENERGY| Total FORCE_EVAL ( NNP ) energy [hartree]         15006.150381849045516
+
+ MD| ***************************************************************************
+ MD| Step number                                                              11
+ MD| Time [fs]                                                          5.500000
+ MD| Conserved quantity [hartree]                             0.150088270273E+05
+ MD| ---------------------------------------------------------------------------
+ MD|                                          Instantaneous             Averages
+ MD| CPU time per MD step [s]                      0.041267             0.041198
+ MD| Energy drift per atom [K]          -0.253658071031E+02  -0.673554871619E+02
+ MD| Potential energy [hartree]          0.150061503818E+05   0.150066940838E+05
+ MD| Kinetic energy [hartree]            0.257206675796E+01   0.196743319207E+01
+ MD| Temperature [K]                             705.948262           539.996109
+ MD| ***************************************************************************
+ MD| Estimated peak process memory after this step [MiB]                     267
+
+ ENERGY| Total FORCE_EVAL ( NNP ) energy [hartree]         15005.924258411752817
+
+ MD| ***************************************************************************
+ MD| Step number                                                              12
+ MD| Time [fs]                                                          6.000000
+ MD| Conserved quantity [hartree]                             0.150088208114E+05
+ MD| ---------------------------------------------------------------------------
+ MD|                                          Instantaneous             Averages
+ MD| CPU time per MD step [s]                      0.112119             0.047108
+ MD| Energy drift per atom [K]          -0.279215657787E+02  -0.640693270466E+02
+ MD| Potential energy [hartree]          0.150059242584E+05   0.150066299317E+05
+ MD| Kinetic energy [hartree]            0.276577414786E+01   0.203396160506E+01
+ MD| Temperature [K]                             759.114609           558.255984
+ MD| ***************************************************************************
+ MD| Estimated peak process memory after this step [MiB]                     267
+
+ ENERGY| Total FORCE_EVAL ( NNP ) energy [hartree]         15005.631420994215659
+
+ MD| ***************************************************************************
+ MD| Step number                                                              13
+ MD| Time [fs]                                                          6.500000
+ MD| Conserved quantity [hartree]                             0.150088123063E+05
+ MD| ---------------------------------------------------------------------------
+ MD|                                          Instantaneous             Averages
+ MD| CPU time per MD step [s]                      0.048324             0.047201
+ MD| Energy drift per atom [K]          -0.314185598606E+02  -0.615577295707E+02
+ MD| Potential energy [hartree]          0.150056314210E+05   0.150065531232E+05
+ MD| Kinetic energy [hartree]            0.301555785344E+01   0.210946900878E+01
+ MD| Temperature [K]                             827.672072           578.980299
+ MD| ***************************************************************************
+ MD| Estimated peak process memory after this step [MiB]                     267
+
+ ENERGY| Total FORCE_EVAL ( NNP ) energy [hartree]         15005.374178855658101
+
+ MD| ***************************************************************************
+ MD| Step number                                                              14
+ MD| Time [fs]                                                          7.000000
+ MD| Conserved quantity [hartree]                             0.150088132377E+05
+ MD| ---------------------------------------------------------------------------
+ MD|                                          Instantaneous             Averages
+ MD| CPU time per MD step [s]                      0.050922             0.047467
+ MD| Energy drift per atom [K]          -0.310356038811E+02  -0.593775777358E+02
+ MD| Potential energy [hartree]          0.150053741789E+05   0.150064689129E+05
+ MD| Kinetic energy [hartree]            0.325607114923E+01   0.219136916167E+01
+ MD| Temperature [K]                             893.685111           601.459214
+ MD| ***************************************************************************
+ MD| Estimated peak process memory after this step [MiB]                     267
+
+ ENERGY| Total FORCE_EVAL ( NNP ) energy [hartree]         15005.714017603373577
+
+ MD| ***************************************************************************
+ MD| Step number                                                              15
+ MD| Time [fs]                                                          7.500000
+ MD| Conserved quantity [hartree]                             0.150093629956E+05
+ MD| ---------------------------------------------------------------------------
+ MD|                                          Instantaneous             Averages
+ MD| CPU time per MD step [s]                      0.047351             0.047459
+ MD| Energy drift per atom [K]           0.195005548885E+03  -0.424187026277E+02
+ MD| Potential energy [hartree]          0.150057140176E+05   0.150064185865E+05
+ MD| Kinetic energy [hartree]            0.343217646465E+01   0.227408964853E+01
+ MD| Temperature [K]                             942.020265           624.163284
+ MD| ***************************************************************************
+ MD| Estimated peak process memory after this step [MiB]                     267
+
+ ENERGY| Total FORCE_EVAL ( NNP ) energy [hartree]         15005.492614924063673
+
+ MD| ***************************************************************************
+ MD| Step number                                                              16
+ MD| Time [fs]                                                          8.000000
+ MD| Conserved quantity [hartree]                             0.150093667695E+05
+ MD| ---------------------------------------------------------------------------
+ MD|                                          Instantaneous             Averages
+ MD| CPU time per MD step [s]                      0.043997             0.047243
+ MD| Energy drift per atom [K]           0.196557223713E+03  -0.274827072314E+02
+ MD| Potential energy [hartree]          0.150054926149E+05   0.150063607133E+05
+ MD| Kinetic energy [hartree]            0.362564041626E+01   0.235856157152E+01
+ MD| Temperature [K]                             995.119796           647.348066
+ MD| ***************************************************************************
+ MD| Estimated peak process memory after this step [MiB]                     267
+
+ ENERGY| Total FORCE_EVAL ( NNP ) energy [hartree]         15006.008571454274716
+
+ MD| ***************************************************************************
+ MD| Step number                                                              17
+ MD| Time [fs]                                                          8.500000
+ MD| Conserved quantity [hartree]                             0.150100859823E+05
+ MD| ---------------------------------------------------------------------------
+ MD|                                          Instantaneous             Averages
+ MD| CPU time per MD step [s]                      0.041448             0.046902
+ MD| Energy drift per atom [K]           0.492272302990E+03   0.309111689929E+01
+ MD| Potential energy [hartree]          0.150060085715E+05   0.150063399991E+05
+ MD| Kinetic energy [hartree]            0.377583293686E+01   0.244193047536E+01
+ MD| Temperature [K]                            1036.342735           670.230105
+ MD| ***************************************************************************
+ MD| Estimated peak process memory after this step [MiB]                     267
+
+ ENERGY| Total FORCE_EVAL ( NNP ) energy [hartree]         15004.716503296214796
+
+ MD| ***************************************************************************
+ MD| Step number                                                              18
+ MD| Time [fs]                                                          9.000000
+ MD| Conserved quantity [hartree]                             0.150090595331E+05
+ MD| ---------------------------------------------------------------------------
+ MD|                                          Instantaneous             Averages
+ MD| CPU time per MD step [s]                      0.046121             0.046859
+ MD| Energy drift per atom [K]           0.702324148555E+02   0.682118900797E+01
+ MD| Potential energy [hartree]          0.150047165033E+05   0.150062498049E+05
+ MD| Kinetic energy [hartree]            0.398819879256E+01   0.252783427076E+01
+ MD| Temperature [K]                            1094.630221           693.807889
+ MD| ***************************************************************************
+ MD| Estimated peak process memory after this step [MiB]                     267
+
+ ENERGY| Total FORCE_EVAL ( NNP ) energy [hartree]         15004.389625368859924
+
+ MD| ***************************************************************************
+ MD| Step number                                                              19
+ MD| Time [fs]                                                          9.500000
+ MD| Conserved quantity [hartree]                             0.150090496953E+05
+ MD| ---------------------------------------------------------------------------
+ MD|                                          Instantaneous             Averages
+ MD| CPU time per MD step [s]                      0.051177             0.047086
+ MD| Energy drift per atom [K]           0.661874541580E+02   0.994572927903E+01
+ MD| Potential energy [hartree]          0.150043896254E+05   0.150061519007E+05
+ MD| Kinetic energy [hartree]            0.426278473433E+01   0.261914745305E+01
+ MD| Temperature [K]                            1169.995088           718.870374
+ MD| ***************************************************************************
+ MD| Estimated peak process memory after this step [MiB]                     267
+
+ ENERGY| Total FORCE_EVAL ( NNP ) energy [hartree]         15005.073314317814948
+
+ MD| ***************************************************************************
+ MD| Step number                                                              20
+ MD| Time [fs]                                                         10.000000
+ MD| Conserved quantity [hartree]                             0.150099735938E+05
+ MD| ---------------------------------------------------------------------------
+ MD|                                          Instantaneous             Averages
+ MD| CPU time per MD step [s]                      0.102152             0.049839
+ MD| Energy drift per atom [K]           0.446062079586E+03   0.317515467944E+02
+ MD| Potential energy [hartree]          0.150050733143E+05   0.150060979714E+05
+ MD| Kinetic energy [hartree]            0.444328022280E+01   0.271035409154E+01
+ MD| Temperature [K]                            1219.535200           743.903615
+ MD| ***************************************************************************
+ MD| Estimated peak process memory after this step [MiB]                     267
+
+ ENERGY| Total FORCE_EVAL ( NNP ) energy [hartree]         15007.324524040890537
+
+ MD| ***************************************************************************
+ MD| Step number                                                              21
+ MD| Time [fs]                                                         10.500000
+ MD| Conserved quantity [hartree]                             0.150125136435E+05
+ MD| ---------------------------------------------------------------------------
+ MD|                                          Instantaneous             Averages
+ MD| CPU time per MD step [s]                      0.067734             0.050691
+ MD| Energy drift per atom [K]           0.149044138472E+04   0.101212967648E+03
+ MD| Potential energy [hartree]          0.150073245240E+05   0.150061563786E+05
+ MD| Kinetic energy [hartree]            0.464949843108E+01   0.280269429818E+01
+ MD| Temperature [K]                            1276.135359           769.247984
+ MD| ***************************************************************************
+ MD| Estimated peak process memory after this step [MiB]                     268
+
+ ENERGY| Total FORCE_EVAL ( NNP ) energy [hartree]         15003.604617704859265
+
+ MD| ***************************************************************************
+ MD| Step number                                                              22
+ MD| Time [fs]                                                         11.000000
+ MD| Conserved quantity [hartree]                             0.150158963860E+05
+ MD| ---------------------------------------------------------------------------
+ MD|                                          Instantaneous             Averages
+ MD| CPU time per MD step [s]                      0.063608             0.051279
+ MD| Energy drift per atom [K]           0.288130640685E+04   0.227580851248E+03
+ MD| Potential energy [hartree]          0.150036046177E+05   0.150060403895E+05
+ MD| Kinetic energy [hartree]            0.116414725964E+02   0.320445694810E+01
+ MD| Temperature [K]                            3195.203746           879.518700
+ MD| ***************************************************************************
+ MD| Estimated peak process memory after this step [MiB]                     268
+
+ ENERGY| Total FORCE_EVAL ( NNP ) energy [hartree]         15008.261824236411485
+
+ MD| ***************************************************************************
+ MD| Step number                                                              23
+ MD| Time [fs]                                                         11.500000
+ MD| Conserved quantity [hartree]                             0.150419182859E+05
+ MD| ---------------------------------------------------------------------------
+ MD|                                          Instantaneous             Averages
+ MD| CPU time per MD step [s]                      0.051167             0.051274
+ MD| Energy drift per atom [K]           0.135805984452E+05   0.808146833593E+03
+ MD| Potential energy [hartree]          0.150082618242E+05   0.150061369736E+05
+ MD| Kinetic energy [hartree]            0.326610577699E+02   0.448517872296E+01
+ MD| Temperature [K]                            8964.392888          1231.034969
+ MD| ***************************************************************************
+ MD| Estimated peak process memory after this step [MiB]                     268
+
+ ENERGY| Total FORCE_EVAL ( NNP ) energy [hartree]         15007.583819020548617
+
+ MD| ***************************************************************************
+ MD| Step number                                                              24
+ MD| Time [fs]                                                         12.000000
+ MD| Conserved quantity [hartree]                             0.150425168565E+05
+ MD| ---------------------------------------------------------------------------
+ MD|                                          Instantaneous             Averages
+ MD| CPU time per MD step [s]                      0.041860             0.050881
+ MD| Energy drift per atom [K]           0.138267096649E+05   0.135058695156E+04
+ MD| Potential energy [hartree]          0.150075838190E+05   0.150061972589E+05
+ MD| Kinetic energy [hartree]            0.334317424662E+02   0.569128554560E+01
+ MD| Temperature [K]                            9175.920648          1562.071872
+ MD| ***************************************************************************
+ MD| Estimated peak process memory after this step [MiB]                     268
+
+ ENERGY| Total FORCE_EVAL ( NNP ) energy [hartree]         15006.989920691981752
+
+ MD| ***************************************************************************
+ MD| Step number                                                              25
+ MD| Time [fs]                                                         12.500000
+ MD| Conserved quantity [hartree]                             0.150427012312E+05
+ MD| ---------------------------------------------------------------------------
+ MD|                                          Instantaneous             Averages
+ MD| CPU time per MD step [s]                      0.122272             0.053737
+ MD| Energy drift per atom [K]           0.139025180678E+05   0.185266419621E+04
+ MD| Potential energy [hartree]          0.150069899207E+05   0.150062289653E+05
+ MD| Kinetic energy [hartree]            0.336538734599E+02   0.680978906217E+01
+ MD| Temperature [K]                            9236.888346          1869.064531
+ MD| ***************************************************************************
+ MD| Estimated peak process memory after this step [MiB]                     268
+
+ ENERGY| Total FORCE_EVAL ( NNP ) energy [hartree]         15003.537677660278860
+
+ MD| ***************************************************************************
+ MD| Step number                                                              26
+ MD| Time [fs]                                                         13.000000
+ MD| Conserved quantity [hartree]                             0.150462494799E+05
+ MD| ---------------------------------------------------------------------------
+ MD|                                          Instantaneous             Averages
+ MD| CPU time per MD step [s]                      0.041825             0.053279
+ MD| Energy drift per atom [K]           0.153614333921E+05   0.237223224221E+04
+ MD| Potential energy [hartree]          0.150035376777E+05   0.150061254543E+05
+ MD| Kinetic energy [hartree]            0.400907576923E+02   0.808982631717E+01
+ MD| Temperature [K]                           11003.602690          2220.392922
+ MD| ***************************************************************************
+ MD| Estimated peak process memory after this step [MiB]                     268
+
+ ENERGY| Total FORCE_EVAL ( NNP ) energy [hartree]         15007.311274076046175
+
+ MD| ***************************************************************************
+ MD| Step number                                                              27
+ MD| Time [fs]                                                         13.500000
+ MD| Conserved quantity [hartree]                             0.150630250461E+05
+ MD| ---------------------------------------------------------------------------
+ MD|                                          Instantaneous             Averages
+ MD| CPU time per MD step [s]                      0.035715             0.052628
+ MD| Energy drift per atom [K]           0.222589574867E+05   0.310877762164E+04
+ MD| Potential energy [hartree]          0.150073112741E+05   0.150061693735E+05
+ MD| Kinetic energy [hartree]            0.523230935041E+02   0.972809547224E+01
+ MD| Temperature [K]                           14360.979077          2670.044261
+ MD| ***************************************************************************
+ MD| Estimated peak process memory after this step [MiB]                     268
+
+ ENERGY| Total FORCE_EVAL ( NNP ) energy [hartree]         15007.408588761518331
+
+ MD| ***************************************************************************
+ MD| Step number                                                              28
+ MD| Time [fs]                                                         14.000000
+ MD| Conserved quantity [hartree]                             0.150629146690E+05
+ MD| ---------------------------------------------------------------------------
+ MD|                                          Instantaneous             Averages
+ MD| CPU time per MD step [s]                      0.040457             0.052194
+ MD| Energy drift per atom [K]           0.222135743319E+05   0.379109178986E+04
+ MD| Potential energy [hartree]          0.150074085888E+05   0.150062136312E+05
+ MD| Kinetic energy [hartree]            0.512755349084E+02   0.112119325950E+02
+ MD| Temperature [K]                           14073.458480          3077.309055
+ MD| ***************************************************************************
+ MD| Estimated peak process memory after this step [MiB]                     268
+
+ ENERGY| Total FORCE_EVAL ( NNP ) energy [hartree]         15008.444210156692861
+
+ MD| ***************************************************************************
+ MD| Step number                                                              29
+ MD| Time [fs]                                                         14.500000
+ MD| Conserved quantity [hartree]                             0.150643634874E+05
+ MD| ---------------------------------------------------------------------------
+ MD|                                          Instantaneous             Averages
+ MD| CPU time per MD step [s]                      0.044347             0.051923
+ MD| Energy drift per atom [K]           0.228092776096E+05   0.444689130088E+04
+ MD| Potential energy [hartree]          0.150084442102E+05   0.150062905477E+05
+ MD| Kinetic energy [hartree]            0.507971925530E+02   0.125769415590E+02
+ MD| Temperature [K]                           13942.169138          3451.959402
+ MD| ***************************************************************************
+ MD| Estimated peak process memory after this step [MiB]                     268
+
+ ENERGY| Total FORCE_EVAL ( NNP ) energy [hartree]         15007.836697348397138
+
+ MD| ***************************************************************************
+ MD| Step number                                                              30
+ MD| Time [fs]                                                         15.000000
+ MD| Conserved quantity [hartree]                             0.150650458486E+05
+ MD| ---------------------------------------------------------------------------
+ MD|                                          Instantaneous             Averages
+ MD| CPU time per MD step [s]                      0.047205             0.051766
+ MD| Energy drift per atom [K]           0.230898405723E+05   0.506832294327E+04
+ MD| Potential energy [hartree]          0.150078366973E+05   0.150063420860E+05
+ MD| Kinetic energy [hartree]            0.512415689002E+02   0.138657624704E+02
+ MD| Temperature [K]                           14064.135921          3805.698620
+ MD| ***************************************************************************
+ MD| Estimated peak process memory after this step [MiB]                     268
+
+ ENERGY| Total FORCE_EVAL ( NNP ) energy [hartree]         15007.316588267671250
+
+ MD| ***************************************************************************
+ MD| Step number                                                              31
+ MD| Time [fs]                                                         15.500000
+ MD| Conserved quantity [hartree]                             0.150653775993E+05
+ MD| ---------------------------------------------------------------------------
+ MD|                                          Instantaneous             Averages
+ MD| CPU time per MD step [s]                      0.064428             0.052174
+ MD| Energy drift per atom [K]           0.232262448307E+05   0.565406235899E+04
+ MD| Potential energy [hartree]          0.150073165883E+05   0.150063735216E+05
+ MD| Kinetic energy [hartree]            0.511884442550E+02   0.150697199473E+02
+ MD| Temperature [K]                           14049.554942          4136.145598
+ MD| ***************************************************************************
+ MD| Estimated peak process memory after this step [MiB]                     268
+
+ ENERGY| Total FORCE_EVAL ( NNP ) energy [hartree]         15004.616452191610733
+
+ MD| ***************************************************************************
+ MD| Step number                                                              32
+ MD| Time [fs]                                                         16.000000
+ MD| Conserved quantity [hartree]                             0.150619262600E+05
+ MD| ---------------------------------------------------------------------------
+ MD|                                          Instantaneous             Averages
+ MD| CPU time per MD step [s]                      0.062688             0.052503
+ MD| Energy drift per atom [K]           0.218071752327E+05   0.615884713629E+04
+ MD| Potential energy [hartree]          0.150046164522E+05   0.150063186132E+05
+ MD| Kinetic energy [hartree]            0.496100388165E+02   0.161491049120E+02
+ MD| Temperature [K]                           13616.334237          4432.401493
+ MD| ***************************************************************************
+ MD| Estimated peak process memory after this step [MiB]                     268
+
+ ENERGY| Total FORCE_EVAL ( NNP ) energy [hartree]         15006.366689674012378
+
+ MD| ***************************************************************************
+ MD| Step number                                                              33
+ MD| Time [fs]                                                         16.500000
+ MD| Conserved quantity [hartree]                             0.150747351945E+05
+ MD| ---------------------------------------------------------------------------
+ MD|                                          Instantaneous             Averages
+ MD| CPU time per MD step [s]                      0.039676             0.052114
+ MD| Energy drift per atom [K]           0.270737595862E+05   0.679263236205E+04
+ MD| Potential energy [hartree]          0.150063666897E+05   0.150063200700E+05
+ MD| Kinetic energy [hartree]            0.597655137265E+02   0.174708142700E+02
+ MD| Temperature [K]                           16403.680186          4795.167514
+ MD| ***************************************************************************
+ MD| Estimated peak process memory after this step [MiB]                     268
+
+ ENERGY| Total FORCE_EVAL ( NNP ) energy [hartree]         15005.856398679083213
+
+ MD| ***************************************************************************
+ MD| Step number                                                              34
+ MD| Time [fs]                                                         17.000000
+ MD| Conserved quantity [hartree]                             0.150761341996E+05
+ MD| ---------------------------------------------------------------------------
+ MD|                                          Instantaneous             Averages
+ MD| CPU time per MD step [s]                      0.044806             0.051899
+ MD| Energy drift per atom [K]           0.276489813646E+05   0.740605439153E+04
+ MD| Potential energy [hartree]          0.150058563987E+05   0.150063064326E+05
+ MD| Kinetic energy [hartree]            0.607483220317E+02   0.187436821454E+02
+ MD| Temperature [K]                           16673.428944          5144.528144
+ MD| ***************************************************************************
+ MD| Estimated peak process memory after this step [MiB]                     268
+
+ ENERGY| Total FORCE_EVAL ( NNP ) energy [hartree]         15006.027283670791803
+
+ MD| ***************************************************************************
+ MD| Step number                                                              35
+ MD| Time [fs]                                                         17.500000
+ MD| Conserved quantity [hartree]                             0.150762973134E+05
+ MD| ---------------------------------------------------------------------------
+ MD|                                          Instantaneous             Averages
+ MD| CPU time per MD step [s]                      0.053730             0.051952
+ MD| Energy drift per atom [K]           0.277160480491E+05   0.798633992460E+04
+ MD| Potential energy [hartree]          0.150060272837E+05   0.150062984570E+05
+ MD| Kinetic energy [hartree]            0.597453700294E+02   0.199151589420E+02
+ MD| Temperature [K]                           16398.151399          5466.060237
+ MD| ***************************************************************************
+ MD| Estimated peak process memory after this step [MiB]                     268
+
+ ENERGY| Total FORCE_EVAL ( NNP ) energy [hartree]         15005.231531087640178
+
+ MD| ***************************************************************************
+ MD| Step number                                                              36
+ MD| Time [fs]                                                         18.000000
+ MD| Conserved quantity [hartree]                             0.150749607340E+05
+ MD| ---------------------------------------------------------------------------
+ MD|                                          Instantaneous             Averages
+ MD| CPU time per MD step [s]                      0.051770             0.051946
+ MD| Energy drift per atom [K]           0.271664935017E+05   0.851912196841E+04
+ MD| Potential energy [hartree]          0.150052315311E+05   0.150062688201E+05
+ MD| Kinetic energy [hartree]            0.582202048448E+02   0.209791879949E+02
+ MD| Temperature [K]                           15979.543403          5758.101436
+ MD| ***************************************************************************
+ MD| Estimated peak process memory after this step [MiB]                     268
+
+ ENERGY| Total FORCE_EVAL ( NNP ) energy [hartree]         15000.298487992617083
+
+ MD| ***************************************************************************
+ MD| Step number                                                              37
+ MD| Time [fs]                                                         18.500000
+ MD| Conserved quantity [hartree]                             0.150750083072E+05
+ MD| ---------------------------------------------------------------------------
+ MD|                                          Instantaneous             Averages
+ MD| CPU time per MD step [s]                      0.042073             0.051680
+ MD| Energy drift per atom [K]           0.271860539221E+05   0.902363364284E+04
+ MD| Potential energy [hartree]          0.150002984880E+05   0.150061074598E+05
+ MD| Kinetic energy [hartree]            0.622602828706E+02   0.220948932618E+02
+ MD| Temperature [K]                           17088.412779          6064.326067
+ MD| ***************************************************************************
+ MD| Estimated peak process memory after this step [MiB]                     268
+
+ ENERGY| Total FORCE_EVAL ( NNP ) energy [hartree]         15001.172218623098161
+
+ MD| ***************************************************************************
+ MD| Step number                                                              38
+ MD| Time [fs]                                                         19.000000
+ MD| Conserved quantity [hartree]                             0.150928300512E+05
+ MD| ---------------------------------------------------------------------------
+ MD|                                          Instantaneous             Averages
+ MD| CPU time per MD step [s]                      0.041881             0.051422
+ MD| Energy drift per atom [K]           0.345137296093E+05   0.969442564195E+04
+ MD| Potential energy [hartree]          0.150011722186E+05   0.150059775850E+05
+ MD| Kinetic energy [hartree]            0.780663068877E+02   0.235678251993E+02
+ MD| Temperature [K]                           21426.649779          6468.597744
+ MD| ***************************************************************************
+ MD| Estimated peak process memory after this step [MiB]                     268
+
+ ENERGY| Total FORCE_EVAL ( NNP ) energy [hartree]         14999.346477820470682
+
+ MD| ***************************************************************************
+ MD| Step number                                                              39
+ MD| Time [fs]                                                         19.500000
+ MD| Conserved quantity [hartree]                             0.151412003037E+05
+ MD| ---------------------------------------------------------------------------
+ MD|                                          Instantaneous             Averages
+ MD| CPU time per MD step [s]                      0.044603             0.051247
+ MD| Energy drift per atom [K]           0.544018799586E+05   0.108407706244E+05
+ MD| Potential energy [hartree]          0.149993464778E+05   0.150058075566E+05
+ MD| Kinetic energy [hartree]            0.126490474853E+03   0.262068674981E+02
+ MD| Temperature [K]                           34717.501225          7192.928602
+ MD| ***************************************************************************
+ MD| Estimated peak process memory after this step [MiB]                     268
+
+ ENERGY| Total FORCE_EVAL ( NNP ) energy [hartree]         15002.446001462825734
+
+ MD| ***************************************************************************
+ MD| Step number                                                              40
+ MD| Time [fs]                                                         20.000000
+ MD| Conserved quantity [hartree]                             0.151637926400E+05
+ MD| ---------------------------------------------------------------------------
+ MD|                                          Instantaneous             Averages
+ MD| CPU time per MD step [s]                      0.041099             0.050993
+ MD| Energy drift per atom [K]           0.636910558093E+05   0.121620277541E+05
+ MD| Potential energy [hartree]          0.150024460015E+05   0.150057235178E+05
+ MD| Kinetic energy [hartree]            0.143646278848E+03   0.291428527819E+02
+ MD| Temperature [K]                           39426.208714          7998.760605
+ MD| ***************************************************************************
+ MD| Estimated peak process memory after this step [MiB]                     268
+
+ ENERGY| Total FORCE_EVAL ( NNP ) energy [hartree]         15001.408706977983456
+
+ MD| ***************************************************************************
+ MD| Step number                                                              41
+ MD| Time [fs]                                                         20.500000
+ MD| Conserved quantity [hartree]                             0.151686321472E+05
+ MD| ---------------------------------------------------------------------------
+ MD|                                          Instantaneous             Averages
+ MD| CPU time per MD step [s]                      0.068053             0.051409
+ MD| Energy drift per atom [K]           0.656808913147E+05   0.134673658897E+05
+ MD| Potential energy [hartree]          0.150014087070E+05   0.150056182785E+05
+ MD| Kinetic energy [hartree]            0.147234342169E+03   0.320231330108E+02
+ MD| Temperature [K]                           40411.014826          8789.303391
+ MD| ***************************************************************************
+ MD| Estimated peak process memory after this step [MiB]                     268
+
+ ENERGY| Total FORCE_EVAL ( NNP ) energy [hartree]         15002.590739202518307
+
+ MD| ***************************************************************************
+ MD| Step number                                                              42
+ MD| Time [fs]                                                         21.000000
+ MD| Conserved quantity [hartree]                             0.151718464587E+05
+ MD| ---------------------------------------------------------------------------
+ MD|                                          Instantaneous             Averages
+ MD| CPU time per MD step [s]                      0.044979             0.051256
+ MD| Energy drift per atom [K]           0.670025033887E+05   0.147420120206E+05
+ MD| Potential energy [hartree]          0.150025907392E+05   0.150055461942E+05
+ MD| Kinetic energy [hartree]            0.146907069746E+03   0.347584648379E+02
+ MD| Temperature [K]                           40321.189243          9540.062578
+ MD| ***************************************************************************
+ MD| Estimated peak process memory after this step [MiB]                     268
+
+ ENERGY| Total FORCE_EVAL ( NNP ) energy [hartree]         15001.846721037556563
+
+ MD| ***************************************************************************
+ MD| Step number                                                              43
+ MD| Time [fs]                                                         21.500000
+ MD| Conserved quantity [hartree]                             0.151718561556E+05
+ MD| ---------------------------------------------------------------------------
+ MD|                                          Instantaneous             Averages
+ MD| CPU time per MD step [s]                      0.041291             0.051024
+ MD| Energy drift per atom [K]           0.670064904364E+05   0.159574650070E+05
+ MD| Potential energy [hartree]          0.150018467210E+05   0.150054601600E+05
+ MD| Kinetic energy [hartree]            0.145211753971E+03   0.373271459805E+02
+ MD| Temperature [K]                           39855.880471         10245.081599
+ MD| ***************************************************************************
+ MD| Estimated peak process memory after this step [MiB]                     268
+
+ ENERGY| Total FORCE_EVAL ( NNP ) energy [hartree]         14999.260537582676989
+
+ MD| ***************************************************************************
+ MD| Step number                                                              44
+ MD| Time [fs]                                                         22.000000
+ MD| Conserved quantity [hartree]                             0.151718771741E+05
+ MD| ---------------------------------------------------------------------------
+ MD|                                          Instantaneous             Averages
+ MD| CPU time per MD step [s]                      0.046237             0.050916
+ MD| Energy drift per atom [K]           0.670151325013E+05   0.171178665410E+05
+ MD| Potential energy [hartree]          0.149992605376E+05   0.150053192594E+05
+ MD| Kinetic energy [hartree]            0.145330371235E+03   0.397817647363E+02
+ MD| Temperature [K]                           39888.437033         10918.794222
+ MD| ***************************************************************************
+ MD| Estimated peak process memory after this step [MiB]                     268
+
+ ENERGY| Total FORCE_EVAL ( NNP ) energy [hartree]         14994.395481592217038
+
+ MD| ***************************************************************************
+ MD| Step number                                                              45
+ MD| Time [fs]                                                         22.500000
+ MD| Conserved quantity [hartree]                             0.151793561401E+05
+ MD| ---------------------------------------------------------------------------
+ MD|                                          Instantaneous             Averages
+ MD| CPU time per MD step [s]                      0.045247             0.050790
+ MD| Energy drift per atom [K]           0.700902208503E+05   0.182950299701E+05
+ MD| Potential energy [hartree]          0.149943954816E+05   0.150050765088E+05
+ MD| Kinetic energy [hartree]            0.155177456393E+03   0.423461134398E+02
+ MD| Temperature [K]                           42591.140074         11622.624130
+ MD| ***************************************************************************
+ MD| Estimated peak process memory after this step [MiB]                     268
+
+ ENERGY| Total FORCE_EVAL ( NNP ) energy [hartree]         14993.124533622440140
+
+ MD| ***************************************************************************
+ MD| Step number                                                              46
+ MD| Time [fs]                                                         23.000000
+ MD| Conserved quantity [hartree]                             0.152123698128E+05
+ MD| ---------------------------------------------------------------------------
+ MD|                                          Instantaneous             Averages
+ MD| CPU time per MD step [s]                      0.038902             0.050531
+ MD| Energy drift per atom [K]           0.836642844910E+05   0.197161007205E+05
+ MD| Potential energy [hartree]          0.149931245336E+05   0.150048166833E+05
+ MD| Kinetic energy [hartree]            0.186598315026E+03   0.454820308656E+02
+ MD| Temperature [K]                           51215.138832         12483.330971
+ MD| ***************************************************************************
+ MD| Estimated peak process memory after this step [MiB]                     268
+
+ ENERGY| Total FORCE_EVAL ( NNP ) energy [hartree]         14990.189873554852966
+
+ MD| ***************************************************************************
+ MD| Step number                                                              47
+ MD| Time [fs]                                                         23.500000
+ MD| Conserved quantity [hartree]                             0.152429522754E+05
+ MD| ---------------------------------------------------------------------------
+ MD|                                          Instantaneous             Averages
+ MD| CPU time per MD step [s]                      0.042267             0.050355
+ MD| Energy drift per atom [K]           0.962387198517E+05   0.213442415531E+05
+ MD| Potential energy [hartree]          0.149901898736E+05   0.150045054746E+05
+ MD| Kinetic energy [hartree]            0.216805827397E+03   0.491272180258E+02
+ MD| Temperature [K]                           59506.113698         13483.815710
+ MD| ***************************************************************************
+ MD| Estimated peak process memory after this step [MiB]                     268
+
+ ENERGY| Total FORCE_EVAL ( NNP ) energy [hartree]         14993.631017850413627
+
+ MD| ***************************************************************************
+ MD| Step number                                                              48
+ MD| Time [fs]                                                         24.000000
+ MD| Conserved quantity [hartree]                             0.152864081646E+05
+ MD| ---------------------------------------------------------------------------
+ MD|                                          Instantaneous             Averages
+ MD| CPU time per MD step [s]                      0.058838             0.050532
+ MD| Energy drift per atom [K]           0.114106256443E+06   0.232767835300E+05
+ MD| Potential energy [hartree]          0.149936310179E+05   0.150042789234E+05
+ MD| Kinetic energy [hartree]            0.252875884523E+03   0.533719819112E+02
+ MD| Temperature [K]                           69406.165492         14648.864664
+ MD| ***************************************************************************
+ MD| Estimated peak process memory after this step [MiB]                     268
+
+ ENERGY| Total FORCE_EVAL ( NNP ) energy [hartree]         14991.746885721246144
+
+ MD| ***************************************************************************
+ MD| Step number                                                              49
+ MD| Time [fs]                                                         24.500000
+ MD| Conserved quantity [hartree]                             0.152856797748E+05
+ MD| ---------------------------------------------------------------------------
+ MD|                                          Instantaneous             Averages
+ MD| CPU time per MD step [s]                      0.064248             0.050812
+ MD| Energy drift per atom [K]           0.113806768130E+06   0.251243342361E+05
+ MD| Potential energy [hartree]          0.149917468857E+05   0.150040231675E+05
+ MD| Kinetic energy [hartree]            0.249732545912E+03   0.573793403602E+02
+ MD| Temperature [K]                           68543.421778         15748.753585
+ MD| ***************************************************************************
+ MD| Estimated peak process memory after this step [MiB]                     268
+
+ ENERGY| Total FORCE_EVAL ( NNP ) energy [hartree]         14986.354351478414173
+
+ MD| ***************************************************************************
+ MD| Step number                                                              50
+ MD| Time [fs]                                                         25.000000
+ MD| Conserved quantity [hartree]                             0.152928722091E+05
+ MD| ---------------------------------------------------------------------------
+ MD|                                          Instantaneous             Averages
+ MD| CPU time per MD step [s]                      0.055506             0.050906
+ MD| Energy drift per atom [K]           0.116764044715E+06   0.269571284457E+05
+ MD| Potential energy [hartree]          0.149863543515E+05   0.150036697912E+05
+ MD| Kinetic energy [hartree]            0.258086269785E+03   0.613934789487E+02
+ MD| Temperature [K]                           70836.245954         16850.503432
+ MD| ***************************************************************************
+ MD| Estimated peak process memory after this step [MiB]                     268
+
+ ENERGY| Total FORCE_EVAL ( NNP ) energy [hartree]         14985.218259516372200
+
+ MD| ***************************************************************************
+ MD| Step number                                                              51
+ MD| Time [fs]                                                         25.500000
+ MD| Conserved quantity [hartree]                             0.153220551396E+05
+ MD| ---------------------------------------------------------------------------
+ MD|                                          Instantaneous             Averages
+ MD| CPU time per MD step [s]                      0.056346             0.051013
+ MD| Energy drift per atom [K]           0.128763041565E+06   0.289533228206E+05
+ MD| Potential energy [hartree]          0.149852182595E+05   0.150033079964E+05
+ MD| Kinetic energy [hartree]            0.283909630590E+03   0.657565407456E+02
+ MD| Temperature [K]                           77923.914503         18048.021296
+ MD| ***************************************************************************
+ MD| Estimated peak process memory after this step [MiB]                     268
+
+ ENERGY| Total FORCE_EVAL ( NNP ) energy [hartree]         14981.251441008771508
+
+ MD| ***************************************************************************
+ MD| Step number                                                              52
+ MD| Time [fs]                                                         26.000000
+ MD| Conserved quantity [hartree]                             0.153316998951E+05
+ MD| ---------------------------------------------------------------------------
+ MD|                                          Instantaneous             Averages
+ MD| CPU time per MD step [s]                      0.064070             0.051264
+ MD| Energy drift per atom [K]           0.132728626576E+06   0.309490017389E+05
+ MD| Potential energy [hartree]          0.149812514410E+05   0.150028838319E+05
+ MD| Kinetic energy [hartree]            0.292802920124E+03   0.701228172721E+02
+ MD| Temperature [K]                           80364.831818         19246.421499
+ MD| ***************************************************************************
+ MD| Estimated peak process memory after this step [MiB]                     268
+
+ ENERGY| Total FORCE_EVAL ( NNP ) energy [hartree]         14966.363621442824297
+
+ MD| ***************************************************************************
+ MD| Step number                                                              53
+ MD| Time [fs]                                                         26.500000
+ MD| Conserved quantity [hartree]                             0.153288022781E+05
+ MD| ---------------------------------------------------------------------------
+ MD|                                          Instantaneous             Averages
+ MD| CPU time per MD step [s]                      0.065482             0.051532
+ MD| Energy drift per atom [K]           0.131537228164E+06   0.328468928036E+05
+ MD| Potential energy [hartree]          0.149663636214E+05   0.150021947713E+05
+ MD| Kinetic energy [hartree]            0.299863273753E+03   0.744575428661E+02
+ MD| Temperature [K]                           82302.668134         20436.162001
+ MD| ***************************************************************************
+ MD| Estimated peak process memory after this step [MiB]                     268
+
+ ENERGY| Total FORCE_EVAL ( NNP ) energy [hartree]         14944.764517736661219
+
+ MD| ***************************************************************************
+ MD| Step number                                                              54
+ MD| Time [fs]                                                         27.000000
+ MD| Conserved quantity [hartree]                             0.153349439784E+05
+ MD| ---------------------------------------------------------------------------
+ MD|                                          Instantaneous             Averages
+ MD| CPU time per MD step [s]                      0.064100             0.051765
+ MD| Energy drift per atom [K]           0.134062479795E+06   0.347212555256E+05
+ MD| Potential energy [hartree]          0.149447645177E+05   0.150011312481E+05
+ MD| Kinetic energy [hartree]            0.322359089214E+03   0.790483122429E+02
+ MD| Temperature [K]                           88477.034241         21696.178154
+ MD| ***************************************************************************
+ MD| Estimated peak process memory after this step [MiB]                     268
+
+ ENERGY| Total FORCE_EVAL ( NNP ) energy [hartree]         14934.723167685091539
+
+ MD| ***************************************************************************
+ MD| Step number                                                              55
+ MD| Time [fs]                                                         27.500000
+ MD| Conserved quantity [hartree]                             0.153499568564E+05
+ MD| ---------------------------------------------------------------------------
+ MD|                                          Instantaneous             Averages
+ MD| CPU time per MD step [s]                      0.058336             0.051884
+ MD| Energy drift per atom [K]           0.140235248363E+06   0.366396917590E+05
+ MD| Potential energy [hartree]          0.149347231677E+05   0.149999238285E+05
+ MD| Kinetic energy [hartree]            0.342009887901E+03   0.838294318003E+02
+ MD| Temperature [K]                           93870.536229         23008.439210
+ MD| ***************************************************************************
+ MD| Estimated peak process memory after this step [MiB]                     268
+
+ ENERGY| Total FORCE_EVAL ( NNP ) energy [hartree]         14945.927533800630044
+
+ MD| ***************************************************************************
+ MD| Step number                                                              56
+ MD| Time [fs]                                                         28.000000
+ MD| Conserved quantity [hartree]                             0.153779452016E+05
+ MD| ---------------------------------------------------------------------------
+ MD|                                          Instantaneous             Averages
+ MD| CPU time per MD step [s]                      0.048866             0.051830
+ MD| Energy drift per atom [K]           0.151743073663E+06   0.386951092930E+05
+ MD| Potential energy [hartree]          0.149459275338E+05   0.149989596089E+05
+ MD| Kinetic energy [hartree]            0.352915607131E+03   0.886345420740E+02
+ MD| Temperature [K]                           96863.799723         24327.284933
+ MD| ***************************************************************************
+ MD| Estimated peak process memory after this step [MiB]                     268
+
+ ENERGY| Total FORCE_EVAL ( NNP ) energy [hartree]         14954.431441611242917
+
+ MD| ***************************************************************************
+ MD| Step number                                                              57
+ MD| Time [fs]                                                         28.500000
+ MD| Conserved quantity [hartree]                             0.154124024993E+05
+ MD| ---------------------------------------------------------------------------
+ MD|                                          Instantaneous             Averages
+ MD| CPU time per MD step [s]                      0.054908             0.051884
+ MD| Energy drift per atom [K]           0.165910705266E+06   0.409269618539E+05
+ MD| Potential energy [hartree]          0.149544314416E+05   0.149981784130E+05
+ MD| Kinetic energy [hartree]            0.372910175139E+03   0.936218338822E+02
+ MD| Temperature [K]                          102351.655153         25696.133533
+ MD| ***************************************************************************
+ MD| Estimated peak process memory after this step [MiB]                     268
+
+ ENERGY| Total FORCE_EVAL ( NNP ) energy [hartree]         14959.550502418507676
+
+ MD| ***************************************************************************
+ MD| Step number                                                              58
+ MD| Time [fs]                                                         29.000000
+ MD| Conserved quantity [hartree]                             0.154566875537E+05
+ MD| ---------------------------------------------------------------------------
+ MD|                                          Instantaneous             Averages
+ MD| CPU time per MD step [s]                      0.048147             0.051820
+ MD| Energy drift per atom [K]           0.184119165502E+06   0.433957929513E+05
+ MD| Potential energy [hartree]          0.149595505024E+05   0.149975124146E+05
+ MD| Kinetic energy [hartree]            0.405627954381E+03   0.990012497529E+02
+ MD| Temperature [K]                          111331.616231         27172.607373
+ MD| ***************************************************************************
+ MD| Estimated peak process memory after this step [MiB]                     268
+
+ ENERGY| Total FORCE_EVAL ( NNP ) energy [hartree]         14959.732972644163965
+
+ MD| ***************************************************************************
+ MD| Step number                                                              59
+ MD| Time [fs]                                                         29.500000
+ MD| Conserved quantity [hartree]                             0.154778326243E+05
+ MD| ---------------------------------------------------------------------------
+ MD|                                          Instantaneous             Averages
+ MD| CPU time per MD step [s]                      0.056736             0.051903
+ MD| Energy drift per atom [K]           0.192813276437E+06   0.459282926714E+05
+ MD| Potential energy [hartree]          0.149597329726E+05   0.149968720850E+05
+ MD| Kinetic energy [hartree]            0.419617418809E+03   0.104435422110E+03
+ MD| Temperature [K]                          115171.266995         28664.110078
+ MD| ***************************************************************************
+ MD| Estimated peak process memory after this step [MiB]                     268
+
+ ENERGY| Total FORCE_EVAL ( NNP ) energy [hartree]         14965.028268260108234
+
+ MD| ***************************************************************************
+ MD| Step number                                                              60
+ MD| Time [fs]                                                         30.000000
+ MD| Conserved quantity [hartree]                             0.155055999879E+05
+ MD| ---------------------------------------------------------------------------
+ MD|                                          Instantaneous             Averages
+ MD| CPU time per MD step [s]                      0.061812             0.052068
+ MD| Energy drift per atom [K]           0.204230241919E+06   0.485666584922E+05
+ MD| Potential energy [hartree]          0.149650282683E+05   0.149963413548E+05
+ MD| Kinetic energy [hartree]            0.435016243797E+03   0.109945102471E+03
+ MD| Temperature [K]                          119397.741171         30176.337263
+ MD| ***************************************************************************
+ MD| Estimated peak process memory after this step [MiB]                     268
+
+ ENERGY| Total FORCE_EVAL ( NNP ) energy [hartree]         14945.696522560765516
+
+ MD| ***************************************************************************
+ MD| Step number                                                              61
+ MD| Time [fs]                                                         30.500000
+ MD| Conserved quantity [hartree]                             0.155156322940E+05
+ MD| ---------------------------------------------------------------------------
+ MD|                                          Instantaneous             Averages
+ MD| CPU time per MD step [s]                      0.094780             0.052769
+ MD| Energy drift per atom [K]           0.208355174081E+06   0.511861423543E+05
+ MD| Potential energy [hartree]          0.149456965226E+05   0.149955111116E+05
+ MD| Kinetic energy [hartree]            0.457077630459E+03   0.115635799651E+03
+ MD| Temperature [K]                          125452.870771         31738.247649
+ MD| ***************************************************************************
+ MD| Estimated peak process memory after this step [MiB]                     268
+
+ ENERGY| Total FORCE_EVAL ( NNP ) energy [hartree]         14940.718781915828004
+
+ MD| ***************************************************************************
+ MD| Step number                                                              62
+ MD| Time [fs]                                                         31.000000
+ MD| Conserved quantity [hartree]                             0.155475745160E+05
+ MD| ---------------------------------------------------------------------------
+ MD|                                          Instantaneous             Averages
+ MD| CPU time per MD step [s]                      0.047531             0.052684
+ MD| Energy drift per atom [K]           0.221488694820E+06   0.539329577167E+05
+ MD| Potential energy [hartree]          0.149407187819E+05   0.149946273644E+05
+ MD| Kinetic energy [hartree]            0.486030498109E+03   0.121609907691E+03
+ MD| Temperature [K]                          133399.486667         33377.945052
+ MD| ***************************************************************************
+ MD| Estimated peak process memory after this step [MiB]                     268
+
+ ENERGY| Total FORCE_EVAL ( NNP ) energy [hartree]         14919.686012589369057
+
+ MD| ***************************************************************************
+ MD| Step number                                                              63
+ MD| Time [fs]                                                         31.500000
+ MD| Conserved quantity [hartree]                             0.155659904562E+05
+ MD| ---------------------------------------------------------------------------
+ MD|                                          Instantaneous             Averages
+ MD| CPU time per MD step [s]                      0.067306             0.052916
+ MD| Energy drift per atom [K]           0.229060683149E+06   0.567127628823E+05
+ MD| Potential energy [hartree]          0.149196860126E+05   0.149934378191E+05
+ MD| Kinetic energy [hartree]            0.517140608891E+03   0.127888172789E+03
+ MD| Temperature [K]                          141938.195297         35101.123628
+ MD| ***************************************************************************
+ MD| Estimated peak process memory after this step [MiB]                     268
+
+ ENERGY| Total FORCE_EVAL ( NNP ) energy [hartree]         14921.022299001304418
+
+ MD| ***************************************************************************
+ MD| Step number                                                              64
+ MD| Time [fs]                                                         32.000000
+ MD| Conserved quantity [hartree]                             0.156234708089E+05
+ MD| ---------------------------------------------------------------------------
+ MD|                                          Instantaneous             Averages
+ MD| CPU time per MD step [s]                      0.046123             0.052810
+ MD| Energy drift per atom [K]           0.252694586944E+06   0.597749788832E+05
+ MD| Potential energy [hartree]          0.149210222990E+05   0.149923063266E+05
+ MD| Kinetic energy [hartree]            0.564175984496E+03   0.134705169847E+03
+ MD| Temperature [K]                          154847.868631         36972.166518
+ MD| ***************************************************************************
+ MD| Estimated peak process memory after this step [MiB]                     268
+
+ ENERGY| Total FORCE_EVAL ( NNP ) energy [hartree]         14915.135444391939018
+
+ MD| ***************************************************************************
+ MD| Step number                                                              65
+ MD| Time [fs]                                                         32.500000
+ MD| Conserved quantity [hartree]                             0.156396819225E+05
+ MD| ---------------------------------------------------------------------------
+ MD|                                          Instantaneous             Averages
+ MD| CPU time per MD step [s]                      0.036681             0.052562
+ MD| Energy drift per atom [K]           0.259360027944E+06   0.628455180995E+05
+ MD| Potential energy [hartree]          0.149151354444E+05   0.149911190822E+05
+ MD| Kinetic energy [hartree]            0.576738312465E+03   0.141505679734E+03
+ MD| Temperature [K]                          158295.817080         38838.684219
+ MD| ***************************************************************************
+ MD| Estimated peak process memory after this step [MiB]                     268
+
+ ENERGY| Total FORCE_EVAL ( NNP ) energy [hartree]         14925.317085099597534
+
+ MD| ***************************************************************************
+ MD| Step number                                                              66
+ MD| Time [fs]                                                         33.000000
+ MD| Conserved quantity [hartree]                             0.156837515178E+05
+ MD| ---------------------------------------------------------------------------
+ MD|                                          Instantaneous             Averages
+ MD| CPU time per MD step [s]                      0.035019             0.052296
+ MD| Energy drift per atom [K]           0.277479898961E+06   0.660975541732E+05
+ MD| Potential energy [hartree]          0.149253170851E+05   0.149901220823E+05
+ MD| Kinetic energy [hartree]            0.601044892227E+03   0.148468395075E+03
+ MD| Temperature [K]                          164967.178806         40749.722016
+ MD| ***************************************************************************
+ MD| Estimated peak process memory after this step [MiB]                     268
+
+ ENERGY| Total FORCE_EVAL ( NNP ) energy [hartree]         14917.069526491397482
+
+ MD| ***************************************************************************
+ MD| Step number                                                              67
+ MD| Time [fs]                                                         33.500000
+ MD| Conserved quantity [hartree]                             0.156905562899E+05
+ MD| ---------------------------------------------------------------------------
+ MD|                                          Instantaneous             Averages
+ MD| CPU time per MD step [s]                      0.038669             0.052093
+ MD| Energy drift per atom [K]           0.280277782440E+06   0.692942739981E+05
+ MD| Potential energy [hartree]          0.149170695265E+05   0.149890317456E+05
+ MD| Kinetic energy [hartree]            0.606113074796E+03   0.155298912682E+03
+ MD| Temperature [K]                          166358.229277         42624.475856
+ MD| ***************************************************************************
+ MD| Estimated peak process memory after this step [MiB]                     268
+
+ ENERGY| Total FORCE_EVAL ( NNP ) energy [hartree]         14905.600235770649306
+
+ MD| ***************************************************************************
+ MD| Step number                                                              68
+ MD| Time [fs]                                                         34.000000
+ MD| Conserved quantity [hartree]                             0.157106335493E+05
+ MD| ---------------------------------------------------------------------------
+ MD|                                          Instantaneous             Averages
+ MD| CPU time per MD step [s]                      0.074280             0.052419
+ MD| Energy drift per atom [K]           0.288532846926E+06   0.725183706588E+05
+ MD| Potential energy [hartree]          0.149056002358E+05   0.149878048117E+05
+ MD| Kinetic energy [hartree]            0.627310887478E+03   0.162240265253E+03
+ MD| Temperature [K]                          172176.336044         44529.650270
+ MD| ***************************************************************************
+ MD| Estimated peak process memory after this step [MiB]                     268
+
+ ENERGY| Total FORCE_EVAL ( NNP ) energy [hartree]         14909.486602885039247
+
+ MD| ***************************************************************************
+ MD| Step number                                                              69
+ MD| Time [fs]                                                         34.500000
+ MD| Conserved quantity [hartree]                             0.157495365926E+05
+ MD| ---------------------------------------------------------------------------
+ MD|                                          Instantaneous             Averages
+ MD| CPU time per MD step [s]                      0.040919             0.052252
+ MD| Energy drift per atom [K]           0.304528413082E+06   0.758808350417E+05
+ MD| Potential energy [hartree]          0.149094866029E+05   0.149866697652E+05
+ MD| Kinetic energy [hartree]            0.651698944952E+03   0.169333869306E+03
+ MD| Temperature [K]                          178870.060740         46476.612741
+ MD| ***************************************************************************
+ MD| Estimated peak process memory after this step [MiB]                     268
+
+ ENERGY| Total FORCE_EVAL ( NNP ) energy [hartree]         14892.655560875746232
+
+ MD| ***************************************************************************
+ MD| Step number                                                              70
+ MD| Time [fs]                                                         35.000000
+ MD| Conserved quantity [hartree]                             0.157930570525E+05
+ MD| ---------------------------------------------------------------------------
+ MD|                                          Instantaneous             Averages
+ MD| CPU time per MD step [s]                      0.037985             0.052048
+ MD| Energy drift per atom [K]           0.322422498873E+06   0.794028588107E+05
+ MD| Potential energy [hartree]          0.148926555609E+05   0.149853267051E+05
+ MD| Kinetic energy [hartree]            0.700601681513E+03   0.176923409481E+03
+ MD| Temperature [K]                          192292.263625         48559.693468
+ MD| ***************************************************************************
+ MD| Estimated peak process memory after this step [MiB]                     268
+
+ ENERGY| Total FORCE_EVAL ( NNP ) energy [hartree]         14896.362067288131584
+
+ MD| ***************************************************************************
+ MD| Step number                                                              71
+ MD| Time [fs]                                                         35.500000
+ MD| Conserved quantity [hartree]                             0.158401422126E+05
+ MD| ---------------------------------------------------------------------------
+ MD|                                          Instantaneous             Averages
+ MD| CPU time per MD step [s]                      0.051094             0.052035
+ MD| Energy drift per atom [K]           0.341782264302E+06   0.830983433951E+05
+ MD| Potential energy [hartree]          0.148963620673E+05   0.149840736820E+05
+ MD| Kinetic energy [hartree]            0.732409024795E+03   0.184747150542E+03
+ MD| Temperature [K]                          201022.339788         50707.054683
+ MD| ***************************************************************************
+ MD| Estimated peak process memory after this step [MiB]                     268
+
+ ENERGY| Total FORCE_EVAL ( NNP ) energy [hartree]         14897.149781032036117
+
+ MD| ***************************************************************************
+ MD| Step number                                                              72
+ MD| Time [fs]                                                         36.000000
+ MD| Conserved quantity [hartree]                             0.158991380353E+05
+ MD| ---------------------------------------------------------------------------
+ MD|                                          Instantaneous             Averages
+ MD| CPU time per MD step [s]                      0.053169             0.052051
+ MD| Energy drift per atom [K]           0.366039276230E+06   0.870280785734E+05
+ MD| Potential energy [hartree]          0.148971497810E+05   0.149828664056E+05
+ MD| Kinetic energy [hartree]            0.778232154930E+03   0.192989997825E+03
+ MD| Temperature [K]                          213599.291360         52969.446860
+ MD| ***************************************************************************
+ MD| Estimated peak process memory after this step [MiB]                     268
+
+ ENERGY| Total FORCE_EVAL ( NNP ) energy [hartree]         14847.573028207601965
+
+ MD| ***************************************************************************
+ MD| Step number                                                              73
+ MD| Time [fs]                                                         36.500000
+ MD| Conserved quantity [hartree]                             0.159246574932E+05
+ MD| ---------------------------------------------------------------------------
+ MD|                                          Instantaneous             Averages
+ MD| CPU time per MD step [s]                      0.093291             0.052616
+ MD| Energy drift per atom [K]           0.376531981720E+06   0.909938854658E+05
+ MD| Potential energy [hartree]          0.148475730282E+05   0.149810130717E+05
+ MD| Kinetic energy [hartree]            0.839699640320E+03   0.201849034023E+03
+ MD| Temperature [K]                          230470.107141         55400.962754
+ MD| ***************************************************************************
+ MD| Estimated peak process memory after this step [MiB]                     268
+
+ ENERGY| Total FORCE_EVAL ( NNP ) energy [hartree]         14854.291751206177651
+
+ MD| ***************************************************************************
+ MD| Step number                                                              74
+ MD| Time [fs]                                                         37.000000
+ MD| Conserved quantity [hartree]                             0.160342290114E+05
+ MD| ---------------------------------------------------------------------------
+ MD|                                          Instantaneous             Averages
+ MD| CPU time per MD step [s]                      0.154301             0.053990
+ MD| Energy drift per atom [K]           0.421583944723E+06   0.954613186990E+05
+ MD| Potential energy [hartree]          0.148542917512E+05   0.149793006214E+05
+ MD| Kinetic energy [hartree]            0.928029244136E+03   0.211662280106E+03
+ MD| Temperature [K]                          254713.696489         58094.378075
+ MD| ***************************************************************************
+ MD| Estimated peak process memory after this step [MiB]                     268
+
+ ENERGY| Total FORCE_EVAL ( NNP ) energy [hartree]         14835.839006056861763
+
+ MD| ***************************************************************************
+ MD| Step number                                                              75
+ MD| Time [fs]                                                         37.500000
+ MD| Conserved quantity [hartree]                             0.160575666754E+05
+ MD| ---------------------------------------------------------------------------
+ MD|                                          Instantaneous             Averages
+ MD| CPU time per MD step [s]                      0.104597             0.054665
+ MD| Energy drift per atom [K]           0.431179573146E+06   0.999375620916E+05
+ MD| Potential energy [hartree]          0.148358390061E+05   0.149773877999E+05
+ MD| Kinetic energy [hartree]            0.954264422266E+03   0.221563642001E+03
+ MD| Temperature [K]                          261914.395435         60811.978306
+ MD| ***************************************************************************
+ MD| Estimated peak process memory after this step [MiB]                     268
+
+ ENERGY| Total FORCE_EVAL ( NNP ) energy [hartree]         14828.957534517216118
+
+ MD| ***************************************************************************
+ MD| Step number                                                              76
+ MD| Time [fs]                                                         38.000000
+ MD| Conserved quantity [hartree]                             0.161144343087E+05
+ MD| ---------------------------------------------------------------------------
+ MD|                                          Instantaneous             Averages
+ MD| CPU time per MD step [s]                      0.137938             0.055760
+ MD| Energy drift per atom [K]           0.454561548257E+06   0.104603667173E+06
+ MD| Potential energy [hartree]          0.148289575345E+05   0.149754347701E+05
+ MD| Kinetic energy [hartree]            0.100153605823E+04   0.231826436952E+03
+ MD| Temperature [K]                          274888.914514         63628.780098
+ MD| ***************************************************************************
+ MD| Estimated peak process memory after this step [MiB]                     268
+
+ ENERGY| Total FORCE_EVAL ( NNP ) energy [hartree]         14804.945077788621347
+
+ MD| ***************************************************************************
+ MD| Step number                                                              77
+ MD| Time [fs]                                                         38.500000
+ MD| Conserved quantity [hartree]                             0.161797845688E+05
+ MD| ---------------------------------------------------------------------------
+ MD|                                          Instantaneous             Averages
+ MD| CPU time per MD step [s]                      0.039126             0.055544
+ MD| Energy drift per atom [K]           0.481431281835E+06   0.109497532298E+06
+ MD| Potential energy [hartree]          0.148049450778E+05   0.149732206182E+05
+ MD| Kinetic energy [hartree]            0.107353695875E+04   0.242757742430E+03
+ MD| Temperature [K]                          294650.808484         66629.066181
+ MD| ***************************************************************************
+ MD| Estimated peak process memory after this step [MiB]                     268
+
+ ENERGY| Total FORCE_EVAL ( NNP ) energy [hartree]         14770.257234163635076
+
+ MD| ***************************************************************************
+ MD| Step number                                                              78
+ MD| Time [fs]                                                         39.000000
+ MD| Conserved quantity [hartree]                             0.162610919864E+05
+ MD| ---------------------------------------------------------------------------
+ MD|                                          Instantaneous             Averages
+ MD| CPU time per MD step [s]                      0.052170             0.055501
+ MD| Energy drift per atom [K]           0.514862038562E+06   0.114694513148E+06
+ MD| Potential energy [hartree]          0.147702572342E+05   0.149706185236E+05
+ MD| Kinetic energy [hartree]            0.117050580297E+04   0.254651948334E+03
+ MD| Temperature [K]                          321265.586964         69893.636960
+ MD| ***************************************************************************
+ MD| Estimated peak process memory after this step [MiB]                     268
+
+ ENERGY| Total FORCE_EVAL ( NNP ) energy [hartree]         14715.515798452817762
+
+ MD| ***************************************************************************
+ MD| Step number                                                              79
+ MD| Time [fs]                                                         39.500000
+ MD| Conserved quantity [hartree]                             0.163169542123E+05
+ MD| ---------------------------------------------------------------------------
+ MD|                                          Instantaneous             Averages
+ MD| CPU time per MD step [s]                      0.065347             0.055626
+ MD| Energy drift per atom [K]           0.537830625418E+06   0.120050666468E+06
+ MD| Potential energy [hartree]          0.147155157985E+05   0.149673893751E+05
+ MD| Kinetic energy [hartree]            0.126087760361E+04   0.267388981945E+03
+ MD| Temperature [K]                          346069.692594         73389.536399
+ MD| ***************************************************************************
+ MD| Estimated peak process memory after this step [MiB]                     268
+
+ ENERGY| Total FORCE_EVAL ( NNP ) energy [hartree]         14658.367315931918711
+
+ MD| ***************************************************************************
+ MD| Step number                                                              80
+ MD| Time [fs]                                                         40.000000
+ MD| Conserved quantity [hartree]                             0.163641267254E+05
+ MD| ---------------------------------------------------------------------------
+ MD|                                          Instantaneous             Averages
+ MD| CPU time per MD step [s]                      0.066855             0.055766
+ MD| Energy drift per atom [K]           0.557226307317E+06   0.125515361978E+06
+ MD| Potential energy [hartree]          0.146583673159E+05   0.149635265994E+05
+ MD| Kinetic energy [hartree]            0.134361437868E+04   0.280841799404E+03
+ MD| Temperature [K]                          368778.233241         77081.895109
+ MD| ***************************************************************************
+ MD| Estimated peak process memory after this step [MiB]                     268
+
+ ENERGY| Total FORCE_EVAL ( NNP ) energy [hartree]         14627.912997061719580
+
+ MD| ***************************************************************************
+ MD| Step number                                                              81
+ MD| Time [fs]                                                         40.500000
+ MD| Conserved quantity [hartree]                             0.164347888804E+05
+ MD| ---------------------------------------------------------------------------
+ MD|                                          Instantaneous             Averages
+ MD| CPU time per MD step [s]                      0.113586             0.056480
+ MD| Energy drift per atom [K]           0.586280105647E+06   0.131203815604E+06
+ MD| Potential energy [hartree]          0.146279129971E+05   0.149593832216E+05
+ MD| Kinetic energy [hartree]            0.142143223722E+04   0.294923162834E+03
+ MD| Temperature [K]                          390136.692069         80946.769146
+ MD| ***************************************************************************
+ MD| Estimated peak process memory after this step [MiB]                     268
+
+ ENERGY| Total FORCE_EVAL ( NNP ) energy [hartree]         14552.599589724681209
+
+ MD| ***************************************************************************
+ MD| Step number                                                              82
+ MD| Time [fs]                                                         41.000000
+ MD| Conserved quantity [hartree]                             0.165285916232E+05
+ MD| ---------------------------------------------------------------------------
+ MD|                                          Instantaneous             Averages
+ MD| CPU time per MD step [s]                      0.057103             0.056487
+ MD| Energy drift per atom [K]           0.624848501583E+06   0.137223872750E+06
+ MD| Potential energy [hartree]          0.145525995897E+05   0.149544224456E+05
+ MD| Kinetic energy [hartree]            0.156600438835E+04   0.310424153389E+03
+ MD| Temperature [K]                          429817.022465         85201.284430
+ MD| ***************************************************************************
+ MD| Estimated peak process memory after this step [MiB]                     268
+
+ ENERGY| Total FORCE_EVAL ( NNP ) energy [hartree]         14510.499530883602347
+
+ MD| ***************************************************************************
+ MD| Step number                                                              83
+ MD| Time [fs]                                                         41.500000
+ MD| Conserved quantity [hartree]                             0.167947825414E+05
+ MD| ---------------------------------------------------------------------------
+ MD|                                          Instantaneous             Averages
+ MD| CPU time per MD step [s]                      0.055741             0.056478
+ MD| Energy drift per atom [K]           0.734296865493E+06   0.144417523265E+06
+ MD| Potential energy [hartree]          0.145104995309E+05   0.149490739767E+05
+ MD| Kinetic energy [hartree]            0.184549829007E+04   0.328919022506E+03
+ MD| Temperature [K]                          506528.963715         90277.521530
+ MD| ***************************************************************************
+ MD| Estimated peak process memory after this step [MiB]                     268
+
+ ENERGY| Total FORCE_EVAL ( NNP ) energy [hartree]         14482.483220345335212
+
+ MD| ***************************************************************************
+ MD| Step number                                                              84
+ MD| Time [fs]                                                         42.000000
+ MD| Conserved quantity [hartree]                             0.170632457694E+05
+ MD| ---------------------------------------------------------------------------
+ MD|                                          Instantaneous             Averages
+ MD| CPU time per MD step [s]                      0.052441             0.056430
+ MD| Energy drift per atom [K]           0.844679523409E+06   0.152753975648E+06
+ MD| Potential energy [hartree]          0.144824832203E+05   0.149435193249E+05
+ MD| Kinetic energy [hartree]            0.210881775630E+04   0.350108293146E+03
+ MD| Temperature [K]                          578801.551053         96093.283786
+ MD| ***************************************************************************
+ MD| Estimated peak process memory after this step [MiB]                     268
+
+ ENERGY| Total FORCE_EVAL ( NNP ) energy [hartree]         14449.151459814504051
+
+ MD| ***************************************************************************
+ MD| Step number                                                              85
+ MD| Time [fs]                                                         42.500000
+ MD| Conserved quantity [hartree]                             0.171560828952E+05
+ MD| ---------------------------------------------------------------------------
+ MD|                                          Instantaneous             Averages
+ MD| CPU time per MD step [s]                      0.053395             0.056395
+ MD| Energy drift per atom [K]           0.882850891532E+06   0.161343351129E+06
+ MD| Potential energy [hartree]          0.144491514598E+05   0.149377032323E+05
+ MD| Kinetic energy [hartree]            0.219877979773E+04   0.371857369671E+03
+ MD| Temperature [K]                          603493.191173        102062.694461
+ MD| ***************************************************************************
+ MD| Estimated peak process memory after this step [MiB]                     268
+
+ ENERGY| Total FORCE_EVAL ( NNP ) energy [hartree]         14437.288831802085042
+
+ MD| ***************************************************************************
+ MD| Step number                                                              86
+ MD| Time [fs]                                                         43.000000
+ MD| Conserved quantity [hartree]                             0.172657353609E+05
+ MD| ---------------------------------------------------------------------------
+ MD|                                          Instantaneous             Averages
+ MD| CPU time per MD step [s]                      0.064392             0.056488
+ MD| Energy drift per atom [K]           0.927936137303E+06   0.170257220735E+06
+ MD| Potential energy [hartree]          0.144372888318E+05   0.149318844602E+05
+ MD| Kinetic energy [hartree]            0.228263365571E+04   0.394075698578E+03
+ MD| Temperature [K]                          626508.334571        108160.899579
+ MD| ***************************************************************************
+ MD| Estimated peak process memory after this step [MiB]                     268
+
+ ENERGY| Total FORCE_EVAL ( NNP ) energy [hartree]         14475.452010762581267
+
+ MD| ***************************************************************************
+ MD| Step number                                                              87
+ MD| Time [fs]                                                         43.500000
+ MD| Conserved quantity [hartree]                             0.175200709726E+05
+ MD| ---------------------------------------------------------------------------
+ MD|                                          Instantaneous             Averages
+ MD| CPU time per MD step [s]                      0.062046             0.056552
+ MD| Energy drift per atom [K]           0.103251001520E+07   0.180168172396E+06
+ MD| Potential energy [hartree]          0.144754520108E+05   0.149266381103E+05
+ MD| Kinetic energy [hartree]            0.245920263073E+04   0.417812789752E+03
+ MD| Temperature [K]                          674970.747362        114675.955301
+ MD| ***************************************************************************
+ MD| Estimated peak process memory after this step [MiB]                     268
+
+ ENERGY| Total FORCE_EVAL ( NNP ) energy [hartree]         14445.179382275602620
+
+ MD| ***************************************************************************
+ MD| Step number                                                              88
+ MD| Time [fs]                                                         44.000000
+ MD| Conserved quantity [hartree]                             0.175987140854E+05
+ MD| ---------------------------------------------------------------------------
+ MD|                                          Instantaneous             Averages
+ MD| CPU time per MD step [s]                      0.054647             0.056530
+ MD| Energy drift per atom [K]           0.106484530330E+07   0.190221321611E+06
+ MD| Potential energy [hartree]          0.144451793823E+05   0.149211669883E+05
+ MD| Kinetic energy [hartree]            0.252684321657E+04   0.441779044603E+03
+ MD| Temperature [K]                          693535.877461        121253.908962
+ MD| ***************************************************************************
+ MD| Estimated peak process memory after this step [MiB]                     268
+
+ ENERGY| Total FORCE_EVAL ( NNP ) energy [hartree]         14432.427286088506662
+
+ MD| ***************************************************************************
+ MD| Step number                                                              89
+ MD| Time [fs]                                                         44.500000
+ MD| Conserved quantity [hartree]                             0.177219045630E+05
+ MD| ---------------------------------------------------------------------------
+ MD|                                          Instantaneous             Averages
+ MD| CPU time per MD step [s]                      0.053225             0.056493
+ MD| Energy drift per atom [K]           0.111549690446E+07   0.200617676474E+06
+ MD| Potential energy [hartree]          0.144324272861E+05   0.149156755310E+05
+ MD| Kinetic energy [hartree]            0.261964442752E+04   0.466249442163E+03
+ MD| Temperature [K]                          719006.776819        127970.233320
+ MD| ***************************************************************************
+ MD| Estimated peak process memory after this step [MiB]                     268
+
+ ENERGY| Total FORCE_EVAL ( NNP ) energy [hartree]         14321.318031996455829
+
+ MD| ***************************************************************************
+ MD| Step number                                                              90
+ MD| Time [fs]                                                         45.000000
+ MD| Conserved quantity [hartree]                             0.177575724169E+05
+ MD| ---------------------------------------------------------------------------
+ MD|                                          Instantaneous             Averages
+ MD| CPU time per MD step [s]                      0.055169             0.056478
+ MD| Energy drift per atom [K]           0.113016227428E+07   0.210945949783E+06
+ MD| Potential energy [hartree]          0.143213180320E+05   0.149090715588E+05
+ MD| Kinetic energy [hartree]            0.272240157709E+04   0.491317799218E+03
+ MD| Temperature [K]                          747210.255937        134850.678015
+ MD| ***************************************************************************
+ MD| Estimated peak process memory after this step [MiB]                     268
+
+ ENERGY| Total FORCE_EVAL ( NNP ) energy [hartree]         14228.356360600808330
+
+ MD| ***************************************************************************
+ MD| Step number                                                              91
+ MD| Time [fs]                                                         45.500000
+ MD| Conserved quantity [hartree]                             0.178601117067E+05
+ MD| ---------------------------------------------------------------------------
+ MD|                                          Instantaneous             Averages
+ MD| CPU time per MD step [s]                      0.061731             0.056536
+ MD| Energy drift per atom [K]           0.117232283173E+07   0.221510530903E+06
+ MD| Potential energy [hartree]          0.142283563606E+05   0.149015911720E+05
+ MD| Kinetic energy [hartree]            0.287107086382E+04   0.517468931796E+03
+ MD| Temperature [K]                          788015.116147        142028.309204
+ MD| ***************************************************************************
+ MD| Estimated peak process memory after this step [MiB]                     268
+
+ ENERGY| Total FORCE_EVAL ( NNP ) energy [hartree]         14123.960443812826270
+
+ MD| ***************************************************************************
+ MD| Step number                                                              92
+ MD| Time [fs]                                                         46.000000
+ MD| Conserved quantity [hartree]                             0.180198881645E+05
+ MD| ---------------------------------------------------------------------------
+ MD|                                          Instantaneous             Averages
+ MD| CPU time per MD step [s]                      0.077130             0.056760
+ MD| Energy drift per atom [K]           0.123801730401E+07   0.232559517568E+06
+ MD| Potential energy [hartree]          0.141239604438E+05   0.148931386641E+05
+ MD| Kinetic energy [hartree]            0.308515399034E+04   0.545378551998E+03
+ MD| Temperature [K]                          846773.937442        149688.587771
+ MD| ***************************************************************************
+ MD| Estimated peak process memory after this step [MiB]                     268
+
+ ENERGY| Total FORCE_EVAL ( NNP ) energy [hartree]         14122.139777565127588
+
+ MD| ***************************************************************************
+ MD| Step number                                                              93
+ MD| Time [fs]                                                         46.500000
+ MD| Conserved quantity [hartree]                             0.182282030420E+05
+ MD| ---------------------------------------------------------------------------
+ MD|                                          Instantaneous             Averages
+ MD| CPU time per MD step [s]                      0.060436             0.056799
+ MD| Energy drift per atom [K]           0.132366907107E+07   0.244291878358E+06
+ MD| Potential energy [hartree]          0.141221397776E+05   0.148848483535E+05
+ MD| Kinetic energy [hartree]            0.324248313746E+04   0.574379676573E+03
+ MD| Temperature [K]                          889955.646295        157648.448616
+ MD| ***************************************************************************
+ MD| Estimated peak process memory after this step [MiB]                     268
+
+ ENERGY| Total FORCE_EVAL ( NNP ) energy [hartree]         14070.127003527459237
+
+ MD| ***************************************************************************
+ MD| Step number                                                              94
+ MD| Time [fs]                                                         47.000000
+ MD| Conserved quantity [hartree]                             0.183494240843E+05
+ MD| ---------------------------------------------------------------------------
+ MD|                                          Instantaneous             Averages
+ MD| CPU time per MD step [s]                      0.053576             0.056765
+ MD| Energy drift per atom [K]           0.137351090953E+07   0.256304846775E+06
+ MD| Potential energy [hartree]          0.140701270035E+05   0.148761811051E+05
+ MD| Kinetic energy [hartree]            0.336063537122E+04   0.604020694601E+03
+ MD| Temperature [K]                          922384.572862        165783.939299
+ MD| ***************************************************************************
+ MD| Estimated peak process memory after this step [MiB]                     268
+
+ ENERGY| Total FORCE_EVAL ( NNP ) energy [hartree]         14072.826185596677533
+
+ MD| ***************************************************************************
+ MD| Step number                                                              95
+ MD| Time [fs]                                                         47.500000
+ MD| Conserved quantity [hartree]                             0.185363725081E+05
+ MD| ---------------------------------------------------------------------------
+ MD|                                          Instantaneous             Averages
+ MD| CPU time per MD step [s]                      0.051789             0.056712
+ MD| Energy drift per atom [K]           0.145037754063E+07   0.268874033026E+06
+ MD| Potential energy [hartree]          0.140728261856E+05   0.148677247375E+05
+ MD| Kinetic energy [hartree]            0.348750716242E+04   0.634373183736E+03
+ MD| Temperature [K]                          957206.732961        174114.705548
+ MD| ***************************************************************************
+ MD| Estimated peak process memory after this step [MiB]                     268
+
+ ENERGY| Total FORCE_EVAL ( NNP ) energy [hartree]         14018.768083634098730
+
+ MD| ***************************************************************************
+ MD| Step number                                                              96
+ MD| Time [fs]                                                         48.000000
+ MD| Conserved quantity [hartree]                             0.186881497117E+05
+ MD| ---------------------------------------------------------------------------
+ MD|                                          Instantaneous             Averages
+ MD| CPU time per MD step [s]                      0.050105             0.056644
+ MD| Energy drift per atom [K]           0.151278300034E+07   0.281831418102E+06
+ MD| Potential energy [hartree]          0.140187680836E+05   0.148588814390E+05
+ MD| Kinetic energy [hartree]            0.363406111764E+04   0.665619933047E+03
+ MD| Temperature [K]                          997431.003808        182690.916988
+ MD| ***************************************************************************
+ MD| Estimated peak process memory after this step [MiB]                     268
+
+ ENERGY| Total FORCE_EVAL ( NNP ) energy [hartree]         13947.718568050846443
+
+ MD| ***************************************************************************
+ MD| Step number                                                              97
+ MD| Time [fs]                                                         48.500000
+ MD| Conserved quantity [hartree]                             0.188526240827E+05
+ MD| ---------------------------------------------------------------------------
+ MD|                                          Instantaneous             Averages
+ MD| CPU time per MD step [s]                      0.039808             0.056470
+ MD| Energy drift per atom [K]           0.158040908965E+07   0.295218816778E+06
+ MD| Potential energy [hartree]          0.139477185681E+05   0.148494880074E+05
+ MD| Kinetic energy [hartree]            0.380762395644E+04   0.698011727103E+03
+ MD| Temperature [K]                         1045068.330457        191581.405787
+ MD| ***************************************************************************
+ MD| Estimated peak process memory after this step [MiB]                     268
+
+ ENERGY| Total FORCE_EVAL ( NNP ) energy [hartree]         13889.567386929955319
+
+ MD| ***************************************************************************
+ MD| Step number                                                              98
+ MD| Time [fs]                                                         49.000000
+ MD| Conserved quantity [hartree]                             0.189649417830E+05
+ MD| ---------------------------------------------------------------------------
+ MD|                                          Instantaneous             Averages
+ MD| CPU time per MD step [s]                      0.036671             0.056268
+ MD| Energy drift per atom [K]           0.162659018634E+07   0.308804238916E+06
+ MD| Potential energy [hartree]          0.138895673869E+05   0.148396928990E+05
+ MD| Kinetic energy [hartree]            0.391390834900E+04   0.730826998755E+03
+ MD| Temperature [K]                         1074239.922496        200588.125345
+ MD| ***************************************************************************
+ MD| Estimated peak process memory after this step [MiB]                     268
+
+ ENERGY| Total FORCE_EVAL ( NNP ) energy [hartree]         13868.642658755199591
+
+ MD| ***************************************************************************
+ MD| Step number                                                              99
+ MD| Time [fs]                                                         49.500000
+ MD| Conserved quantity [hartree]                             0.191709413323E+05
+ MD| ---------------------------------------------------------------------------
+ MD|                                          Instantaneous             Averages
+ MD| CPU time per MD step [s]                      0.045879             0.056163
+ MD| Energy drift per atom [K]           0.171128997168E+07   0.322970761469E+06
+ MD| Potential energy [hartree]          0.138686426588E+05   0.148298843107E+05
+ MD| Kinetic energy [hartree]            0.407443033395E+04   0.764600769818E+03
+ MD| Temperature [K]                         1118297.960981        209857.921665
+ MD| ***************************************************************************
+ MD| Estimated peak process memory after this step [MiB]                     268
+
+ ENERGY| Total FORCE_EVAL ( NNP ) energy [hartree]         13902.305889833301990
+
+ MD| ***************************************************************************
+ MD| Step number                                                             100
+ MD| Time [fs]                                                         50.000000
+ MD| Conserved quantity [hartree]                             0.195339562064E+05
+ MD| ---------------------------------------------------------------------------
+ MD|                                          Instantaneous             Averages
+ MD| CPU time per MD step [s]                      0.065908             0.056261
+ MD| Energy drift per atom [K]           0.186054894833E+07   0.338346543338E+06
+ MD| Potential energy [hartree]          0.139023058898E+05   0.148206085265E+05
+ MD| Kinetic energy [hartree]            0.433411874198E+04   0.800295949539E+03
+ MD| Temperature [K]                         1189573.941520        219655.081863
+ MD| ***************************************************************************
+ MD| Estimated peak process memory after this step [MiB]                     268
+
+ -------------------------------------------------------------------------------
+ -                                                                             -
+ -                                DBCSR STATISTICS                             -
+ -                                                                             -
+ -------------------------------------------------------------------------------
+ COUNTER                                    TOTAL       BLAS       SMM       ACC
+ flops inhomo. stacks                           0       0.0%      0.0%      0.0%
+ flops total                         0.000000E+00       0.0%      0.0%      0.0%
+ flops max/rank                      0.000000E+00       0.0%      0.0%      0.0%
+ matmuls inhomo. stacks                         0       0.0%      0.0%      0.0%
+ matmuls total                                  0       0.0%      0.0%      0.0%
+ number of processed stacks                     0       0.0%      0.0%      0.0%
+ average stack size                                     0.0       0.0       0.0
+ marketing flops                     0.000000E+00
+ -------------------------------------------------------------------------------
+ -                                                                             -
+ -                      DBCSR MESSAGE PASSING PERFORMANCE                      -
+ -                                                                             -
+ -------------------------------------------------------------------------------
+ ROUTINE             CALLS      AVE VOLUME [Bytes]
+ MP_Bcast                1                     12.
+ MP_Allreduce           19                     21.
+ -------------------------------------------------------------------------------
+
+ MEMORY| Estimated peak process memory [MiB]                                 268
+
+ -------------------------------------------------------------------------------
+ -                                                                             -
+ -                         MESSAGE PASSING PERFORMANCE                         -
+ -                                                                             -
+ -------------------------------------------------------------------------------
+
+ ROUTINE             CALLS      AVE VOLUME [Bytes]
+ MP_Bcast              286                 179373.
+ MP_Allreduce         1444                   4518.
+ -------------------------------------------------------------------------------
+
+
+ -------------------------------------------------------------------------------
+ -                                                                             -
+ -                           R E F E R E N C E S                               -
+ -                                                                             -
+ -------------------------------------------------------------------------------
+ 
+ CP2K version 2026.1 (Development Version), the CP2K developers group (2026).
+ CP2K is freely available from https://www.cp2k.org/ .
+ 
+ C. Schran, J. Behler, D. Marx.
+ J. Chem. Theory Comput. 16, 88-99 (2020).
+ Automated Fitting of Neural Network Potentials at Coupled Cluster Accuracy: 
+ Protonated Water Clusters as Testing Ground.
+ https://doi.org/10.1021/acs.jctc.9b00805
+
+ C. Schran, K. Brezina, O. Marsalek.
+ J. Chem. Phys. 153, 104105 (2020).
+ Committee neural network potentials control generalization errors and enable 
+ active learning.
+ https://doi.org/10.1063/5.0016004
+
+ O. Schuett, P. Messmer, J. Hutter, J. VandeVondele.
+ Electronic Structure Calculations on Graphics Processing Units, 173-190 (2016).
+ GPU-Accelerated Sparse Matrix-Matrix Multiplication for Linear Scaling Density 
+ Functional Theory.
+ https://doi.org/10.1002/9781118670712.ch8
+
+ A. Heinecke, G. Henry, M. Hutchinson, H. Pabst.
+ Proceedings of Intl. Supercomputing Conference, 981-991 (2016).
+ LIBXSMM: Accelerating Small Matrix Multiplications by Runtime Code Generation.
+ https://doi.org/10.1109/SC.2016.83
+
+ J. Hutter, M. Iannuzzi, F. Schiffmann, J. VandeVondele.
+ WIREs Comput Mol Sci. 4, 15-25 (2014).
+ CP2K: atomistic simulations of condensed matter systems.
+ https://doi.org/10.1002/wcms.1159
+
+ U. Borstnik, J. VandeVondele, V. Weber, J. Hutter.
+ Parallel Comput. 40, 47-58 (2014).
+ Sparse matrix multiplication: The distributed block-compressed sparse row 
+ library.
+ https://doi.org/10.1016/j.parco.2014.03.012
+
+ J. Behler.
+ J. Chem. Phys. 134, 074106 (2011).
+ Atom-centered symmetry functions for constructing high-dimensional neural 
+ network potentials.
+ https://doi.org/10.1063/1.3553717
+
+ G. Bussi, D. Donadio, M. Parrinello.
+ J. Chem. Phys. 126, 014101 (2007).
+ Canonical sampling through velocity rescaling.
+ https://doi.org/10.1063/1.2408420
+
+ J. Behler, M. Parrinello.
+ Phys. Rev. Lett. 98, 146401 (2007).
+ Generalized neural-network representation of high-dimensional potential-energy 
+ surfaces.
+ https://doi.org/10.1103/PhysRevLett.98.146401
+
+ M. Frigo, S. G. Johnson.
+ Proc. IEEE 93, 216-231 (2005).
+ The design and implementation of FFTW3.
+ https://doi.org/10.1109/JPROC.2004.840301
+
+
+ -------------------------------------------------------------------------------
+ -                                                                             -
+ -                                T I M I N G                                  -
+ -                                                                             -
+ -------------------------------------------------------------------------------
+ SUBROUTINE                       CALLS  ASD         SELF TIME        TOTAL TIME
+                                MAXIMUM       AVERAGE  MAXIMUM  AVERAGE  MAXIMUM
+ CP2K                                 1  1.0    0.005    0.006    5.862    5.862
+ qs_mol_dyn_low                       1  2.0    0.004    0.004    5.650    5.671
+ velocity_verlet                    100  3.0    0.005    0.012    5.379    5.454
+ mp_sum_dv                          609  4.4    2.738    2.820    2.738    2.820
+ md_output                          100  3.0    0.000    0.000    0.234    2.819
+ csvr_particles                     200  4.0    0.040    0.048    2.642    2.718
+ nnp_calc_energy_force              101  4.0    0.054    1.159    2.716    2.717
+ md_write_output                    101  4.0    0.038    1.252    0.083    2.695
+ nnp_calc_acsf                     2222  5.0    0.046    0.053    1.100    1.507
+ write_trajectory                   404  5.0    0.038    1.276    0.043    1.441
+ nnp_acsf_angular                  2222  6.0    1.014    1.409    1.014    1.409
+ mp_sum_b                           101  5.0    1.106    1.138    1.106    1.138
+ mp_sum_dm                          301  5.0    0.452    0.741    0.452    0.741
+ nnp_init                             1  2.0    0.000    0.000    0.182    0.183
+ nnp_init_subsys                      1  3.0    0.000    0.000    0.179    0.180
+ write_particle_coordinates         101  6.0    0.005    0.166    0.005    0.166
+ write_restart                      100  4.0    0.004    0.126    0.151    0.152
+ update_input                         5  5.0    0.000    0.000    0.147    0.152
+ update_motion                        5  6.0    0.000    0.000    0.136    0.140
+ update_motion_THERMOSTAT_PARTI       5  7.0    0.000    0.000    0.136    0.140
+ nnp_init_model                       1  4.0    0.010    0.023    0.118    0.122
+ -------------------------------------------------------------------------------
+
+ The number of warnings for this run is : 0
+ 
+ -------------------------------------------------------------------------------
+  **** **** ******  **  PROGRAM ENDED AT                 2026-05-02 15:45:55.307
+ ***** ** ***  *** **   PROGRAM RAN ON                             phy-cerberus4
+ **    ****   ******    PROGRAM RAN BY                                     crm98
+ ***** **    ** ** **   PROGRAM PROCESS ID                               1225379
+  **** **  *******  **  PROGRAM STOPPED IN /lsc/zeushome/crm98/cp2k-benchmarks/r
+                                           esults/cp2k_optimized/NNP/NNP_size_sc
+                                           aling_feature-nnp-verlet-cells_02-05_
+                                           15-45/N_256
