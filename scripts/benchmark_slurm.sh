@@ -113,7 +113,12 @@ echo "=== CORE SCALING ==="
 ./run_nnp_core_scaling_slurm.sh feature-nnp-native-spline
 
 
-#----------------------------------------------------------------------------
-# Plots the results of the above benchmarks and saves the graphs as PNG files.
-#----------------------------------------------------------------------------
-python3 /home/raid/crm98/cp2k-benchmarks/plots/plot_scaling.py
+# ---------------------------------------------------------------------------
+# Copy CSV results from node-local scratch to home so they are accessible
+# from the login node (cerberus1) for plotting.
+# ---------------------------------------------------------------------------
+SCRATCH_RESULTS=/local/data/public/crm98/cp2k-benchmarks/results
+HOME_RESULTS=/home/raid/crm98/cp2k-benchmarks/results
+mkdir -p "$HOME_RESULTS"
+rsync -a "$SCRATCH_RESULTS/" "$HOME_RESULTS/"
+echo "Results synced to $HOME_RESULTS"

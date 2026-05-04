@@ -8,8 +8,11 @@ import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
 import pandas as pd
 
-RESULTS_ROOT = "/local/data/public/crm98/cp2k-benchmarks/results"
-PLOT_DIR     = "/home/raid/crm98/cp2k-benchmarks/plots"
+RESULTS_ROOT = "/home/raid/crm98/cp2k-benchmarks/results"
+# Plots are written to local scratch (no per-user quota).
+# After the job syncs CSVs to home, run this script from cerberus1/athena;
+# retrieve PNGs with: scp athena:/local/data/public/crm98/cp2k-benchmarks/plots/*.png .
+PLOT_DIR     = "/local/data/public/crm98/cp2k-benchmarks/plots"
 os.makedirs(PLOT_DIR, exist_ok=True)
 
 BRANCHES = {
