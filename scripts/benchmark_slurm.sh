@@ -3,6 +3,7 @@
 #SBATCH --partition=csc-mphil
 #SBATCH --clusters=CSC
 #SBATCH --account=crm98
+#SBATCH --nodelist=phy-cerberus4
 #SBATCH --ntasks=36
 #SBATCH --mem-per-cpu=2G
 #SBATCH --time=01:00:00
@@ -53,22 +54,46 @@ cp /local/data/public/crm98/original_cp2k/tools/toolchain/install/setup \
 #    same install/{bin,lib}.  We MUST snapshot bin+lib into $BIN_ROOT before
 #    moving on to the next branch.
 # ---------------------------------------------------------------------------
+git -C "$CP2K_REPO" stash
 git -C "$CP2K_REPO" checkout feature/nnp-verlet-cells
 cd /home/raid/crm98/cp2k-benchmarks/cp2k_optimized/
 CP2K_FORCE_CONFIGURE=1 ./rebuild_cp2k.sh
 FEATURE_INSTALL=/local/data/public/crm98/original_cp2k/install
 cp     "$FEATURE_INSTALL/bin/cp2k.psmp"     "$BIN_ROOT/feature-nnp-verlet-cells/cp2k.psmp"
 cp -P "$FEATURE_INSTALL/lib"/libcp2k.so*    "$BIN_ROOT/feature-nnp-verlet-cells/lib/"
+git -C "$CP2K_REPO" stash pop
 
 # ---------------------------------------------------------------------------
 # 3) Feature branch: nnp-native-spline.  Overwrites $FEATURE_INSTALL — that's
 #    fine because verlet-cells is already snapshotted in $BIN_ROOT above.
 # ---------------------------------------------------------------------------
+git -C "$CP2K_REPO" stash
 git -C "$CP2K_REPO" checkout feature/nnp-native-spline
 cd /home/raid/crm98/cp2k-benchmarks/cp2k_optimized/
 CP2K_FORCE_CONFIGURE=1 ./rebuild_cp2k.sh
 cp     "$FEATURE_INSTALL/bin/cp2k.psmp"     "$BIN_ROOT/feature-nnp-native-spline/cp2k.psmp"
 cp -P "$FEATURE_INSTALL/lib"/libcp2k.so*    "$BIN_ROOT/feature-nnp-native-spline/lib/"
+git -C "$CP2K_REPO" stash pop
+
+# ---------------------------------------------------------------------------
+# Sanity check: confirm the three cp2k.psmp binaries and their libcp2k.so
+# are genuinely distinct.  Matching hashes would mean a rebuild was skipped
+# or the wrong source tree was used.
+# ---------------------------------------------------------------------------
+echo "=== BINARY VERIFICATION ==="
+echo "-- cp2k.psmp md5sums --"
+md5sum "$BIN_ROOT/master/cp2k.psmp" \
+       "$BIN_ROOT/feature-nnp-verlet-cells/cp2k.psmp" \
+       "$BIN_ROOT/feature-nnp-native-spline/cp2k.psmp"
+echo "-- libcp2k.so md5sums --"
+md5sum "$BIN_ROOT/master/lib"/libcp2k.so \
+       "$BIN_ROOT/feature-nnp-verlet-cells/lib"/libcp2k.so \
+       "$BIN_ROOT/feature-nnp-native-spline/lib"/libcp2k.so
+echo "-- LD_LIBRARY_PATH sanity (ldd on verlet-cells binary) --"
+source "$BIN_ROOT/setup"
+export LD_LIBRARY_PATH="$BIN_ROOT/feature-nnp-verlet-cells/lib:${LD_LIBRARY_PATH:-}"
+ldd "$BIN_ROOT/feature-nnp-verlet-cells/cp2k.psmp" | grep libcp2k
+echo ""
 
 # ---------------------------------------------------------------------------
 # Benchmarks.  The run scripts read from $BIN_ROOT/<branch>/{cp2k.psmp,lib},

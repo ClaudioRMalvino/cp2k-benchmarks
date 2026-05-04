@@ -1,0 +1,98 @@
+SCRATCH_USER:  crm98
+SCRATCH_ROOT:  /local/data/public
+SCRATCH_REPO:  /local/data/public/crm98/cp2k-buildtree
+TOOLCHAIN:     /local/data/public/crm98/original_cp2k
+JOBS:          32
+
+ERROR: DBCSRConfig.cmake not found under /local/data/public/crm98/original_cp2k/tools/toolchain/install
+cp: cannot stat '/local/data/public/crm98/cp2k-buildtree/install/bin/cp2k.psmp': No such file or directory
+cp: cannot stat '/local/data/public/crm98/cp2k-buildtree/install/lib/libcp2k.so*': No such file or directory
+error: Your local changes to the following files would be overwritten by checkout:
+	src/nnp_acsf.F
+	src/splines_methods.F
+Please commit your changes or stash them before you switch branches.
+Aborting
+SCRATCH_USER:  crm98
+SCRATCH_ROOT:  /local/data/public
+SCRATCH_REPO:  /local/data/public/crm98/original_cp2k
+HOME_REPO:     /home/raid/crm98/cp2k
+JOBS:          16
+
+Syncing source from home to scratch...
+.d..t...... src/
+.f..t...... src/nnp_acsf.F
+.f..t...... src/splines_methods.F
+ERROR: DBCSRConfig.cmake not found under /local/data/public/crm98/original_cp2k/tools/toolchain/install
+cp: cannot stat '/local/data/public/crm98/original_cp2k/install/bin/cp2k.psmp': No such file or directory
+cp: cannot stat '/local/data/public/crm98/original_cp2k/install/lib/libcp2k.so*': No such file or directory
+Already on 'feature/nnp-native-spline'
+M	src/nnp_acsf.F
+M	src/splines_methods.F
+Your branch is up-to-date with 'origin/feature/nnp-native-spline'.
+SCRATCH_USER:  crm98
+SCRATCH_ROOT:  /local/data/public
+SCRATCH_REPO:  /local/data/public/crm98/original_cp2k
+HOME_REPO:     /home/raid/crm98/cp2k
+JOBS:          16
+
+Syncing source from home to scratch...
+ERROR: DBCSRConfig.cmake not found under /local/data/public/crm98/original_cp2k/tools/toolchain/install
+cp: cannot stat '/local/data/public/crm98/original_cp2k/install/bin/cp2k.psmp': No such file or directory
+cp: cannot stat '/local/data/public/crm98/original_cp2k/install/lib/libcp2k.so*': No such file or directory
+=== SIZE SCALING ===
+Starting NNP size scaling benchmark on branch: upstream-master
+Molecules    Repeated Tiles  Walltime (s)   
+---------------------------------------------------
+64           1 1 1           FAILED         
+256          2 2 1           FAILED         
+512          2 2 2           FAILED         
+1024         4 2 2           FAILED         
+2048         4 4 2           FAILED         
+4096         4 4 4           FAILED         
+Starting NNP size scaling benchmark on branch: feature-nnp-verlet-cells
+Molecules    Repeated Tiles  Walltime (s)   
+---------------------------------------------------
+64           1 1 1           FAILED         
+256          2 2 1           FAILED         
+512          2 2 2           FAILED         
+1024         4 2 2           FAILED         
+2048         4 4 2           FAILED         
+4096         4 4 4           FAILED         
+Starting NNP size scaling benchmark on branch: feature-nnp-native-spline
+Molecules    Repeated Tiles  Walltime (s)   
+---------------------------------------------------
+64           1 1 1           FAILED         
+256          2 2 1           FAILED         
+512          2 2 2           FAILED         
+1024         4 2 2           FAILED         
+2048         4 4 2           FAILED         
+4096         4 4 4           FAILED         
+
+=== CORE SCALING ===
+Starting core scaling benchmark (System size: 64) on branch: upstream-master
+MPI_Ranks  OMP_Threads Total_Cores  Walltime(s)    Speedup    Efficiency
+------------------------------------------------------------------------
+1          1          1            FAILED         N/A        N/A       
+2          1          2            FAILED         N/A        N/A       
+4          1          4            FAILED         N/A        N/A       
+8          1          8            FAILED         N/A        N/A       
+16         1          16           FAILED         N/A        N/A       
+32         1          32           FAILED         N/A        N/A       
+Starting core scaling benchmark (System size: 64) on branch: feature-nnp-verlet-cells
+MPI_Ranks  OMP_Threads Total_Cores  Walltime(s)    Speedup    Efficiency
+------------------------------------------------------------------------
+1          1          1            FAILED         N/A        N/A       
+2          1          2            FAILED         N/A        N/A       
+4          1          4            FAILED         N/A        N/A       
+8          1          8            FAILED         N/A        N/A       
+16         1          16           FAILED         N/A        N/A       
+32         1          32           FAILED         N/A        N/A       
+Starting core scaling benchmark (System size: 64) on branch: feature-nnp-native-spline
+MPI_Ranks  OMP_Threads Total_Cores  Walltime(s)    Speedup    Efficiency
+------------------------------------------------------------------------
+1          1          1            FAILED         N/A        N/A       
+2          1          2            FAILED         N/A        N/A       
+4          1          4            FAILED         N/A        N/A       
+8          1          8            FAILED         N/A        N/A       
+16         1          16           FAILED         N/A        N/A       
+32         1          32           FAILED         N/A        N/A       
