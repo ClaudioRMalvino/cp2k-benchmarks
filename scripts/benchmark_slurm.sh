@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-#SBATCH --job-name=Master_NNP_Scaling
+#SBATCH --job-name=NNP_Benchmarking
 #SBATCH --partition=csc-mphil
 #SBATCH --clusters=CSC
 #SBATCH --account=crm98
@@ -7,7 +7,7 @@
 #SBATCH --ntasks=36
 #SBATCH --mem-per-cpu=2G
 #SBATCH --time=01:00:00
-#SBATCH --output=/home/raid/crm98/cp2k-benchmarks/logs/Master_Scaling_%j.out
+#SBATCH --output=/home/raid/crm98/cp2k-benchmarks/logs/NNP_Benchmarking_%j.out
 #SBATCH --mail-type=ALL
 
 mkdir -p /home/raid/crm98/cp2k-benchmarks/logs/
@@ -111,3 +111,9 @@ echo "=== CORE SCALING ==="
 ./run_nnp_core_scaling_slurm.sh master
 ./run_nnp_core_scaling_slurm.sh feature-nnp-verlet-cells
 ./run_nnp_core_scaling_slurm.sh feature-nnp-native-spline
+
+
+#----------------------------------------------------------------------------
+# Plots the results of the above benchmarks and saves the graphs as PNG files.
+#----------------------------------------------------------------------------
+python3 /home/raid/crm98/cp2k-benchmarks/plots/plot_scaling.py
