@@ -116,9 +116,16 @@ echo "=== CORE SCALING ==="
 # ---------------------------------------------------------------------------
 # Copy CSV results from node-local scratch to home so they are accessible
 # from the login node (cerberus1) for plotting.
+#
+# Only the .csv files travel to /home — the per-run cp2k.out logs, input
+# copies, and NNP symlinks stay on scratch.  A previous unfiltered `rsync -a`
+# pulled the whole tree (hundreds of MB of cp2k.out per branch) and blew out
+# the home quota, leaving the CSVs partially or never copied.  Directory
+# structure is preserved so plot_scaling.py's glob patterns still resolve.
 # ---------------------------------------------------------------------------
 SCRATCH_RESULTS=/local/data/public/crm98/cp2k-benchmarks/results
 HOME_RESULTS=/home/raid/crm98/cp2k-benchmarks/results
 mkdir -p "$HOME_RESULTS"
-rsync -a "$SCRATCH_RESULTS/" "$HOME_RESULTS/"
-echo "Results synced to $HOME_RESULTS"
+rsync -a --include='*/' --include='*.csv' --exclude='*' --prune-empty-dirs \
+      "$SCRATCH_RESULTS/" "$HOME_RESULTS/"
+echo "CSVs synced to $HOME_RESULTS (full results remain on $SCRATCH_RESULTS)"

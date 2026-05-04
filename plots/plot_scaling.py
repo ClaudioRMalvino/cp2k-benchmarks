@@ -56,18 +56,57 @@ def load_csv(path, columns):
     return df
 
 
+def parse_header(path):
+    # The run scripts emit `# key: value` lines before the data rows.  Pull
+    # them into a dict so titles can show the actual run parameters instead
+    # of hardcoded values that drift if STEPS/MPI_RANKS are overridden.
+    if path is None:
+        return {}
+    meta = {}
+    with open(path) as f:
+        for line in f:
+            if not line.startswith("#"):
+                break
+            stripped = line.lstrip("#").strip()
+            if ":" in stripped:
+                key, _, val = stripped.partition(":")
+                meta[key.strip()] = val.strip()
+    return meta
+
+
 # ── Discover and load data ────────────────────────────────────────────────────
 data = {}
 for name, info in BRANCHES.items():
     d, lbl = info["dir"], info["label"]
     size_pat = f"{RESULTS_ROOT}/{d}/NNP/NNP_size_scaling_{lbl}_*/results_size_scaling_{lbl}_*.csv"
     core_pat = f"{RESULTS_ROOT}/{d}/NNP/NNP_core_scaling_{lbl}_*/results_core_scaling_{lbl}_*.csv"
+    size_csv = latest_csv(size_pat)
+    core_csv = latest_csv(core_pat)
     data[name] = {
-        "size":   load_csv(latest_csv(size_pat), SIZE_COLS),
-        "core":   load_csv(latest_csv(core_pat), CORE_COLS),
-        "color":  info["color"],
-        "marker": info["marker"],
+        "size":      load_csv(size_csv, SIZE_COLS),
+        "size_meta": parse_header(size_csv),
+        "core":      load_csv(core_csv, CORE_COLS),
+        "core_meta": parse_header(core_csv),
+        "color":     info["color"],
+        "marker":    info["marker"],
     }
+
+
+def consensus(kind, key, fallback="?"):
+    # Return the value of `key` from `<kind>_meta` across branches.  Warn if
+    # branches disagree (meaning runs were launched with different params and
+    # shouldn't really be plotted on the same axes) but proceed with the
+    # first non-empty value so plotting still works.
+    seen = {}
+    for branch, d in data.items():
+        v = d[f"{kind}_meta"].get(key)
+        if v:
+            seen.setdefault(v, []).append(branch)
+    if not seen:
+        return fallback
+    if len(seen) > 1:
+        print(f"  WARNING: {kind} '{key}' differs across branches: {seen}")
+    return next(iter(seen))
 
 # H₂O: 3 atoms per molecule
 N_ATOMS   = [64*3, 256*3, 512*3, 1024*3, 2048*3, 4096*3]
@@ -88,7 +127,13 @@ for name, d in data.items():
                 marker=d["marker"], color=d["color"],
                 label=name, linewidth=1.8, markersize=6)
 
-ax.set_title("NNP Size Scaling: Walltime vs Number of Atoms\n(36 MPI ranks, 1 OMP thread)")
+size_mpi   = consensus("size", "MPI ranks")
+size_omp   = consensus("size", "OMP threads")
+size_steps = consensus("size", "steps")
+ax.set_title(
+    "NNP Size Scaling: Walltime vs Number of Atoms\n"
+    f"({size_mpi} MPI ranks, {size_omp} OMP threads, {size_steps} MD steps)"
+)
 ax.set_xlabel("Number of Atoms")
 ax.set_ylabel("Walltime (s)")
 ax.set_xscale("log", base=2)
@@ -114,7 +159,13 @@ for name, d in data.items():
                 marker=d["marker"], color=d["color"],
                 label=name, linewidth=1.8, markersize=6)
 
-ax.set_title("NNP Core Scaling: Walltime vs Cores\n(64 H₂O molecules, 192 atoms)")
+core_nmol  = consensus("core", "N_molecules")
+core_steps = consensus("core", "steps")
+core_atoms = int(core_nmol) * 3 if core_nmol.isdigit() else "?"
+ax.set_title(
+    "NNP Core Scaling: Walltime vs Cores\n"
+    f"({core_nmol} H₂O molecules, {core_atoms} atoms, {core_steps} MD steps)"
+)
 ax.set_xlabel("Total Cores (MPI ranks)")
 ax.set_ylabel("Walltime (s)")
 ax.set_xscale("log", base=2)
@@ -142,7 +193,10 @@ for name, d in data.items():
 
 ax.plot(N_CORES, N_CORES, "k--", linewidth=1.2, label="Ideal (linear)")
 
-ax.set_title("NNP Core Scaling: Speedup vs Cores\n(64 H₂O molecules, 192 atoms)")
+ax.set_title(
+    "NNP Core Scaling: Speedup vs Cores\n"
+    f"({core_nmol} H₂O molecules, {core_atoms} atoms, {core_steps} MD steps)"
+)
 ax.set_xlabel("Total Cores (MPI ranks)")
 ax.set_ylabel("Speedup (relative to 1 core)")
 ax.set_xticks(N_CORES)
