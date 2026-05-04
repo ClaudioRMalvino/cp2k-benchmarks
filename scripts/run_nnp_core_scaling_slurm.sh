@@ -7,25 +7,45 @@ source /home/raid/crm98/cp2k_binaries/phy-cerberus/setup
 set -u
 
 # --- Pass the branch as an argument (defaults to master) ---
-TARGET_BRANCH=${1:-master} 
+# Accepted values: master, feature-nnp-verlet-cells, feature-nnp-native-spline
+TARGET_BRANCH=${1:-master}
 TIMESTAMP=$(date +%d-%m_%H-%M)
 
-if [ "$TARGET_BRANCH" == "optimized" ]; then
-    CP2K_EXE="/home/raid/crm98/cp2k_binaries/phy-cerberus/cp2k_feature_verlet_cells.psmp"
-    PROJECT_ROOT="/home/raid/crm98/cp2k"
-    LABEL=$(git -C "$PROJECT_ROOT" rev-parse --abbrev-ref HEAD | tr '/' '-')
-    BENCHMARK_ROOT="/home/raid/crm98/cp2k-benchmarks/cp2k_optimized/NNP"
-    OUTDIR="/local/data/public/crm98/cp2k-benchmarks/results/cp2k_optimized/NNP/NNP_core_scaling_${LABEL}_${TIMESTAMP}"
-    INSTALL_LIB="/local/data/public/crm98/original_cp2k/install/lib"
-else
-    CP2K_EXE="/home/raid/crm98/cp2k_binaries/phy-cerberus/cp2k_master.psmp"
-    LABEL="upstream-master"
-    PROJECT_ROOT="/home/raid/crm98/cp2k-upstream-master"
-    BENCHMARK_ROOT="/home/raid/crm98/cp2k-benchmarks/cp2k_master/NNP"
-    OUTDIR="/local/data/public/crm98/cp2k-benchmarks/results/cp2k_master/NNP/NNP_core_scaling_${LABEL}_${TIMESTAMP}"
-    INSTALL_LIB="/local/data/public/crm98/cp2k-buildtree/install/lib"
-fi
-# Ensure this branch's libcp2k.so.2026.1 is loaded, not the other branch's
+# Per-branch binary cache populated by benchmark_slurm.sh.  Each branch has
+# its own cp2k.psmp + lib/, so LD_LIBRARY_PATH cannot accidentally pick up
+# another branch's libcp2k.so.
+BIN_ROOT=/home/raid/crm98/cp2k_binaries/phy-cerberus
+
+case "$TARGET_BRANCH" in
+  feature-nnp-verlet-cells)
+      CP2K_EXE="$BIN_ROOT/feature-nnp-verlet-cells/cp2k.psmp"
+      INSTALL_LIB="$BIN_ROOT/feature-nnp-verlet-cells/lib"
+      LABEL="feature-nnp-verlet-cells"
+      PROJECT_ROOT="/home/raid/crm98/cp2k"
+      BENCHMARK_ROOT="/home/raid/crm98/cp2k-benchmarks/cp2k_optimized/NNP"
+      OUTDIR_PARENT="cp2k_feature_verlet_cells"
+      ;;
+  feature-nnp-native-spline)
+      CP2K_EXE="$BIN_ROOT/feature-nnp-native-spline/cp2k.psmp"
+      INSTALL_LIB="$BIN_ROOT/feature-nnp-native-spline/lib"
+      LABEL="feature-nnp-native-spline"
+      PROJECT_ROOT="/home/raid/crm98/cp2k"
+      BENCHMARK_ROOT="/home/raid/crm98/cp2k-benchmarks/cp2k_optimized/NNP"
+      OUTDIR_PARENT="cp2k_feature_native_spline"
+      ;;
+  master|*)
+      CP2K_EXE="$BIN_ROOT/master/cp2k.psmp"
+      INSTALL_LIB="$BIN_ROOT/master/lib"
+      LABEL="upstream-master"
+      PROJECT_ROOT="/home/raid/crm98/cp2k-upstream-master"
+      BENCHMARK_ROOT="/home/raid/crm98/cp2k-benchmarks/cp2k_master/NNP"
+      OUTDIR_PARENT="cp2k_master"
+      ;;
+esac
+
+OUTDIR="/local/data/public/crm98/cp2k-benchmarks/results/${OUTDIR_PARENT}/NNP/NNP_core_scaling_${LABEL}_${TIMESTAMP}"
+
+# Ensure this branch's libcp2k.so.2026.1 is loaded, not another branch's.
 export LD_LIBRARY_PATH="$INSTALL_LIB:${LD_LIBRARY_PATH:-}"
 
 BASE_INP="${BENCHMARK_ROOT}/H2O-64_NNP_MD.inp"
