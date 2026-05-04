@@ -16,8 +16,12 @@ mkdir -p /home/raid/crm98/cp2k-benchmarks/logs/
 # we never accidentally run binary-A against libcp2k.so-of-B: the run scripts
 # point LD_LIBRARY_PATH at $BIN_ROOT/<branch>/lib, not at the scratch install
 # tree (which gets overwritten by the next rebuild).
+#
+# Lives on scratch (/local/data/public), NOT on /home — libcp2k.so.* alone is
+# hundreds of MB, three copies will blow out a typical home quota.  Job 10330
+# died with "Disk quota exceeded" mid-rebuild because BIN_ROOT was on /home.
 # ---------------------------------------------------------------------------
-BIN_ROOT=~/cp2k_binaries/phy-cerberus
+BIN_ROOT=/local/data/public/crm98/cp2k_binaries/phy-cerberus
 mkdir -p "$BIN_ROOT/master/lib"
 mkdir -p "$BIN_ROOT/feature-nnp-verlet-cells/lib"
 mkdir -p "$BIN_ROOT/feature-nnp-native-spline/lib"
@@ -31,15 +35,19 @@ CP2K_REPO=/home/raid/crm98/cp2k
 cd /home/raid/crm98/cp2k-benchmarks/cp2k_master/
 ./build_cp2k.sh
 MASTER_INSTALL=/local/data/public/crm98/cp2k-buildtree/install
-cp "$MASTER_INSTALL/bin/cp2k.psmp"   "$BIN_ROOT/master/cp2k.psmp"
-cp -r "$MASTER_INSTALL/lib/."        "$BIN_ROOT/master/lib/"
+cp     "$MASTER_INSTALL/bin/cp2k.psmp"     "$BIN_ROOT/master/cp2k.psmp"
+# Copy only the runtime shared library + its versioned symlinks.  -P preserves
+# the symlinks instead of dereferencing them.  We deliberately skip install/lib's
+# cmake/ and pkgconfig/ subdirs — those are build-time metadata for downstream
+# CMake consumers, not required for LD_LIBRARY_PATH at runtime.
+cp -P "$MASTER_INSTALL/lib"/libcp2k.so*    "$BIN_ROOT/master/lib/"
 
 # Toolchain setup is shared across every build (same toolchain dir).  Save once.
 cp /local/data/public/crm98/original_cp2k/tools/toolchain/install/setup \
    "$BIN_ROOT/setup"
 
 # ---------------------------------------------------------------------------
-# 2) Feature branch: nnp-verlet-cells.  IMPORTANT: rebuild_cp2k.sh rsyncs
+# 2) Feature branch: nnp-verlet-cells.  rebuild_cp2k.sh rsyncs
 #    /home/raid/crm98/cp2k -> /local/data/public/crm98/original_cp2k, so
 #    'feature' and 'native-spline' share the same scratch source AND the
 #    same install/{bin,lib}.  We MUST snapshot bin+lib into $BIN_ROOT before
@@ -49,8 +57,8 @@ git -C "$CP2K_REPO" checkout feature/nnp-verlet-cells
 cd /home/raid/crm98/cp2k-benchmarks/cp2k_optimized/
 CP2K_FORCE_CONFIGURE=1 ./rebuild_cp2k.sh
 FEATURE_INSTALL=/local/data/public/crm98/original_cp2k/install
-cp "$FEATURE_INSTALL/bin/cp2k.psmp" "$BIN_ROOT/feature-nnp-verlet-cells/cp2k.psmp"
-cp -r "$FEATURE_INSTALL/lib/."      "$BIN_ROOT/feature-nnp-verlet-cells/lib/"
+cp     "$FEATURE_INSTALL/bin/cp2k.psmp"     "$BIN_ROOT/feature-nnp-verlet-cells/cp2k.psmp"
+cp -P "$FEATURE_INSTALL/lib"/libcp2k.so*    "$BIN_ROOT/feature-nnp-verlet-cells/lib/"
 
 # ---------------------------------------------------------------------------
 # 3) Feature branch: nnp-native-spline.  Overwrites $FEATURE_INSTALL — that's
@@ -59,8 +67,8 @@ cp -r "$FEATURE_INSTALL/lib/."      "$BIN_ROOT/feature-nnp-verlet-cells/lib/"
 git -C "$CP2K_REPO" checkout feature/nnp-native-spline
 cd /home/raid/crm98/cp2k-benchmarks/cp2k_optimized/
 CP2K_FORCE_CONFIGURE=1 ./rebuild_cp2k.sh
-cp "$FEATURE_INSTALL/bin/cp2k.psmp" "$BIN_ROOT/feature-nnp-native-spline/cp2k.psmp"
-cp -r "$FEATURE_INSTALL/lib/."      "$BIN_ROOT/feature-nnp-native-spline/lib/"
+cp     "$FEATURE_INSTALL/bin/cp2k.psmp"     "$BIN_ROOT/feature-nnp-native-spline/cp2k.psmp"
+cp -P "$FEATURE_INSTALL/lib"/libcp2k.so*    "$BIN_ROOT/feature-nnp-native-spline/lib/"
 
 # ---------------------------------------------------------------------------
 # Benchmarks.  The run scripts read from $BIN_ROOT/<branch>/{cp2k.psmp,lib},

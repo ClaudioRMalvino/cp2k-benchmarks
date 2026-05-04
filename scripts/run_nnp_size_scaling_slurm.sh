@@ -1,20 +1,21 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# Per-branch binary cache populated by benchmark_slurm.sh.  Each branch has
+# its own cp2k.psmp + lib/, so LD_LIBRARY_PATH cannot accidentally pick up
+# another branch's libcp2k.so.  Lives on scratch (/local/data/public) — too
+# big for /home (libcp2k.so.* alone is hundreds of MB per branch).
+BIN_ROOT=/local/data/public/crm98/cp2k_binaries/phy-cerberus
+
 set +u
 # --- Load the Toolchain Environment ---
-source /home/raid/crm98/cp2k_binaries/phy-cerberus/setup
+source "$BIN_ROOT/setup"
 set -u
 
 # --- Pass the branch as an argument (defaults to master) ---
 # Accepted values: master, feature-nnp-verlet-cells, feature-nnp-native-spline
 TARGET_BRANCH=${1:-master}
 TIMESTAMP=$(date +%d-%m_%H-%M)
-
-# Per-branch binary cache populated by benchmark_slurm.sh.  Each branch has
-# its own cp2k.psmp + lib/, so LD_LIBRARY_PATH cannot accidentally pick up
-# another branch's libcp2k.so.
-BIN_ROOT=/home/raid/crm98/cp2k_binaries/phy-cerberus
 
 case "$TARGET_BRANCH" in
   feature-nnp-verlet-cells)
@@ -65,6 +66,7 @@ cat <<EOF >"$CSV_FILE"
 # branch:    $LABEL
 # exe:       $CP2K_EXE
 # MPI ranks: $MPI_RANKS
+# OMP threads: $OMP_NUM_THREADS
 # steps:     $STEPS
 # n_molecules,walltime_s
 EOF

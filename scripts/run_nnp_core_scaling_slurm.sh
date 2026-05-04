@@ -1,20 +1,21 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# Per-branch binary cache populated by benchmark_slurm.sh.  Each branch has
+# its own cp2k.psmp + lib/, so LD_LIBRARY_PATH cannot accidentally pick up
+# another branch's libcp2k.so.  Lives on scratch (/local/data/public) — too
+# big for /home (libcp2k.so.* alone is hundreds of MB per branch).
+BIN_ROOT=/local/data/public/crm98/cp2k_binaries/phy-cerberus
+
 set +u
 # --- Load the Toolchain Environment ---
-source /home/raid/crm98/cp2k_binaries/phy-cerberus/setup
+source "$BIN_ROOT/setup"
 set -u
 
 # --- Pass the branch as an argument (defaults to master) ---
 # Accepted values: master, feature-nnp-verlet-cells, feature-nnp-native-spline
 TARGET_BRANCH=${1:-master}
 TIMESTAMP=$(date +%d-%m_%H-%M)
-
-# Per-branch binary cache populated by benchmark_slurm.sh.  Each branch has
-# its own cp2k.psmp + lib/, so LD_LIBRARY_PATH cannot accidentally pick up
-# another branch's libcp2k.so.
-BIN_ROOT=/home/raid/crm98/cp2k_binaries/phy-cerberus
 
 case "$TARGET_BRANCH" in
   feature-nnp-verlet-cells)
@@ -49,7 +50,7 @@ OUTDIR="/local/data/public/crm98/cp2k-benchmarks/results/${OUTDIR_PARENT}/NNP/NN
 export LD_LIBRARY_PATH="$INSTALL_LIB:${LD_LIBRARY_PATH:-}"
 
 BASE_INP="${BENCHMARK_ROOT}/H2O-64_NNP_MD.inp"
-NNP_DATA="${PROJECT_ROOT}/data/NNP" 
+NNP_DATA="${PROJECT_ROOT}/data/NNP"
 
 # --- Variables ---
 N_MOLECULES=${N_MOLECULES:-64}
@@ -82,40 +83,27 @@ for omp in $OMP_LIST; do
     total=$((mpi * omp))
     rundir="${OUTDIR}/mpi${mpi}_omp${omp}"
     mkdir -p "$rundir"
-    
-    # Copy your pre-configured file into the run directory and name it run.inp
+
     cp "$BASE_INP" "${rundir}/run.inp"
-    
-    # Symlink the required NNP data directory
     ln -sfn "$NNP_DATA" "${rundir}/NNP"
 
     printf "%-10s %-10s %-12s " "$mpi" "$omp" "$total"
 
-    # Execute CP2K
     (cd "$rundir" && mpiexec -n "$mpi" --bind-to core "$CP2K_EXE" -i run.inp >cp2k.out 2>&1) || true
 
-    # 1. Check if the run finished successfully
     if grep -q "PROGRAM ENDED" "${rundir}/cp2k.out" 2>/dev/null; then
-      
-      # 2. Extract the Walltime using grep and awk
       wt=$(grep -E "^ CP2K +[0-9]" "${rundir}/cp2k.out" | awk '{print $NF}' | tail -1)
 
-      # 3. Save the 1-core baseline time to do the math against
       if [[ -z "$BASELINE_TIME" ]]; then
         BASELINE_TIME=$wt
         BASELINE_CORES=$total
       fi
 
-      # 4. Calculate Speedup and Efficiency
       speedup=$(awk "BEGIN {printf \"%.2f\", $BASELINE_TIME / $wt}")
       efficiency=$(awk "BEGIN {printf \"%.1f%%\", 100 * $BASELINE_TIME / $wt / ($total / $BASELINE_CORES)}")
 
-      # 5. Print to the terminal log
       printf "%-14s %-10s %-10s\n" "$wt" "${speedup}x" "$efficiency"
-      
-      # 6. SAVE TO THE CSV
       echo "$mpi,$omp,$total,$wt,$speedup" >>"$CSV_FILE"
-      
     else
       printf "%-14s %-10s %-10s\n" "FAILED" "N/A" "N/A"
     fi
