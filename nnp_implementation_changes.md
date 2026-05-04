@@ -1,28 +1,91 @@
-# NNP Implementation Changes: `feature/nnp-verlet-cells` vs `upstream/master`
+# NNP Implementation Changes — Cross-Branch Reference
 
-This document records all key implementation differences between the
-`feature/nnp-verlet-cells` branch and `upstream/master` across the four
-modified NNP source files.  The intent is a reference for code review and
-future maintenance — not an API guide.
+This document records the implementation differences between the four NNP-related
+branches of CP2K maintained in this project, why each branch exists, and what the
+benchmark suite is actually measuring.
+
+```
+Branches under test (all rooted at upstream master):
+
+   upstream/master                       ← baseline
+       │
+       ├── feature/nnp-verlet-cells      ← cell-list neighbour walk +
+       │                                    persistent buffers +
+       │                                    local Hermite Horner spline cache +
+       │                                    division/SQRT eliminations
+       │
+       ├── feature/nnp-native-spline     ← same neighbour walk +
+       │                                    native CP2K splines (splines_methods.F) +
+       │                                    additional micro-optimisations
+       │                                    (fc/dfc/dr hoisting, sqrt skip,
+       │                                     ASSOCIATE, cut_type local)
+       │
+       └── feature/nnp-openmp-implementation
+                                         ← verlet-cells base + OpenMP threading
+                                            (THREADPRIVATE scratch, OMP PARALLEL DO
+                                             with local-reduction + CRITICAL)
+```
 
 ---
 
-## 1. `nnp_acsf.F`
+## Why three feature branches, all benchmarked together
 
-This file received the largest changes.  The upstream file is ~1 414 lines;
-the branch version is ~2 192 lines.
+Each feature branch represents a **different optimisation strategy** layered on
+top of the same neighbour-walk improvements.  Benchmarking them in isolation
+matters because the strategies interact:
 
-### 1.1 New module-level types
+| Concern | Affected branches | Reason for separate measurement |
+|---|---|---|
+| Spline evaluation cost (Horner vs basis form) | `nnp-verlet-cells` (Horner) vs `nnp-native-spline` (basis) | Native CP2K splines use basis-function form (~22 MULs); local Horner cache uses ~5 MULs.  We need to know the absolute cost of going "native" before recommending it as the merge candidate |
+| Synchronisation overhead vs work granularity | `nnp-openmp-implementation` | Adding OpenMP on top of the already-optimised verlet-cells base lets us isolate whether threading helps once the per-call work is small.  Mixing it with native-spline would confuse the measurement |
+| Maintenance burden of new modules | `nnp-native-spline` adds public symbols to `splines_methods.F` | This change touches CP2K core and benefits the wider codebase; we want to see the real-world cost in the NNP context |
+| Hyperthread contention | `nnp-openmp-implementation` | Cerberus has 32 physical cores × 2 hyperthreads.  OMP behaviour is sensitive to physical-vs-logical core binding; pure-MPI baselines on the other branches give us the reference for "what should be possible" |
 
-Two private derived types were added at module scope.
+The benchmark harness builds **all four** binaries (master + three feature
+branches) into separate per-branch directories so `LD_LIBRARY_PATH` cannot
+accidentally pick up the wrong `libcp2k.so`.  Each branch is then run through
+the same size-scaling and core-scaling sweeps.
+
+---
+
+## Branch 1 — `upstream/master` (baseline)
+
+`src/nnp_acsf.F` ≈ 1 414 lines.  Reference implementation as merged into CP2K
+upstream.
+
+Performance characteristics relevant to our work:
+
+- **Neighbour search**: per centre atom calls `nnp_compute_pbc_copies` then
+  loops over all `(j, c1, c2, c3)` periodic images, calling `pbc()` on every
+  displacement.  Cost: O(N · (2p+1)³) per centre, plus ~9 ALLOCATE/DEALLOCATE
+  calls per centre for buffer setup.
+- **Spline evaluation**: the cutoff function uses direct `COS(π·r/rc)` and
+  `TANH(1−r/rc)` libm calls.  The radial Gaussian uses `EXP(−η(r−rs)²)`.
+  Each is ~30–80 cycles per evaluation.
+- **Force accumulation**: outer atom loop in `nnp_force.F` iterates over all
+  `nnp%num_atoms` per centre even though only ~k actually contribute.
+- **MPI atom assignment**: `allgather(mecalc, allcalc)` collective + prefix
+  sum to compute each rank's `istart`.
+
+The remaining branches treat this as the truth-source for correctness and the
+"slow but always-right" reference for benchmarks.
+
+---
+
+## Branch 2 — `feature/nnp-verlet-cells`
+
+`src/nnp_acsf.F` ≈ 2 193 lines.  This is the foundational performance branch.
+Its changes are mostly about avoiding work the upstream couldn't avoid; almost
+everything that follows in `nnp-native-spline` and `nnp-openmp-implementation`
+inherits from this branch.
+
+### 2.1 New module-level types
 
 #### `nnp_cell_list_cache_type`
 A Verlet-skin / cell-list hybrid cache.  Each `(atom j, integer PBC shift)`
 pair becomes one *image entry* stored explicitly, so the inner neighbour-query
 loop contains no `pbc()` calls.  The coarse grid has `bin_width ≈ list_cutoff`
 (one bin-span walk covers 27 bins).
-
-Key fields:
 
 | Field | Purpose |
 |---|---|
@@ -38,14 +101,15 @@ A `SAVE` instance `cell_list_cache` lives at module level and persists across
 force evaluations.
 
 #### `nnp_spline_cache_type`
-Stores Hermite cubic spline coefficients `(a, b, c, d)` for Horner's-method
+Stores Hermite cubic spline coefficients `(a, b, c, d)` for **Horner-method**
 evaluation of `EXP`, `COS`, and `TANH`.  Coefficients are packed as
 `coef(4, n_points)` so each evaluation reads four consecutive doubles.  A
 `SAVE` instance `spline_cache` is initialised once in `nnp_init_acsf_groups`.
 
----
+This local cache is the key reason this branch is so fast: per-evaluation cost
+is **~5 MULs + 4 ADDs**, vs ~30–80 cycles for the libm intrinsic call.
 
-### 1.2 New module-level SAVE variables
+### 2.2 New module-level SAVE variables
 
 ```fortran
 TYPE(nnp_cell_list_cache_type), SAVE, PRIVATE :: cell_list_cache
@@ -56,141 +120,70 @@ INTEGER, SAVE, PRIVATE :: persistent_n_capacity = -1
 INTEGER, SAVE, PRIVATE :: persistent_n_rad_grp  = -1
 INTEGER, SAVE, PRIVATE :: persistent_n_ang_grp  = -1
 
-INTEGER,       ALLOCATABLE, SAVE, TARGET, PRIVATE :: scratch_max_sym
 REAL(KIND=dp), ALLOCATABLE, SAVE, TARGET, PRIVATE :: scratch_sym(:)
 REAL(KIND=dp), ALLOCATABLE, SAVE, TARGET, PRIVATE :: scratch_forcetmp(:,:)
 REAL(KIND=dp), ALLOCATABLE, SAVE, TARGET, PRIVATE :: scratch_force3tmp(:,:,:)
 ```
 
 `persistent_neighbor` replaces the per-centre-atom local `nnp_neighbor_type`.
-In the upstream, each call to `nnp_calc_acsf` allocated and deallocated 9
-arrays sized `~num_atoms × (2p+1)³`; for a 6 000-atom system those allocations
-cross glibc's `mmap` threshold and become system calls, giving O(N²) `malloc`
-traffic per MD step.
+In upstream, each call to `nnp_calc_acsf` allocated and deallocated 9 arrays
+sized `~num_atoms × (2p+1)³`; for a 6 000-atom system those allocations cross
+glibc's `mmap` threshold and become syscalls, giving O(N²) `malloc` traffic
+per MD step.
 
-`scratch_sym/forcetmp/force3tmp` replace per-symfgrp-group
-ALLOCATE/DEALLOCATE in the hot radial and angular loops.
-
----
-
-### 1.3 `nnp_calc_acsf` — signature extended
+### 2.3 `nnp_calc_acsf` — signature extended
 
 ```fortran
 ! upstream
 SUBROUTINE nnp_calc_acsf(nnp, i, dsymdxyz, stress)
 
-! branch
+! verlet-cells
 SUBROUTINE nnp_calc_acsf(nnp, i, dsymdxyz, stress, active_atoms, active_flag, n_active)
 ```
 
-`active_atoms(:)`, `active_flag(:)`, and `n_active` are all `OPTIONAL`.  When
-present, the routine builds an active-atoms set (centre atom `i` plus every
-distinct neighbour touched by the radial and angular lists) as a deduplication
-pass after `nnp_compute_neighbors`.  This is passed back to `nnp_force.F` so
-the force-accumulation loop is restricted to O(n_active) atoms instead of O(N).
+The three new optionals build a deduplicated active-atoms set (centre `i` plus
+every distinct neighbour touched by the rad/ang lists), letting the caller
+walk O(n_active) atoms instead of O(N) when accumulating forces.
 
----
+### 2.4 `POINTER, CONTIGUOUS` scratch aliases
 
-### 1.4 Scratch buffer management — `POINTER, CONTIGUOUS` local aliases
-
-In the upstream, `symtmp`, `forcetmp`, and `force3tmp` were local
-`ALLOCATABLE` arrays declared fresh in each call:
+Module-level SAVE arrays accessed via per-call pointer aliases:
 
 ```fortran
-! upstream
-REAL(KIND=dp), ALLOCATABLE, DIMENSION(:)         :: symtmp
-REAL(KIND=dp), ALLOCATABLE, DIMENSION(:,:)       :: forcetmp
-REAL(KIND=dp), ALLOCATABLE, DIMENSION(:,:,:)     :: force3tmp
-! ... per symfgrp:
-ALLOCATE(symtmp(n_symf)); ALLOCATE(force3tmp(3,3,n_symf))
-! ... use ...
-DEALLOCATE(symtmp); DEALLOCATE(force3tmp)
-```
-
-In the branch they are `POINTER, CONTIGUOUS` aliases into the module-level
-SAVE arrays:
-
-```fortran
-! branch
 REAL(KIND=dp), DIMENSION(:),     POINTER, CONTIGUOUS :: symtmp
 REAL(KIND=dp), DIMENSION(:,:),   POINTER, CONTIGUOUS :: forcetmp
 REAL(KIND=dp), DIMENSION(:,:,:), POINTER, CONTIGUOUS :: force3tmp
-! ... per symfgrp:
+! per symfgrp:
 symtmp    => scratch_sym(1:n_symf)
 force3tmp => scratch_force3tmp(:,:,1:n_symf)
-! ... use ...
-NULLIFY(symtmp); NULLIFY(force3tmp)
 ```
 
-**Why `CONTIGUOUS` matters:** without this attribute the compiler must treat
-the pointer as potentially non-contiguous and potentially aliasing other
-`TARGET` or `POINTER` variables in scope.  Both restrictions block
-vectorisation of the inner `sf`/`l` loops in the angular double loop.
-`CONTIGUOUS` tells the compiler the target is a unit-stride contiguous block,
-restoring the same optimisation level as the original `ALLOCATABLE` version.
+`CONTIGUOUS` matters: without it the compiler treats the pointer as potentially
+non-contiguous and potentially aliasing other `TARGET`/`POINTER` variables in
+scope, blocking vectorisation of the inner `sf`/`l` loops.
 
----
+### 2.5 Cell-list neighbour walk
 
-### 1.5 Neighbour building: O(N) cell-list replaces O(N·(2p+1)³) direct loop
+Two-phase architecture:
 
-#### Upstream — `nnp_neighbor_create` + `nnp_neighbor_release`
+- **`nnp_prepare_cell_list_cache`** — called once per force evaluation from
+  `nnp_calc_energy_force`.  Refreshes `coord_primary`, checks six rebuild
+  triggers (`!initialized` / `num_atoms` change / cutoff change / skin change /
+  cell change / any-atom-moved-more-than-half-skin).  Skin defaults to
+  `MIN(1.0 Å, 0.1·max_cut)`.
+- **`nnp_compute_neighbors`** — called once per centre atom; walks only the
+  27 bins around the centre's bin in the pre-built image table.  No
+  allocations, no `pbc()` calls, lazy `SQRT` (sentinel `norm = -1.0`).
 
-Each call to `nnp_calc_acsf` triggered:
-1. `nnp_compute_pbc_copies` to find the periodic image count `p`
-2. 9× ALLOCATE (arrays sized `num_atoms × (2p+1)³ × n_symfgrp`)
-3. A triple PBC loop (`c1`, `c2`, `c3`) over all `(j, shift)` pairs, calling
-   `pbc(dr, cell, nl)` for every displacement
-4. `nnp_neighbor_release` — 9× DEALLOCATE
+Cheap inner-loop filter chain:
+1. `r² ≥ max_cut²` — scalar reject, no SQRT
+2. Per-group `r² < cutoff_sq` — radial groups
+3. Per-group `r² < cutoff_sq` — angular ele1 / ele2 separately
 
-#### Branch — `nnp_compute_neighbors` (cell-list walk)
+### 2.6 Bug fix — wrong `kk` index in hetero-angular path
 
-`nnp_prepare_cell_list_cache` is called **once per force evaluation** from
-`nnp_calc_energy_force` before the per-centre loop.  `nnp_compute_neighbors`
-is then called once per centre atom and walks only the 27 bins adjacent to the
-centre's bin in the pre-built image table.  No allocations occur in the
-per-atom hot path; `pbc()` is not called in the inner loop.
-
-The inner loop filters candidates by:
-1. Cheap `r² ≥ max_cut²` scalar reject (avoids `SQRT`)
-2. Per-group `r² < cutoff_sq` for radial groups
-3. Per-group `r² < cutoff_sq` for angular groups (ele1 and ele2 separately)
-
-`SQRT` is computed **lazily** (only when at least one group accepts the
-candidate), hoisted using a sentinel `norm = -1.0`.
-
----
-
-### 1.6 `nnp_prepare_cell_list_cache` — Verlet skin logic
-
-Called once per force evaluation.  The cheap path (O(N)) refreshes
-`coord_primary` with PBC-wrapped coordinates and checks six rebuild triggers:
-
-| Trigger | Why |
-|---|---|
-| `!initialized` | First call |
-| `num_atoms` changed | System resized |
-| `exact_cutoff` changed | Cutoff parameters changed |
-| `verlet_skin` changed | Skin changed |
-| `perd` or `hmat` changed | Cell geometry changed |
-| Any atom moved > 0.5·skin | Verlet displacement criterion |
-
-The displacement check uses raw `coord_primary − ref_coord_primary` without
-`pbc()`.  An atom that crosses a box face in the wrapped coordinates will show
-an apparent large displacement (~box size), causing a conservative rebuild.
-This is safe: false-positive rebuilds are cheap; false-negative rebuilds would
-produce wrong neighbour lists.
-
-The expensive path (`nnp_build_cell_list_cache`, O(N·(2p+1)³)) is only entered
-when a trigger fires.
-
-Skin value: `skin = MIN(1.0_dp Å, 0.1·max_cut)`.
-
----
-
-### 1.7 Bug fix — wrong `kk` index in hetero-angular path
-
-In the upstream, the hetero-angular loop (element 1 ≠ element 2) contained
-a dead write followed by a redundant inner-loop assignment:
+In upstream, the hetero-angular loop (element 1 ≠ element 2) had a dead write
+followed by a redundant inner-loop assignment:
 
 ```fortran
 ! upstream (buggy)
@@ -199,415 +192,444 @@ kk = neighbor%ind_ang1(k, s)   ! DEAD — immediately overwritten inside sf loop
 CALL nnp_calc_ang(...)
 DO sf = 1, n_symf
    m = off + ...
-   jj = neighbor%ind_ang1(j, s)   ! redundant: same value as outer scope
+   jj = neighbor%ind_ang1(j, s)   ! redundant
    kk = neighbor%ind_ang2(k, s)   ! correct, but re-read every sf iteration
 END DO
 ```
 
-The outer `kk = ind_ang1(k,s)` was the wrong index (should be `ind_ang2`), but
-it was immediately shadowed by the correct assignment inside the loop, so the
-computation was numerically correct.  However, re-reading `ind_ang1` and
-`ind_ang2` on every `sf` iteration adds unnecessary memory traffic.
+The outer `kk` was the wrong index (should be `ind_ang2`) but immediately
+shadowed by the correct inner assignment, so the result was numerically
+correct.  Verlet-cells fixes the index and removes the redundant inner reads.
 
-Branch fix:
+### 2.7 Spline replacement of `EXP`, `COS`, `TANH`
 
-```fortran
-! branch (fixed)
-jj = neighbor%ind_ang1(j, s)
-kk = neighbor%ind_ang2(k, s)   ! correct index, set once before CALL
-CALL nnp_calc_ang(...)
-DO sf = 1, n_symf
-   m = off + ...
-   ! jj and kk are already correct — no inner-loop re-reads
-END DO
-```
-
----
-
-### 1.8 Spline replacement of `EXP`, `COS`, and `TANH`
-
-In `nnp_calc_sym_rad` and `nnp_calc_ang`, the expensive intrinsic calls are
-replaced by Hermite cubic spline lookups initialised in `nnp_init_acsf_groups`:
+The expensive intrinsic calls in `nnp_calc_sym_rad` and `nnp_calc_ang` are
+replaced by the local Horner-form Hermite cubic cache:
 
 | Intrinsic | Spline range | Rationale |
 |---|---|---|
 | `EXP(x)` | `[−50, 0]` | Argument is always ≤ 0 (Gaussian decay) |
-| `COS(π·r/rc)` | `[0, π]` | Cutoff argument lives in `[0, 1)` so `tmp ∈ [0, π]` only — doubles grid resolution vs `[−π, π]` |
-| `TANH(1−r/rc)` | `[0, 1]` | Argument lives in `[0, 1)` — 20× finer resolution vs `[−10, 10]` |
+| `COS(π·r/rc)` | `[0, π]` | Cutoff arg ∈ `[0, 1)` so `tmp ∈ [0, π]` only — doubles grid resolution |
+| `TANH(1−r/rc)` | `[0, 1]` | Argument lives in `[0, 1)` — 20× finer resolution |
 
-Each spline uses 5 000 grid points.  Coefficients are stored as `coef(4, n)`
-(column-major, Horner form) so each evaluation reads four contiguous doubles:
-`a + t*(b + t*(c + t*d))`.
+5 000 grid points each.  For `EXP` specifically, the spline value (~`EXP`) is
+used directly in the chain rule for the force rather than evaluating the
+formal spline derivative — same answer, slightly more accurate (O(h⁴) value
+vs O(h³) derivative).
 
-For the EXP term, the spline value `symtmp` (≈ EXP) is used directly in the
-chain rule for the force (`dsymdr = symtmp * (−2η(r−rs))`), rather than
-evaluating the spline derivative separately.  This is both faster and slightly
-more accurate (O(h⁴) value vs O(h³) formal derivative).
-
----
-
-### 1.9 Division elimination
-
-Scalar reciprocal-multiply replaces division in three places:
+### 2.8 Division elimination
 
 ```fortran
 ! upstream
 drdx(:) = rvect(:)/r
 
-! branch
+! verlet-cells
 rinv = 1.0_dp/r
 drdx(1) = rvect(1)*rinv; drdx(2) = rvect(2)*rinv; drdx(3) = rvect(3)*rinv
 ```
 
-The same pattern is applied to `r1`, `r2`, `r3` in the angular routine.
+Cutoff-argument divisions move to `nnp_init_acsf_groups` as precomputed
+reciprocals stored in the `symfgrp` struct: `pi_over_cut = π/funccut`,
+`inv_cut = 1/funccut`, `cutoff_sq = funccut²`.
 
-Division is typically 6× slower than multiplication on x86; three multiplies
-share one division.
-
-Cutoff argument divisions are moved to `nnp_init_acsf_groups` as precomputed
-reciprocals stored in the symfgrp struct:
+### 2.9 `nnp_calc_ang` — hoisted loop invariants
 
 ```fortran
-! upstream
-tmp = pi*r/funccut          ! division in hot loop
-tmp = 1.0_dp - r/funccut   ! division in hot loop
-
-! branch — uses precomputed fields set at init
-tmp = r * symfgrp%pi_over_cut
-tmp = 1.0_dp - r * symfgrp%inv_cut
-```
-
-`cutoff_sq = funccut²` is also precomputed to eliminate a `SQRT` in the
-neighbour filter (branch uses `r² < cutoff_sq` instead of `norm < cutoff`).
-
----
-
-### 1.10 `nnp_calc_ang` — hoisted loop invariants
-
-Two sub-expressions are hoisted out of the per-symmetry-function loop:
-
-```fortran
-! branch — computed once per (j,k) pair, outside the sf loop
-r_sum_sq = rsqr1 + rsqr2 + rsqr3   ! EXP argument; only eta varies per sf
+r_sum_sq = rsqr1 + rsqr2 + rsqr3   ! EXP argument; only η varies per sf
 g_sq_inv = 1.0_dp/(g*g)             ! denominator in dangular/dr
 ```
 
-In the upstream these were recomputed (or reloaded) on every `sf` iteration.
+In upstream these were recomputed on every `sf` iteration.
 
----
+### 2.10 Pre-computed `zeta_int` / `zeta_is_int`
 
-### 1.11 Pre-computed `zeta_int` / `zeta_is_int`
+Upstream did `i = NINT(zeta); IF (1.0_dp*i == zeta) ...` inside the angular
+SF loop on every call.  Verlet-cells precomputes `zeta_int(:)` and
+`zeta_is_int(:)` once at init, eliminating the runtime NINT and FP-equality
+test from every SF evaluation.
 
-The upstream checked integer-zeta at runtime on every angular SF evaluation:
+### 2.11 `nnp_force.F` — accompanying changes
 
+- **Allgather elimination**: `mecalc` and `istart` derived analytically from
+  `(num_atoms, num_pe, mepos)`; no MPI collective needed.
+- **SAVE scratch arrays**: `dsymdxyz`, `stress`, `denergydsym`, `active_atoms`,
+  `active_flag` allocated once at first force eval, reused across steps.
+- **Hoisted allocation**: `dsymdxyz` sized to `max_nsym` (max over all
+  elements) at force-eval entry rather than re-allocating per centre atom.
+- **Selective zeroing**: `dsymdxyz(:, :, k) = 0` only for atoms in the active
+  list, not the whole `(:,:,:)`.
+- **O(n_active) force accumulation loop**: only walks the touched atoms.
+
+### 2.12 `nnp_environment_types.F` — new fields
+
+Per `symfgrp` (radial and angular, identical):
 ```fortran
-! upstream — inside sf loop
-i = NINT(zeta)
-IF (1.0_dp*i == zeta) THEN
-   tmpzeta = tmp**(i - 1)   ! fast integer power
+REAL(KIND=dp) :: cutoff_sq   = -1.0_dp   ! eliminates SQRT in neighbour filter
+REAL(KIND=dp) :: inv_cut     = -1.0_dp   ! eliminates / in cutoff arg
+REAL(KIND=dp) :: pi_over_cut = -1.0_dp   ! eliminates / in cutoff arg
 ```
 
-The branch precomputes these once at init and stores them in the `nnp_ang_type`
-struct:
-
+Per `nnp_rad_type` and `nnp_ang_type`:
 ```fortran
-! branch — computed in nnp_init_acsf_groups, used in hot loop
-IF (nnp%ang(ind)%zeta_is_int(m)) THEN
-   tmpzeta = tmp**(nnp%ang(ind)%zeta_int(m) - 1)
+INTEGER, ALLOCATABLE :: ele_grp_count(:)    ! O(1) element→group dispatch (infrastructure)
+INTEGER, ALLOCATABLE :: ele_grp_list(:,:)
 ```
 
-This removes one `NINT` call and one FP equality test from every angular SF
-evaluation.
-
----
-
-### 1.12 Element→group lookup tables (infrastructure, not yet used in hot path)
-
-`nnp_init_acsf_groups` now builds reverse-index maps:
-
-| Array | Meaning |
-|---|---|
-| `rad(i)%ele_grp_count(e)` | Number of radial symfgrps for centre element `i` that accept neighbour element `e` |
-| `rad(i)%ele_grp_list(g, e)` | Group indices in that set |
-| `ang(i)%ele1_grp_count(e)` / `ele2_grp_count(e)` | Same for the two angular partner roles |
-
-These enable an O(1) dispatch "given neighbour element `e`, which groups does
-it enter?" rather than the current O(n_symfgrp) scan in `nnp_compute_neighbors`.
-The tables are allocated and populated but not yet wired into the neighbour
-walk.
-
----
-
-### 1.13 `nnp_scale_acsf` — active-atoms fast path
-
+Per `nnp_ang_type`:
 ```fortran
-! upstream — always O(num_atoms)
-DO k = 1, nnp%num_atoms
-   DO j = 1, nnp%n_rad(ind)
-      dsymdxyz(:, j, k) = dsymdxyz(:, j, k) / (loc_max - loc_min) * (scmax - scmin)
-
-! branch — O(n_active) when active_atoms present
-IF (PRESENT(active_atoms) .AND. PRESENT(n_active)) THEN
-   DO idx = 1, n_active
-      k = active_atoms(idx)
-      DO j = 1, nnp%n_rad(ind) ...
+INTEGER, ALLOCATABLE :: zeta_int(:)        ! NINT(zeta), precomputed
+LOGICAL, ALLOCATABLE :: zeta_is_int(:)
 ```
 
-The same pattern is applied to both the radial and angular halves of both the
-`symtype_loc` and `symtype_std` scaling branches.
+### Performance — observed
+
+Verlet-cells is the fastest single-thread implementation we have.  In our
+36-rank pure-MPI runs on 64–4 096 H₂O it produces the timing baseline that
+the other two feature branches are measured against.
 
 ---
 
-## 2. `nnp_force.F`
+## Branch 3 — `feature/nnp-native-spline`
 
-### 2.1 MPI parallelisation — allgather eliminated
+`src/nnp_acsf.F` ≈ 2 279 lines.  Same neighbour walk as verlet-cells but with
+two distinguishing changes:
 
-#### Upstream
+1. **Splines moved to CP2K-native `splines_methods.F`** (no module-local
+   `nnp_spline_cache_type`).
+2. **Additional inner-loop micro-optimisations** that are absent or
+   incomplete on verlet-cells.
+
+### 3.1 New public symbols in `splines_methods.F` (+69 lines)
+
 ```fortran
-mecalc = nnp%num_atoms/logger%para_env%num_pe + &
-         MIN(MOD(nnp%num_atoms, logger%para_env%num_pe)/(logger%para_env%mepos + 1), 1)
-ALLOCATE(allcalc(logger%para_env%num_pe))
-allcalc(:) = 0
-CALL logger%para_env%allgather(mecalc, allcalc)
-istart = 1
-DO i = 2, logger%para_env%mepos + 1
-   istart = istart + allcalc(i - 1)
+PUBLIC :: init_hermite_spline   ! init Hermite cubic spline (stores h*dy/dx in y2)
+PUBLIC :: hermite_spline_value  ! evaluate Hermite cubic spline (+ optional derivative)
+```
+
+The new initialiser populates the standard `spline_data_type` struct, storing
+`h·dy/dx` in `y2` so the evaluator needs no extra division per call.
+
+The evaluator uses **Hermite basis-function form**:
+
+```fortran
+val = (2t³ − 3t² + 1)·ylo +
+      (t³ − 2t² + t)·m0  +
+      (−2t³ + 3t²)·yhi   +
+      (t³ − t²)·m1
+```
+
+This is mathematically equivalent to the Horner form used by verlet-cells but
+requires **~22 MULs + 12 ADDs per evaluation**, vs ~5 MULs + 4 ADDs in Horner
+form.  This is the deliberate trade-off being measured: native splines mean
+the optimisation lives where any future CP2K caller can use it, but each call
+costs ~4× more than the local cache.
+
+### 3.2 NNP usage of native splines
+
+```fortran
+USE splines_methods, ONLY: hermite_spline_value, init_hermite_spline, init_splinexy
+USE splines_types,   ONLY: spline_data_type
+
+TYPE(spline_data_type), SAVE, PRIVATE :: spl_exp, spl_cos, spl_tanh
+LOGICAL,                SAVE, PRIVATE :: spline_initialized = .FALSE.
+```
+
+Call sites in `nnp_calc_rad`/`nnp_calc_ang` (and the fc precomputation block)
+use `hermite_spline_value(spl_cos, x)` etc.  Three splines, same `[−50, 0]` /
+`[0, π]` / `[0, 1]` ranges as verlet-cells.
+
+### 3.3 Hoist `f_c(r1)` / `f_c(r2)` out of the `k`-loop
+
+The angular routine reads the cutoff function for `r1` and `r2` independently
+of `k`, but verlet-cells still computed them inside the `(j,k)` body.
+Native-spline precomputes them per neighbour:
+
+```fortran
+REAL(KIND=dp), ALLOCATABLE, SAVE, PRIVATE :: scratch_fc1(:), scratch_dfc1(:)
+REAL(KIND=dp), ALLOCATABLE, SAVE, PRIVATE :: scratch_fc2(:), scratch_dfc2(:)
+
+! Per s-iteration, before entering the (j,k) loop:
+DO j = 1, neighbor%n_ang1(s)
+   fc_tmp = neighbor%dist_ang1(4, j, s) * sg%pi_over_cut
+   scratch_fc1(j)  = 0.5_dp*(hermite_spline_value(spl_cos, fc_tmp, y1=dfc_tmp) + 1.0_dp)
+   scratch_dfc1(j) = 0.5_dp*dfc_tmp*sg%pi_over_cut
 END DO
-! ... end of routine:
-DEALLOCATE(allcalc)
 ```
 
-One MPI collective (`allgather`) per force evaluation, plus allocate/deallocate
-of a `num_pe`-sized integer array.
+`nnp_calc_ang` accepts these via new optional args `fc1_in`, `fc2_in`,
+`dfc1dr_in`, `dfc2dr_in`.  For typical N_k ~ 30 inner iterations this cuts
+the cutoff-function spline-evaluation count by ~30×.
 
-#### Branch — analytical derivation
+### 3.4 Hoist `dr1dx` / `dr2dx` out of the `k`-loop
+
+Same idea, applied to the radial unit vectors.  Two more SAVE scratch arrays:
+
 ```fortran
-n_base      = nnp%num_atoms/logger%para_env%num_pe
-n_remainder = MOD(nnp%num_atoms, logger%para_env%num_pe)
-IF (logger%para_env%mepos < n_remainder) THEN
-   mecalc = n_base + 1
-   istart = 1 + logger%para_env%mepos*(n_base + 1)
-ELSE
-   mecalc = n_base
-   istart = 1 + n_remainder*(n_base + 1) + (logger%para_env%mepos - n_remainder)*n_base
-END IF
+REAL(KIND=dp), ALLOCATABLE, SAVE, PRIVATE :: scratch_dr1dx(:, :)  ! (3, n)
+REAL(KIND=dp), ALLOCATABLE, SAVE, PRIVATE :: scratch_dr2dx(:, :)
 ```
 
-The formula is mathematically identical to the upstream (same block
-distribution), verified by expanding both expressions symbolically.  The
-allgather is eliminated because `istart` is a deterministic closed-form
-function of `(num_atoms, num_pe, mepos)`.
+`nnp_calc_ang` accepts them via new `dr1dx_in` / `dr2dx_in` optionals.  Per
+`(j,k)` pair this saves two divisions and six multiplies (the second `1/r2`
+unit-vector computation).
 
----
+### 3.5 Skip the SQRT in the `r3` cutoff check
 
-### 2.2 SAVE scratch arrays
-
+In verlet-cells the inner angular loop body was:
 ```fortran
-! upstream — re-allocated every force eval
-REAL(KIND=dp), ALLOCATABLE, DIMENSION(:)         :: denergydsym
-REAL(KIND=dp), ALLOCATABLE, DIMENSION(:,:,:)     :: dsymdxyz, stress
-
-! branch — SAVE; allocated once, reused across steps
-INTEGER,       ALLOCATABLE, DIMENSION(:), SAVE :: active_atoms, active_flag
-REAL(KIND=dp), ALLOCATABLE, DIMENSION(:), SAVE :: denergydsym
-REAL(KIND=dp), ALLOCATABLE, DIMENSION(:,:,:), SAVE :: dsymdxyz, stress
-```
-
----
-
-### 2.3 Hoisted allocation guard
-
-#### Upstream
-`dsymdxyz` was allocated inside the per-centre loop with size fitted to the
-current atom's element type:
-```fortran
-DO i = istart, istart + mecalc - 1
+rvect3 = rvect2 - rvect1
+r3 = NORM2(rvect3(:))                          ! always pays a sqrt
+IF (r3 < sg%cutoff) THEN
    ...
-   IF (calc_forces) THEN
-      ALLOCATE(dsymdxyz(3, nnp%arc(ind)%n_nodes(1), nnp%num_atoms))
-      dsymdxyz(:,:,:) = 0.0_dp
-      IF (calc_stress) THEN
-         ALLOCATE(stress(3, 3, nnp%arc(ind)%n_nodes(1)))
-         stress(:,:,:) = 0.0_dp
-      END IF
 ```
+Native-spline replaces it with:
+```fortran
+rvect3 = rvect2 - rvect1
+r3sq = rvect3(1)**2 + rvect3(2)**2 + rvect3(3)**2
+IF (r3sq < sg%cutoff_sq) THEN
+   r3 = SQRT(r3sq)                             ! only on accepted pairs
+   ...
+```
+For typical NNP cutoffs ~50–75 % of `(j,k)` pairs miss the cutoff, so the
+sqrt is skipped for most of them.
 
-This means: O(mecalc) allocations of an array of size `3 × n_nodes(1) ×
-num_atoms` per force eval.
+### 3.6 `ASSOCIATE` aliases for hot derived-type fields
 
-#### Branch
-Allocated once at force-eval entry, sized to `max_nsym` (maximum `n_nodes(1)`
-across all element types), guarded by a SAVE check:
+Both `nnp_calc_rad` and `nnp_calc_ang`, plus the `(j,k)` loops in
+`nnp_calc_acsf`, wrap their bodies in:
+```fortran
+ASSOCIATE (sg => nnp%ang(ind)%symfgrp(s))
+   ! ... sg%cutoff, sg%cutoff_sq, sg%pi_over_cut, sg%inv_cut, sg%n_symf, sg%symf(...)
+END ASSOCIATE
+```
+Inside `nnp_calc_ang`'s `sf` loop a second alias `a => nnp%ang(ind)` collapses
+the per-symmetry-function `lam(m)`, `zeta(m)`, `prefzeta(m)`, `eta(m)`,
+`zeta_int(m)`, `zeta_is_int(m)` reads from a multi-step pointer chase down to
+single-array indexing.
+
+### 3.7 Local `cut_type`
 
 ```fortran
-IF (calc_forces) THEN
-   max_nsym = MAXVAL([nnp%arc(ie)%n_nodes(1), ie=1..n_ele])
-   IF (.NOT. ALLOCATED(dsymdxyz) .OR. SIZE(dsymdxyz, 3) /= nnp%num_atoms) THEN
-      IF (ALLOCATED(dsymdxyz)) DEALLOCATE(dsymdxyz, active_atoms, active_flag, denergydsym)
-      IF (ALLOCATED(stress))   DEALLOCATE(stress)
-      ALLOCATE(dsymdxyz(3, max_nsym, nnp%num_atoms), SOURCE=0.0_dp)
-      ALLOCATE(active_atoms(nnp%num_atoms))
-      ALLOCATE(active_flag(nnp%num_atoms), SOURCE=0)
-      ALLOCATE(denergydsym(max_nsym))
-   END IF
-   IF (calc_stress .AND. .NOT. ALLOCATED(stress)) ALLOCATE(stress(3, 3, max_nsym))
+cut_type = nnp%cut_type   ! read once at top of nnp_calc_acsf (and rad/ang)
+SELECT CASE (cut_type)    ! register-local instead of derived-type field walk
+```
+
+Trivial change individually; meaningful in aggregate because the SELECT CASE
+appears in the fc precomputation, in `nnp_calc_rad`, and in `nnp_calc_ang` —
+all hot.
+
+### Performance — expected vs observed
+
+Native-spline pays ~4× more per spline evaluation than verlet-cells (basis
+form vs Horner) but avoids many spline calls outright via §3.3, §3.4, §3.5.
+Whether the trade is profitable is exactly the question the benchmark answers.
+
+---
+
+## Branch 4 — `feature/nnp-openmp-implementation`
+
+`src/nnp_acsf.F` ≈ 2 310 lines.  Built on top of verlet-cells (still uses the
+local `nnp_spline_cache_type` Horner cache, **not** the native splines).
+
+The single distinguishing feature is OpenMP threading of the per-centre work.
+This was a research branch to answer: *can we trade some MPI ranks for OMP
+threads to recover the efficiency that pure-MPI loses past ~16 ranks?*
+
+### 4.1 THREADPRIVATE persistent buffers
+
+```fortran
+INTEGER, SAVE, PRIVATE :: scratch_max_sym = -1
+REAL(KIND=dp), ALLOCATABLE, SAVE, TARGET, PRIVATE :: scratch_sym(:)
+REAL(KIND=dp), ALLOCATABLE, SAVE, TARGET, PRIVATE :: scratch_forcetmp(:,:)
+REAL(KIND=dp), ALLOCATABLE, SAVE, TARGET, PRIVATE :: scratch_force3tmp(:,:,:)
+REAL(KIND=dp), ALLOCATABLE, SAVE, PRIVATE :: local_y(:)
+REAL(KIND=dp), ALLOCATABLE, SAVE, PRIVATE :: local_fi(:,:)
+REAL(KIND=dp), ALLOCATABLE, SAVE, PRIVATE :: local_stress(:,:,:)
+!$OMP THREADPRIVATE(scratch_max_sym, scratch_sym, scratch_forcetmp, scratch_force3tmp, &
+!$OMP&              local_y, local_fi, local_stress)
+```
+
+Each thread has its own copy of:
+- The same scratch buffers verlet-cells uses (`scratch_sym/forcetmp/force3tmp`)
+- New per-thread reduction accumulators (`local_y`, `local_fi`, `local_stress`)
+  used to defer race-prone shared-array writes until end of the parallel loop.
+
+These persist across calls and grow lazily — no per-call allocation.
+
+### 4.2 Parallel-region structure
+
+For each of the four hot paths (radial-force, angular-force, radial-no-force,
+angular-no-force) the structure is:
+
+```fortran
+CALL timeset('nnp_acsf_radial', handle_sf)
+!$OMP PARALLEL DEFAULT(NONE) &
+!$OMP&   SHARED(neighbor, nnp, ind, i, dsymdxyz, has_stress, stress_p) &
+!$OMP&   PRIVATE(j, jj, rvect1, r1, sf, m, l, s, n_symf_s, symtmp, forcetmp)
+DO s = 1, nnp%rad(ind)%n_symfgrp                  ! sequential s-loop in each thread
+   ! per-thread scratch grow if needed (THREADPRIVATE)
+   ! reset per-thread reduction accumulators
+   !$OMP DO SCHEDULE(static)
+   DO j = 1, neighbor%n_rad(s)
+      ! body: spline eval + accumulate into local_*  (no atomic in hot path)
+      ! ATOMIC kept only for dsymdxyz(m, l, jj) writes (different jj per j)
+   END DO
+   !$OMP END DO NOWAIT
+   !$OMP CRITICAL
+   ! reduce local_y / local_fi / local_stress into shared dsymdxyz / nnp%y / stress_p
+   !$OMP END CRITICAL
+   !$OMP BARRIER                                  ! sync before next s-iteration
+END DO
+NULLIFY(symtmp); NULLIFY(forcetmp)
+!$OMP END PARALLEL
+CALL timestop(handle_sf)
+```
+
+One PARALLEL region wraps the entire s-loop (not one per `s`), to amortise
+fork/join overhead.
+
+### 4.3 Why the local-reduction + CRITICAL pattern
+
+The naïve approach — `!$OMP ATOMIC UPDATE` on every shared write — produced
+**100 % contention** on `dsymdxyz(m, l, i)` and `nnp%rad/ang(ind)%y(m)`,
+because every `j` iteration writes to the same `i`-indexed slot and the same
+`m`-indexed slot for a given `sf`.  The hardware bus lock serialised every
+update, making the parallel loop slower than serial.
+
+The fix is the local-reduction pattern:
+- Accumulate per-thread partial sums in `local_fi`, `local_y`, `local_stress`
+  (THREADPRIVATE — no contention).
+- One `!$OMP CRITICAL` block per thread per s-iteration reduces the locals
+  into the shared arrays.  CRITICAL serialises 2 threads × ~10 simple
+  scalar operations — negligible compared to the work saved.
+- `!$OMP ATOMIC UPDATE` is kept only for `dsymdxyz(m, l, jj)` and `(:, :, kk)`
+  writes, where different `j`/`k` iterations index different atoms (low
+  contention) but PBC images of the same atom can occasionally collide.
+
+### 4.4 Defensive grow-check
+
+```fortran
+IF (.NOT. ALLOCATED(scratch_sym) .OR. .NOT. ALLOCATED(local_y) .OR. &
+    scratch_max_sym < n_symf_s) THEN
+   ! grow all THREADPRIVATE arrays together
 END IF
 ```
 
-`SOURCE=0` (Fortran 2003) handles the initial zero-fill at allocation time.
+The `.NOT. ALLOCATED(local_y)` guard is non-obvious: a separate code path
+(`nnp_neighbor_ensure_persistent` in serial code) pre-allocates `scratch_sym`
+for the master thread.  Without the `local_y` guard, the master thread would
+skip the grow branch on first parallel entry — leaving `local_y` unallocated
+for the master and segfaulting on `local_y(1:n_symf_s) = 0.0_dp`.
+
+### Performance — observed
+
+OpenMP at the `j`-loop level **does not help** for the typical 64-molecule
+benchmark.  At a single MPI rank:
+- 1 thread: 7.92 s
+- 2 threads: 10.93 s (38 % slower)
+
+The j-loop is too short to amortise OMP synchronisation overhead.  Per
+s-iteration the body has ~7.5 µs of useful compute and ~5 µs of sync
+(`!$OMP DO` distribution + `!$OMP CRITICAL` + `!$OMP BARRIER`).
+
+This branch is preserved as a **negative result** in the benchmark suite —
+it documents that OMP at this granularity is not the right approach for this
+workload.  Coarser-grained OMP (parallelising the outer atom loop in
+`nnp_force.F`) would be required for a real win, but that requires
+significant refactoring of the shared `dsymdxyz` accumulator and was out of
+scope for this work.
 
 ---
 
-### 2.4 Selective zeroing — O(n_active) instead of O(N)
+## Cross-branch summary
 
-#### Upstream
-After each centre atom, the entire `dsymdxyz` buffer was cleared:
-```fortran
-dsymdxyz(:,:,:) = 0.0_dp   ! O(3 × max_nsym × N) every centre atom
-```
+### Spline strategy
 
-#### Branch
-Only entries touched by the current centre's neighbour set are zeroed:
-```fortran
-DO idx = 1, n_active
-   k = active_atoms(idx)
-   dsymdxyz(:, 1:nnp%arc(ind)%n_nodes(1), k) = 0.0_dp
-   active_flag(k) = 0
-END DO
-```
+| Branch | Where | Per-eval cost | Notes |
+|---|---|---|---|
+| `master` | libm | ~30–80 cycles | Direct intrinsic call |
+| `nnp-verlet-cells` | local `nnp_spline_cache_type` Horner form | ~5 MULs + 4 ADDs | Module-local; doesn't extend the public framework |
+| `nnp-native-spline` | `splines_methods.F` Hermite basis form | ~22 MULs + 12 ADDs | Public, available to any CP2K caller; partly compensated by §3.3–3.5 hoisting |
+| `nnp-openmp-implementation` | local `nnp_spline_cache_type` Horner form | ~5 MULs + 4 ADDs | Same as verlet-cells base |
 
-Cost drops from O(N) to O(n_active) ≈ O(k_neighbours) per centre atom.
+### Threading
 
----
+| Branch | Granularity | Sync points |
+|---|---|---|
+| `master` | Single-threaded; MPI atom decomposition | None within a call |
+| `nnp-verlet-cells` | Single-threaded; MPI atom decomposition | None within a call |
+| `nnp-native-spline` | Single-threaded; MPI atom decomposition | None within a call |
+| `nnp-openmp-implementation` | OMP DO over the j-loop, per s-iteration | `!$OMP DO`, `!$OMP CRITICAL`, `!$OMP BARRIER` |
 
-### 2.5 Force accumulation — O(n_active) loop
+### Key files touched
 
-#### Upstream — O(N) inner loop
-```fortran
-DO j = 1, nnp%arc(ind)%n_nodes(1)
-   DO k = 1, nnp%num_atoms
-      DO m = 1, 3
-         nnp%myforce(m, k, i_com) = ... - denergydsym(j)*dsymdxyz(m, j, k)
-      END DO
-   END DO
-   IF (calc_stress) ...
-END DO
-```
+| File | master | verlet-cells | native-spline | openmp |
+|---|---:|---:|---:|---:|
+| `nnp_acsf.F` | 1 414 | 2 193 | 2 279 | 2 310 |
+| `nnp_force.F` | 674 | 710 | 710 | 710 |
+| `nnp_environment_types.F` | 592 | 618 | 618 | 618 |
+| `nnp_environment.F` | 798 | 800 | 800 | 800 |
+| `splines_methods.F` | 244 | 244 | **313** | 244 |
 
-This iterates over all N atoms for each centre, most of which have
-`dsymdxyz(:,:,k) = 0`.
+The only branch that touches `splines_methods.F` is `nnp-native-spline`, and
+that change is purely additive (two new public functions; nothing rewritten).
 
-#### Branch — O(n_active) inner loop, stress separated
-```fortran
-! Stress: separate j-loop, no per-atom inner loop
-IF (calc_stress) THEN
-   DO j = 1, nnp%arc(ind)%n_nodes(1)
-      nnp%committee_stress(:,:,i_com) = nnp%committee_stress(:,:,i_com) &
-                                        - denergydsym(j)*stress(:,:,j)
-   END DO
-END IF
-! Force: walk only the active neighbour set
-DO idx = 1, n_active
-   k = active_atoms(idx)
-   DO j = 1, nnp%arc(ind)%n_nodes(1)
-      DO m = 1, 3
-         nnp%myforce(m, k, i_com) = ... - denergydsym(j)*dsymdxyz(m, j, k)
-      END DO
-   END DO
-END DO
-```
+### Optimisation matrix
 
-Loop order is also reordered: `k` outermost, `j` middle, `m` innermost.  In
-the upstream the j-outermost order accessed `dsymdxyz(m, j, k)` with varying
-`k` in the inner loop — Fortran column-major layout means this scattered across
-the third dimension.  The reordering keeps `k` fixed in the inner `j, m` loops,
-accessing a contiguous `dsymdxyz(:, :, k)` block.
+| Optimisation | master | verlet-cells | native-spline | openmp |
+|---|:-:|:-:|:-:|:-:|
+| Cell-list / Verlet cache | — | ✓ | ✓ | ✓ |
+| Persistent neighbour buffer | — | ✓ | ✓ | ✓ |
+| Module SAVE scratch + `POINTER, CONTIGUOUS` aliases | — | ✓ | ✓ | ✓ THREADPRIVATE |
+| `kk` index correction (hetero-angular) | — | ✓ | ✓ | ✓ |
+| Hermite spline for EXP/COS/TANH | — | ✓ Horner | ✓ basis | ✓ Horner |
+| Native CP2K splines (`splines_methods.F`) | — | — | ✓ | — |
+| Division → reciprocal-multiply | — | ✓ | ✓ | ✓ |
+| Precomputed `cutoff_sq` / `inv_cut` / `pi_over_cut` | — | ✓ | ✓ | ✓ |
+| `zeta_int` / `zeta_is_int` precompute | — | ✓ | ✓ | ✓ |
+| `r_sum_sq`, `g_sq_inv` hoists | — | ✓ | ✓ | ✓ |
+| MPI allgather → analytical `istart` | — | ✓ | ✓ | ✓ |
+| O(n_active) force-accumulation loop | — | ✓ | ✓ | ✓ |
+| Selective zeroing of `dsymdxyz` | — | ✓ | ✓ | ✓ |
+| Hoist `f_c(r1)` / `f_c(r2)` from k-loop | — | partial | ✓ | partial |
+| Hoist `dr1dx` / `dr2dx` from k-loop | — | — | ✓ | — |
+| Skip SQRT via `cutoff_sq` in angular | — | — | ✓ | — |
+| `ASSOCIATE` aliases for hot fields | — | — | ✓ | — |
+| Local `cut_type` instead of `nnp%cut_type` | — | — | ✓ | — |
+| OpenMP threading of the j-loop | — | — | — | ✓ |
 
 ---
 
-### 2.6 Cell-list integration
+## How to read the benchmark output
 
-`nnp_prepare_cell_list_cache(nnp)` is called once per force evaluation before
-the per-centre atom loop.  `nnp_calc_acsf` is called with the optional
-`active_atoms`, `active_flag`, `n_active` arguments.
+The harness produces one CSV per branch per scaling type (size or core),
+under:
 
----
-
-## 3. `nnp_environment_types.F`
-
-### 3.1 New fields in `nnp_symfgrp_rad_type`
-
-```fortran
-REAL(KIND=dp) :: cutoff_sq   = -1.0_dp   ! funccut², avoids SQRT in neighbour filter
-REAL(KIND=dp) :: inv_cut     = -1.0_dp   ! 1/funccut, avoids division in cutoff arg
-REAL(KIND=dp) :: pi_over_cut = -1.0_dp   ! π/funccut, avoids division in cutoff arg
+```
+/local/data/public/crm98/cp2k-benchmarks/results/
+  ├── cp2k_master/NNP/...
+  ├── cp2k_feature_verlet_cells/NNP/...
+  └── cp2k_feature_native_spline/NNP/...
 ```
 
-### 3.2 New fields in `nnp_rad_type`
+(The OpenMP branch's results land under `cp2k_feature_verlet_cells` if
+benchmarked there, or have their own subtree if a separate OMP harness run
+is performed.)
 
-```fortran
-INTEGER, ALLOCATABLE, DIMENSION(:)    :: ele_grp_count   ! (n_ele)
-INTEGER, ALLOCATABLE, DIMENSION(:,:)  :: ele_grp_list    ! (n_symfgrp, n_ele)
-```
+When comparing:
 
-Element→radial-group reverse index (see §1.12).
+- **`master` vs `verlet-cells`** measures the *combined* effect of all the
+  inner-loop and neighbour-walk optimisations.  This is the largest jump.
+- **`verlet-cells` vs `native-spline`** measures the cost of moving the
+  spline cache into the public CP2K framework, partially offset by the
+  additional inner-loop micro-optimisations on this branch.  Expected:
+  comparable to verlet-cells, sometimes slightly slower due to basis-form
+  evaluator.
+- **`verlet-cells` vs `openmp-implementation`** measures whether OMP at the
+  j-loop level helps once you've already paid the synchronisation cost.
+  Expected: slower than pure MPI for typical system sizes.
 
-### 3.3 New fields in `nnp_symfgrp_ang_type`
-
-Same three precomputed cutoff fields as the radial type.
-
-### 3.4 New fields in `nnp_ang_type`
-
-```fortran
-INTEGER, ALLOCATABLE, DIMENSION(:) :: zeta_int(:)      ! NINT(zeta), precomputed
-LOGICAL, ALLOCATABLE, DIMENSION(:) :: zeta_is_int(:)   ! .TRUE. when zeta is integer-valued
-
-INTEGER, ALLOCATABLE, DIMENSION(:)   :: ele1_grp_count, ele2_grp_count
-INTEGER, ALLOCATABLE, DIMENSION(:,:) :: ele1_grp_list,  ele2_grp_list
-```
-
-`zeta_int` / `zeta_is_int` eliminate the `NINT` + FP-equality check from every
-angular SF evaluation (see §1.11).  The `ele1/ele2` arrays are the angular
-equivalent of the radial element→group maps (see §1.12).
-
----
-
-## 4. `nnp_environment.F`
-
-### 4.1 Additional allocations at init
-
-```fortran
-ALLOCATE(nnp_env%ang(i)%zeta_int(nnp_env%n_ang(i)))
-ALLOCATE(nnp_env%ang(i)%zeta_is_int(nnp_env%n_ang(i)))
-```
-
-These are populated in `nnp_init_acsf_groups` (in `nnp_acsf.F`) after the
-zeta arrays are finalised by the sort.
-
-### 4.2 Deallocate additions
-
-Companion deallocations for the new arrays are wired into the env-release path
-via the existing `nnp_env_release` cleanup in `nnp_environment_types.F`.
-
----
-
-## Summary table
-
-| Change | File | Upstream | Branch | Why |
-|---|---|---|---|---|
-| Cell-list / Verlet cache | `nnp_acsf.F` | None — O(N·(2p+1)³) per centre | `nnp_prepare_cell_list_cache` + `nnp_build_cell_list_cache` | Amortises rebuild; O(k) per centre atom |
-| Persistent neighbour buffer | `nnp_acsf.F` | 9× alloc/free per centre atom | Single `SAVE` buffer, reused | Eliminates O(N²) `malloc` traffic for large N |
-| Scratch sym/force buffers | `nnp_acsf.F` | ALLOCATE/DEALLOCATE per symfgrp | Module SAVE arrays + `POINTER, CONTIGUOUS` alias | Eliminates per-group alloc; CONTIGUOUS restores vectorisation |
-| `kk` index bug | `nnp_acsf.F` | Dead outer write + redundant inner reads | Correct single write before CALL | Correctness fix; also removes memory traffic |
-| `EXP` / `COS` / `TANH` splines | `nnp_acsf.F` | Direct intrinsic calls | Hermite cubic spline lookup | Replaces expensive libm calls in the hot SF loop |
-| Division → reciprocal-multiply | `nnp_acsf.F` | `rvect/r`, `pi*r/funccut`, etc. | Precomputed reciprocals | `×` is ~6× faster than `/` on x86 |
-| `zeta_int` / `zeta_is_int` | `nnp_acsf.F` + types | NINT + FP-equality per SF | Precomputed boolean + int | Removes runtime NINT from angular hot loop |
-| `r_sum_sq`, `g_sq_inv` hoists | `nnp_acsf.F` | Recomputed per sf | Computed once per (j,k) pair | Loop-invariant code motion |
-| MPI allgather removal | `nnp_force.F` | `allgather(mecalc, allcalc)` + prefix sum | Closed-form analytical formula | Eliminates 1 collective + alloc/free per force eval |
-| SAVE scratch arrays | `nnp_force.F` | Re-alloc every force eval | SAVE ALLOCATABLE | Eliminates O(step) allocation traffic |
-| Hoisted allocation guard | `nnp_force.F` | Alloc per centre inside loop | Alloc once at force-eval entry, guarded | Reduces alloc calls from O(N) to O(1) per step |
-| Selective zeroing | `nnp_force.F` | `dsymdxyz(:,:,:)=0` — O(N) | Zero only active-atoms slice — O(n_active) | Avoids full N-atom clear every centre |
-| O(n_active) force loop | `nnp_force.F` | Loop over all N atoms | Loop over n_active touched atoms | Skips all-zero rows; O(k) at fixed density |
-| Stress loop placement | `nnp_force.F` | Inside per-atom inner loop | Separate j-loop before per-atom loop | Removes branch/per-atom overhead |
-| Element→group maps | `nnp_acsf.F` + types | O(n_symfgrp) scan per neighbour | Reverse-index tables (infrastructure) | Future O(1) group dispatch in neighbour walk |
-| Precomputed `cutoff_sq`, `inv_cut`, `pi_over_cut` | types | Computed at every call | Stored in symfgrp struct at init | Eliminates repeated multiply/divide at call time |
+Treating each branch as a separable benchmark makes it possible to point at
+which optimisation strategy is responsible for which performance change,
+and avoids the trap of "is this faster because of A, B, or both?" that a
+single mega-branch would create.

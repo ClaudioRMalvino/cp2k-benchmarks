@@ -1,0 +1,2375 @@
+SCRATCH_USER:  crm98
+SCRATCH_ROOT:  /local/data/public
+SCRATCH_REPO:  /local/data/public/crm98/cp2k-buildtree
+TOOLCHAIN:     /local/data/public/crm98/original_cp2k
+JOBS:          32
+
+DBCSR cmake:   /local/data/public/crm98/original_cp2k/tools/toolchain/install/dbcsr-2.9.1/lib/cmake/dbcsr
+-- The Fortran compiler identification is GNU 13.3.0
+-- The C compiler identification is GNU 13.3.0
+-- The CXX compiler identification is GNU 13.3.0
+-- Detecting Fortran compiler ABI info
+-- Detecting Fortran compiler ABI info - done
+-- Check for working Fortran compiler: /usr/bin/gfortran - skipped
+-- Detecting C compiler ABI info
+-- Detecting C compiler ABI info - done
+-- Check for working C compiler: /usr/bin/gcc - skipped
+-- Detecting C compile features
+-- Detecting C compile features - done
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Check for working CXX compiler: /usr/bin/g++ - skipped
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+-- Found PkgConfig: /usr/bin/pkg-config (found version "1.8.1")
+-- Found Python: /lsc/opt/miniforge3/bin/python3.10 (found version "3.10.14") found components: Interpreter
+-- Found MPI_C: /usr/lib/x86_64-linux-gnu/libmpi.so (found version "3.1")
+-- Found MPI_CXX: /usr/lib/x86_64-linux-gnu/libmpi_cxx.so (found version "3.1")
+-- Found MPI_Fortran: /usr/lib/x86_64-linux-gnu/libmpi_usempif08.so (found version "3.1")
+-- Found MPI: TRUE (found version "3.1") found components: C CXX Fortran
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Success
+-- Found Threads: TRUE
+-- Found MPI: TRUE (found version "3.1") found components: CXX C Fortran
+-- Found OpenMP_CXX: -fopenmp (found version "4.5")
+-- Found OpenMP_C: -fopenmp (found version "4.5")
+-- Found OpenMP_Fortran: -fopenmp (found version "4.5")
+-- Found OpenMP: TRUE (found version "4.5") found components: CXX C Fortran
+-- Could NOT find MKL (missing: CP2K_MKL_INCLUDE_DIRS) 
+-- Checking for module 'openblas'
+--   Found openblas, version 0.3.26
+-- Found OpenBLAS: /usr/include/x86_64-linux-gnu
+-- Found Blas: /usr/lib/x86_64-linux-gnu/openblas-pthread/libopenblas.so
+-- Found Lapack: /usr/lib/x86_64-linux-gnu/openblas-pthread/libopenblas.so
+-- Checking for module 'libxsmm-shared'
+--   Found libxsmm-shared, version 1.17.0
+-- Checking for module 'libxsmmf-shared'
+--   Found libxsmmf-shared, version 1.17.0
+-- Checking for module 'libxsmmext-shared'
+--   Found libxsmmext-shared, version 1.17.0
+-- Checking for module 'libxsmmnoblas-shared'
+--   Found libxsmmnoblas-shared, version 1.17.0
+-- Found LibXSMM: /local/data/public/crm98/original_cp2k/tools/toolchain/install/libxsmm-e0c4a2389afba36c453233ad7de07bd92c715bec/include
+-- Using LIBXSMM for Small Matrix Multiplication
+-- Checking for module 'scalapack'
+--   Found scalapack, version 2.2.3
+-- Found SCALAPACK: /local/data/public/crm98/original_cp2k/tools/toolchain/install/scalapack-2.2.3/lib/libscalapack.a;/usr/lib/x86_64-linux-gnu/openmpi/lib/libmpi.so;/usr/lib/x86_64-linux-gnu/openblas-pthread/liblapack.so;/usr/lib/x86_64-linux-gnu/openblas-pthread/libblas.so
+
+------------------------------------------------------------
+-                          OPENMP                          -
+------------------------------------------------------------
+
+-- Found OpenMP_Fortran: -fopenmp (found version "4.5")
+-- Found OpenMP_C: -fopenmp (found version "4.5")
+-- Found OpenMP_CXX: -fopenmp (found version "4.5")
+-- Found OpenMP: TRUE (found version "4.5") found components: Fortran C CXX
+
+------------------------------------------------------------
+-                          DBCSR                           -
+------------------------------------------------------------
+
+-- Found MPI: TRUE (found version "3.1")
+-- Found OpenMP_C: -fopenmp (found version "4.5")
+-- Found OpenMP_CXX: -fopenmp (found version "4.5")
+-- Found OpenMP_Fortran: -fopenmp (found version "4.5")
+-- Found OpenMP: TRUE (found version "4.5")
+-- Checking for module 'libxsmmf'
+--   Found libxsmmf, version 1.17.0
+-- Checking for module 'libxsmmext'
+--   Found libxsmmext, version 1.17.0
+
+------------------------------------------------------------
+-                    Other dependencies                    -
+------------------------------------------------------------
+
+-- Found HDF5: hdf5-shared;hdf5_fortran-shared (found version "2.1.1") found components: C Fortran
+-- Found MPI: TRUE (found version "3.1") found components: CXX
+-- Found OPENBLAS: /usr/lib/x86_64-linux-gnu/libopenblas.so
+-- Found Blas: /usr/lib/x86_64-linux-gnu/libopenblas.so
+-- Found SCALAPACK: /local/data/public/crm98/original_cp2k/tools/toolchain/install/scalapack-2.2.3/lib/libscalapack.a
+-- Found LibVORI: /local/data/public/crm98/original_cp2k/tools/toolchain/install/libvori-220621/lib/libvori.a
+-- Checking for one of the modules 'fftw3'
+-- Checking for one of the modules 'fftw3f'
+-- Checking for one of the modules 'fftw3l'
+-- Checking for one of the modules 'fftw3q'
+-- Found Fftw: /local/data/public/crm98/original_cp2k/tools/toolchain/install/fftw-3.3.10/include
+-- Checking for module 'libint2'
+--   Package 'libint2', required by 'virtual:world', not found
+-- Found Libint2: /local/data/public/crm98/original_cp2k/tools/toolchain/install/libint-v2.13.1-cp2k-lmax-5/include
+-- Component omp of Spglib: NOT FOUND
+-- Component fortran of Spglib: FOUND (LIB_TYPE: static)
+-- Found package: Spglib
+-- Found libsmeagol: /local/data/public/crm98/original_cp2k/tools/toolchain/install/libsmeagol-1.2/lib/libsmeagol.a
+-- Found ACE: /local/data/public/crm98/original_cp2k/tools/toolchain/install/lammps-user-pace-v.2023.11.25.fix2/lib/libpace.a
+-- multicharge: Find installed package
+-- DFTD4: found version 3.7.0, using v3.x API
+-- Checking for one of the modules 'plumed;plumedInternals'
+-- Found Plumed: /local/data/public/crm98/original_cp2k/tools/toolchain/install/plumed-2.10.0/include
+-- Found MPI: TRUE (found version "3.1") found components: CXX C Fortran
+-- Found OpenMP_CXX: -fopenmp (found version "4.5")
+-- Found OpenMP_C: -fopenmp (found version "4.5")
+-- Found OpenMP_Fortran: -fopenmp (found version "4.5")
+-- Found OpenMP: TRUE (found version "4.5") found components: CXX C Fortran
+-- Found Torch: /local/data/public/crm98/original_cp2k/tools/toolchain/install/libtorch-2.7.1/lib/libtorch.so
+-- Checking for modules 'mclf;mcl'
+--   Package 'mclf', required by 'virtual:world', not found
+--   Package 'mcl', required by 'virtual:world', not found
+-- Found MiMiC: True
+-- Checking for module 'trexio'
+--   Package 'trexio', required by 'virtual:world', not found
+-- Found TrexIO: /local/data/public/crm98/original_cp2k/tools/toolchain/install/trexio-2.6.1/include
+-- Looking for Fortran sgemm
+-- Looking for Fortran sgemm - not found
+-- Looking for Fortran sgemm
+-- Looking for Fortran sgemm - found
+-- Found BLAS: /usr/lib/x86_64-linux-gnu/libopenblas.so
+-- Looking for Fortran cheev
+-- Looking for Fortran cheev - found
+-- Found LAPACK: /usr/lib/x86_64-linux-gnu/libopenblas.so;-lm;-ldl
+-- Performing Test f2008-norm2
+-- Performing Test f2008-norm2 - Success
+-- Performing Test f2008-block_construct
+-- Performing Test f2008-block_construct - Success
+-- Performing Test f2008-contiguous
+-- Performing Test f2008-contiguous - Success
+-- Performing Test f95-reshape-order-allocatable
+-- Performing Test f95-reshape-order-allocatable - Success
+-- FYPP preprocessor found.
+
+--------------------------------------------------------------------
+-                                                                  -
+-               Summary of enabled dependencies                    -
+-                                                                  -
+--------------------------------------------------------------------
+
+  - BLAS
+    - vendor: OpenBLAS
+    - include directories: /usr/include/x86_64-linux-gnu
+    - libraries: /usr/lib/x86_64-linux-gnu/openblas-pthread/libopenblas.so
+
+
+  - LAPACK
+    - include directories: /usr/include/x86_64-linux-gnu
+    - libraries: /usr/lib/x86_64-linux-gnu/openblas-pthread/libopenblas.so
+
+
+  - MPI
+    - include directories: /usr/lib/x86_64-linux-gnu/fortran/gfortran-mod-15/openmpi;/usr/lib/x86_64-linux-gnu/openmpi/lib
+    - libraries: /usr/lib/x86_64-linux-gnu/libmpi_cxx.so;/usr/lib/x86_64-linux-gnu/libmpi.so
+
+
+  - MPI_F08: ON
+
+  - ScaLAPACK
+    - vendor: auto
+    - include directories: /usr/lib/x86_64-linux-gnu/openmpi/include;/usr/lib/x86_64-linux-gnu/fortran/gfortran-mod-15/openmpi;/usr/lib/x86_64-linux-gnu/openmpi/include/openmpi;/usr/include/x86_64-linux-gnu
+    - libraries: /local/data/public/crm98/original_cp2k/tools/toolchain/install/scalapack-2.2.3/lib/libscalapack.a;/usr/lib/x86_64-linux-gnu/openmpi/lib/libmpi.so;/usr/lib/x86_64-linux-gnu/openblas-pthread/liblapack.so;/usr/lib/x86_64-linux-gnu/openblas-pthread/libblas.so
+
+
+  - LibXC
+    - version:  7.0.0
+    - include directories: /local/data/public/crm98/original_cp2k/tools/toolchain/install/libxc-7.0.0/include/
+    - libraries: /local/data/public/crm98/original_cp2k/tools/toolchain/install/libxc-7.0.0/lib/libxcf03.a;/local/data/public/crm98/original_cp2k/tools/toolchain/install/libxc-7.0.0/lib/libxc.a
+
+
+  - Spglib
+    - include directories: /local/data/public/crm98/original_cp2k/tools/toolchain/install/spglib-2.7.0/include;$<BUILD_INTERFACE:/local/data/public/crm98/original_cp2k/tools/toolchain/install/spglib-2.7.0/include>
+
+
+  - LibTorch
+    - extra CXX flags: -D_GLIBCXX_USE_CXX11_ABI=1
+    - include directories: /local/data/public/crm98/original_cp2k/tools/toolchain/install/libtorch-2.7.1/include;/local/data/public/crm98/original_cp2k/tools/toolchain/install/libtorch-2.7.1/include/torch/csrc/api/include
+    - libraries: /local/data/public/crm98/original_cp2k/tools/toolchain/install/libtorch-2.7.1/lib/libtorch.so
+
+  - HDF5
+    - version: 2.1.1
+    - include directories: /local/data/public/crm98/original_cp2k/tools/toolchain/install/hdf5-2.1.1/include
+    - libraries: hdf5-shared;hdf5_fortran-shared
+
+
+  - FFTW3
+    - include directories: /local/data/public/crm98/original_cp2k/tools/toolchain/install/fftw-3.3.10/include
+    - libraries: /local/data/public/crm98/original_cp2k/tools/toolchain/install/fftw-3.3.10/lib/libfftw3.a
+
+
+  - PLUMED
+    - include directories: /local/data/public/crm98/original_cp2k/tools/toolchain/install/plumed-2.10.0/include
+    - libraries: /local/data/public/crm98/original_cp2k/tools/toolchain/install/plumed-2.10.0/lib/libplumed.so
+
+
+  - LIBXSMM
+    - include directories: /local/data/public/crm98/original_cp2k/tools/toolchain/install/libxsmm-e0c4a2389afba36c453233ad7de07bd92c715bec/include
+    - libraries: /local/data/public/crm98/original_cp2k/tools/toolchain/install/libxsmm-e0c4a2389afba36c453233ad7de07bd92c715bec/lib/libxsmmext.so;:libxsmm.a;/usr/lib/x86_64-linux-gnu/libpthread.a;/usr/lib/x86_64-linux-gnu/librt.a;/usr/lib/x86_64-linux-gnu/libdl.a;/usr/lib/x86_64-linux-gnu/libm.so;/usr/lib/x86_64-linux-gnu/libc.so;/local/data/public/crm98/original_cp2k/tools/toolchain/install/libxsmm-e0c4a2389afba36c453233ad7de07bd92c715bec/lib/libxsmmf.so;:libxsmmext.a;:libxsmm.a;/usr/lib/x86_64-linux-gnu/libpthread.a;/usr/lib/x86_64-linux-gnu/librt.a;/usr/lib/x86_64-linux-gnu/libdl.a;/usr/lib/x86_64-linux-gnu/libm.so;/usr/lib/x86_64-linux-gnu/libc.so
+
+
+ - MiMiC
+   - include directories: /local/data/public/crm98/original_cp2k/tools/toolchain/install/mcl-3.0.0/include/MiMiC/
+   - libraries: /local/data/public/crm98/original_cp2k/tools/toolchain/install/mcl-3.0.0/lib/MiMiC/libmclf.so;/local/data/public/crm98/original_cp2k/tools/toolchain/install/mcl-3.0.0/lib/MiMiC/libmcl.so
+
+
+ - DeePMD
+
+
+ - ACE
+   - include directories: /local/data/public/crm98/original_cp2k/tools/toolchain/install/lammps-user-pace-v.2023.11.25.fix2/include
+   - libraries: /local/data/public/crm98/original_cp2k/tools/toolchain/install/lammps-user-pace-v.2023.11.25.fix2/lib/libpace.a;/local/data/public/crm98/original_cp2k/tools/toolchain/install/lammps-user-pace-v.2023.11.25.fix2/lib/libyaml-cpp-pace.a;/local/data/public/crm98/original_cp2k/tools/toolchain/install/lammps-user-pace-v.2023.11.25.fix2/lib/libcnpy.a;/local/data/public/crm98/original_cp2k/tools/toolchain/install/lammps-user-pace-v.2023.11.25.fix2/lib/libyaml-cpp-pace.a;/local/data/public/crm98/original_cp2k/tools/toolchain/install/lammps-user-pace-v.2023.11.25.fix2/lib/libcnpy.a
+
+
+ - LibSMEAGOL
+   - include directories: /local/data/public/crm98/original_cp2k/tools/toolchain/install/libsmeagol-1.2/include
+   - libraries: /local/data/public/crm98/original_cp2k/tools/toolchain/install/libsmeagol-1.2/lib/libsmeagol.a
+
+
+ - TBLITE :
+   - include directories :  /local/data/public/crm98/original_cp2k/tools/toolchain/install/tblite-0.5.0/include;/local/data/public/crm98/original_cp2k/tools/toolchain/install/tblite-0.5.0/include/tblite/GNU-13.3.0
+   - tblite libraries    :  
+
+
+ - COSMA
+   - include directories: /local/data/public/crm98/original_cp2k/tools/toolchain/install/COSMA-2.8.4/include
+   - libraries: MPI::MPI_CXX;costa::costa;$<TARGET_NAME_IF_EXISTS:roc::rccl>;$<TARGET_NAME_IF_EXISTS:cosma::nccl>;$<$<STREQUAL:OFF,OFF>:cosma::BLAS::blas>;$<TARGET_NAME_IF_EXISTS:Tiled-MM::Tiled-MM>;$<$<STREQUAL:OFF,CUDA>:Tiled-MM::Tiled-MM>;$<$<STREQUAL:OFF,ROCM>:Tiled-MM::Tiled-MM>;$<$<BOOL:OFF>:semiprof::semiprof>;$<$<BOOL:CUSTOM>:cosma::scalapack::scalapack>
+
+
+ - Libint2
+   - include directories: /local/data/public/crm98/original_cp2k/tools/toolchain/install/libint-v2.13.1-cp2k-lmax-5/include
+   - libraries: /local/data/public/crm98/original_cp2k/tools/toolchain/install/libint-v2.13.1-cp2k-lmax-5/lib/libint2.a
+
+
+ - Libvori
+   - libraries: /local/data/public/crm98/original_cp2k/tools/toolchain/install/libvori-220621/lib/libvori.a
+
+
+ - TREXIO
+   - include directories: /local/data/public/crm98/original_cp2k/tools/toolchain/install/trexio-2.6.1/include
+   - libraries: /local/data/public/crm98/original_cp2k/tools/toolchain/install/trexio-2.6.1/lib/libtrexio.so
+
+
+ - GreenX
+   - include directories: /local/data/public/crm98/original_cp2k/tools/toolchain/install/greenX-2.2/include/modules
+   - libraries: /local/data/public/crm98/original_cp2k/tools/toolchain/install/greenX-2.2/lib/libGXCommon.so.0.0.1;/local/data/public/crm98/original_cp2k/tools/toolchain/install/greenX-2.2/lib/libgx_minimax.so.0.0.1;/local/data/public/crm98/original_cp2k/tools/toolchain/install/greenX-2.2/lib/libgx_ac.so.0.0.1
+
+
+--------------------------------------------------------------------
+-                                                                  -
+-        List of dependencies not included in this build           -
+-                                                                  -
+--------------------------------------------------------------------
+
+   - DFTD4
+   - PEXSI
+   - SIRIUS
+   - SpLA
+   - openPMD
+   - GPU acceleration is disabled
+   - ELPA
+   - DLA-Future
+
+
+After building and installing CP2K the regtests can be run with the following command:
+   /local/data/public/crm98/cp2k-buildtree/tests/do_regtest.py /local/data/public/crm98/cp2k-buildtree/install/bin psmp
+
+
+-- Configuring done (12.5s)
+-- Generating done (0.6s)
+CMake Warning:
+  Manually-specified variables were not used by the project:
+
+    CP2K_USE_SpFFT
+
+
+-- Build files have been written to: /local/data/public/crm98/cp2k-buildtree/build
+[  0%] Building C object src/CMakeFiles/grid_unittest.dir/grid/common/grid_library.c.o
+[  0%] Building C object src/CMakeFiles/grid_unittest.dir/grid/grid_unittest.c.o
+[  0%] Building C object src/CMakeFiles/dbm_miniapp.dir/dbm/dbm_distribution.c.o
+[  0%] Building C object src/CMakeFiles/grid_miniapp.dir/grid/grid_miniapp.c.o
+[  0%] Building C object src/CMakeFiles/dbm_miniapp.dir/dbm/dbm_miniapp.c.o
+[  0%] Building C object src/CMakeFiles/dbm_miniapp.dir/dbm/dbm_matrix.c.o
+[  0%] Building C object src/CMakeFiles/grid_unittest.dir/grid/dgemm/grid_dgemm_coefficients.c.o
+[  0%] Building C object src/CMakeFiles/grid_miniapp.dir/grid/common/grid_basis_set.c.o
+[  0%] Building C object src/CMakeFiles/dbm_miniapp.dir/dbm/dbm_multiply_cpu.c.o
+[  0%] Building C object src/CMakeFiles/grid_unittest.dir/grid/common/grid_basis_set.c.o
+[  0%] Building C object src/CMakeFiles/dbm_miniapp.dir/dbm/dbm_library.c.o
+[  0%] Building C object src/CMakeFiles/grid_miniapp.dir/grid/common/grid_library.c.o
+[  0%] Building C object src/CMakeFiles/grid_miniapp.dir/grid/common/grid_sphere_cache.c.o
+[  0%] Building C object src/CMakeFiles/dbm_miniapp.dir/dbm/dbm_multiply.c.o
+[  0%] Building C object src/CMakeFiles/grid_miniapp.dir/grid/dgemm/grid_dgemm_collocation_integration.c.o
+[  0%] Building C object src/CMakeFiles/dbm_miniapp.dir/mpiwrap/cp_mpi.c.o
+[  0%] Building C object src/CMakeFiles/grid_unittest.dir/grid/common/grid_sphere_cache.c.o
+[  0%] Building C object src/CMakeFiles/dbm_miniapp.dir/dbm/dbm_multiply_comm.c.o
+[  0%] Building C object src/CMakeFiles/grid_miniapp.dir/grid/dgemm/grid_dgemm_coefficients.c.o
+[  0%] Building C object src/CMakeFiles/dbm_miniapp.dir/dbm/dbm_shard.c.o
+[  0%] Building C object src/CMakeFiles/grid_miniapp.dir/grid/dgemm/grid_dgemm_context.c.o
+[  0%] Building C object src/CMakeFiles/grid_miniapp.dir/grid/dgemm/grid_dgemm_integrate.c.o
+[  0%] Building C object src/CMakeFiles/grid_unittest.dir/grid/dgemm/grid_dgemm_context.c.o
+[  0%] Building C object src/CMakeFiles/grid_unittest.dir/grid/dgemm/grid_dgemm_collocate.c.o
+[  0%] Building C object src/CMakeFiles/grid_miniapp.dir/grid/dgemm/grid_dgemm_prepare_pab.c.o
+[  0%] Building C object src/CMakeFiles/grid_unittest.dir/grid/dgemm/grid_dgemm_collocation_integration.c.o
+[  0%] Building C object src/CMakeFiles/dbm_miniapp.dir/offload/offload_buffer.c.o
+[  0%] Building C object src/CMakeFiles/grid_miniapp.dir/grid/dgemm/grid_dgemm_non_orthorombic_corrections.c.o
+[  0%] Building C object src/CMakeFiles/grid_miniapp.dir/grid/dgemm/grid_dgemm_collocate.c.o
+[  0%] Building C object src/CMakeFiles/dbm_miniapp.dir/offload/offload_library.c.o
+[  0%] Building C object src/CMakeFiles/grid_unittest.dir/grid/dgemm/grid_dgemm_integrate.c.o
+[  0%] Generating xtb_types.F
+[  0%] Generating accint_weights_forces.F
+[  0%] Generating ace_nlist.F
+[  0%] Building C object src/CMakeFiles/grid_miniapp.dir/grid/dgemm/grid_dgemm_tensor_local.c.o
+[  0%] Building C object src/CMakeFiles/grid_miniapp.dir/grid/dgemm/grid_dgemm_utils.c.o
+[  0%] Building C object src/CMakeFiles/grid_miniapp.dir/grid/grid_task_list.c.o
+[  0%] Building C object src/CMakeFiles/grid_miniapp.dir/grid/ref/grid_ref_collocate.c.o
+[  0%] Building C object src/CMakeFiles/grid_unittest.dir/grid/dgemm/grid_dgemm_prepare_pab.c.o
+[  0%] Building C object src/CMakeFiles/grid_unittest.dir/grid/dgemm/grid_dgemm_non_orthorombic_corrections.c.o
+[  0%] Building C object src/CMakeFiles/grid_unittest.dir/grid/dgemm/grid_dgemm_tensor_local.c.o
+[  0%] Building C object src/CMakeFiles/grid_unittest.dir/grid/dgemm/grid_dgemm_utils.c.o
+[  0%] Building C object src/CMakeFiles/grid_miniapp.dir/grid/ref/grid_ref_integrate.c.o
+[  0%] Building C object src/CMakeFiles/grid_miniapp.dir/grid/ref/grid_ref_prepare_pab.c.o
+[  0%] Generating ace_wrapper.F
+[  0%] Generating admm_dm_methods.F
+[  0%] Building C object src/CMakeFiles/grid_unittest.dir/grid/grid_task_list.c.o
+[  1%] Building C object src/CMakeFiles/grid_miniapp.dir/grid/ref/grid_ref_task_list.c.o
+[  0%] Generating admm_dm_types.F
+[  1%] Building C object src/CMakeFiles/grid_unittest.dir/grid/ref/grid_ref_collocate.c.o
+[  1%] Generating admm_methods.F
+[  1%] Generating admm_types.F
+[  1%] Building C object src/CMakeFiles/grid_miniapp.dir/grid/cpu/grid_cpu_collocate.c.o
+[  1%] Building C object src/CMakeFiles/grid_miniapp.dir/grid/cpu/grid_cpu_integrate.c.o
+[  1%] Building C object src/CMakeFiles/grid_miniapp.dir/grid/cpu/grid_cpu_prepare_pab.c.o
+[  1%] Generating admm_utils.F
+[  1%] Generating al_system_types.F
+[  1%] Generating almo_scf.F
+[  1%] Generating almo_scf_diis_types.F
+[  1%] Generating almo_scf_env_methods.F
+[  1%] Building C object src/CMakeFiles/dbm_miniapp.dir/offload/offload_mempool.c.o
+[  1%] Building C object src/CMakeFiles/grid_unittest.dir/grid/ref/grid_ref_integrate.c.o
+[  1%] Generating almo_scf_lbfgs_types.F
+[  1%] Generating almo_scf_methods.F
+[  1%] Generating almo_scf_optimizer.F
+[  1%] Generating almo_scf_qs.F
+[  1%] Building C object src/CMakeFiles/grid_miniapp.dir/grid/cpu/grid_cpu_task_list.c.o
+[  1%] Generating almo_scf_types.F
+[  1%] Building C object src/CMakeFiles/grid_miniapp.dir/grid/grid_replay.c.o
+[  1%] Generating aobasis/ai_angmom.F
+[  1%] Generating aobasis/ai_contraction.F
+[  1%] Generating aobasis/ai_contraction_sphi.F
+[  1%] Generating aobasis/ai_coulomb.F
+[  1%] Generating aobasis/ai_coulomb_test.F
+[  1%] Generating aobasis/ai_derivatives.F
+[  1%] Building C object src/CMakeFiles/grid_miniapp.dir/mpiwrap/cp_mpi.c.o
+[  1%] Building C object src/CMakeFiles/grid_miniapp.dir/offload/offload_buffer.c.o
+[  1%] Building C object src/CMakeFiles/grid_miniapp.dir/offload/offload_library.c.o
+[  1%] Generating aobasis/ai_elec_field.F
+[  1%] Generating aobasis/ai_fermi_contact.F
+[  1%] Generating aobasis/ai_eri_debug.F
+[  1%] Building C object src/CMakeFiles/grid_miniapp.dir/offload/offload_mempool.c.o
+[  1%] Generating aobasis/ai_kinetic.F
+[  2%] Generating aobasis/ai_moments.F
+[  2%] Generating aobasis/ai_onecenter.F
+[  2%] Generating aobasis/ai_oneelectron.F
+[  2%] Generating aobasis/ai_operator_ra2m.F
+[  2%] Generating aobasis/ai_operators_r12.F
+[  2%] Generating aobasis/ai_os_rr.F
+[  2%] Building C object src/CMakeFiles/grid_unittest.dir/grid/ref/grid_ref_prepare_pab.c.o
+[  3%] Building C object src/CMakeFiles/grid_unittest.dir/grid/cpu/grid_cpu_prepare_pab.c.o
+[  3%] Building C object src/CMakeFiles/grid_unittest.dir/grid/ref/grid_ref_task_list.c.o
+[  3%] Building C object src/CMakeFiles/grid_unittest.dir/grid/cpu/grid_cpu_collocate.c.o
+[  3%] Generating aobasis/ai_overlap.F
+[  3%] Generating aobasis/ai_overlap3_debug.F
+[  3%] Building C object src/CMakeFiles/grid_unittest.dir/grid/cpu/grid_cpu_integrate.c.o
+[  3%] Generating aobasis/ai_overlap3.F
+[  3%] Building C object src/CMakeFiles/grid_unittest.dir/grid/cpu/grid_cpu_task_list.c.o
+[  3%] Generating aobasis/ai_overlap_aabb.F
+[  3%] Linking C executable ../bin/dbm_miniapp.psmp
+[  3%] Generating aobasis/ai_overlap_debug.F
+[  3%] Generating aobasis/ai_overlap_ppl.F
+[  3%] Generating aobasis/ai_spin_orbit.F
+[  3%] Building C object src/CMakeFiles/grid_unittest.dir/grid/grid_replay.c.o
+[  3%] Generating aobasis/ai_verfc.F
+[  3%] Building C object src/CMakeFiles/grid_unittest.dir/mpiwrap/cp_mpi.c.o
+[  3%] Generating aobasis/ao_util.F
+[  3%] Building C object src/CMakeFiles/grid_unittest.dir/offload/offload_buffer.c.o
+[  3%] Generating aobasis/aux_basis_set.F
+[  3%] Building C object src/CMakeFiles/grid_unittest.dir/offload/offload_library.c.o
+[  3%] Generating aobasis/basis_set_container_types.F
+[  3%] Building C object src/CMakeFiles/grid_unittest.dir/offload/offload_mempool.c.o
+[  3%] Generating aobasis/basis_set_types.F
+[  3%] Generating aobasis/orbital_pointers.F
+[  3%] Generating aobasis/orbital_symbols.F
+[  3%] Generating aobasis/orbital_transformation_matrices.F
+[  3%] Generating aobasis/paw_basis_types.F
+[  3%] Generating aobasis/soft_basis_set.F
+[  3%] Generating aobasis/sto_ng.F
+[  3%] Generating arnoldi/arnoldi_api.F
+[  3%] Generating arnoldi/arnoldi_data_methods.F
+[  3%] Built target dbm_miniapp
+[  3%] Generating arnoldi/arnoldi_geev.F
+[  4%] Generating arnoldi/arnoldi_methods.F
+[  4%] Generating arnoldi/arnoldi_types.F
+[  4%] Generating arnoldi/arnoldi_vector.F
+[  4%] Generating atom.F
+[  4%] Generating atom_admm_methods.F
+[  4%] Generating atom_basis.F
+[  4%] Generating atom_energy.F
+[  4%] Generating atom_electronic_structure.F
+[  4%] Generating atom_fit.F
+[  4%] Generating atom_grb.F
+[  5%] Generating atom_kind_orbitals.F
+[  5%] Generating atom_operators.F
+[  5%] Generating atom_optimization.F
+[  5%] Generating atom_output.F
+[  5%] Generating atom_pseudo.F
+[  5%] Generating atom_set_basis.F
+[  5%] Generating atom_sgp.F
+[  5%] Generating atom_types.F
+[  5%] Generating atom_upf.F
+[  5%] Generating atom_utils.F
+[  5%] Generating atom_xc.F
+[  5%] Generating atomic_charges.F
+[  5%] Generating atoms_input.F
+[  5%] Generating auto_basis.F
+[  5%] Generating base/base_hooks.F
+[  5%] Generating base/machine.F
+[  5%] Generating basis_set_output.F
+[  5%] Generating base/kinds.F
+[  5%] Generating beta_gamma_psi.F
+[  5%] Generating block_p_types.F
+[  5%] Generating bse_full_diag.F
+[  5%] Generating bse_iterative.F
+[  5%] Generating bse_main.F
+[  5%] Generating bse_print.F
+[  5%] Generating bse_properties.F
+[  5%] Generating bse_util.F
+[  5%] Generating bsse.F
+[  5%] Generating cell_methods.F
+[  5%] Generating colvar_methods.F
+[  6%] Generating colvar_utils.F
+[  6%] Generating common/bibliography.F
+[  6%] Generating common/bessel_lib.F
+[  6%] Generating common/callgraph.F
+[  6%] Generating common/cg_test.F
+[  6%] Generating common/cp_array_sort.F
+[  6%] Generating common/cp_array_utils.F
+[  6%] Generating common/cp_error_handling.F
+[  6%] Generating common/cp_files.F
+[  6%] Generating common/cp_iter_types.F
+[  6%] Generating common/cp_log_handling.F
+[  6%] Generating common/cp_min_heap.F
+[  6%] Generating common/cp_result_methods.F
+[  6%] Generating common/cp_result_types.F
+[  6%] Generating common/distribution_1d_types.F
+[  6%] Generating common/cp_units.F
+[  6%] Generating common/d3_poly.F
+[  6%] Generating common/eigenvalueproblems.F
+[  6%] Generating common/fparser.F
+[  6%] Generating common/erf_complex.F
+[  7%] Generating common/gfun.F
+[  6%] Generating common/gamma.F
+[  7%] Generating common/kahan_sum.F
+[  7%] Generating common/linear_systems.F
+[  7%] Generating common/lebedev.F
+[  7%] Generating common/list.F
+[  7%] Generating common/list_callstackentry.F
+[  7%] Generating common/list_routinereport.F
+[  7%] Generating common/list_routinestat.F
+[  7%] Generating common/list_timerenv.F
+[  7%] Generating common/mathconstants.F
+[  7%] Generating common/mathlib.F
+[  7%] Generating common/memory_utilities.F
+[  7%] Generating common/parallel_rng_types.F
+[  7%] Generating common/periodic_table.F
+[  7%] Generating common/physcon.F
+[  7%] Generating common/powell.F
+[  7%] Generating common/reference_manager.F
+[  7%] Generating common/print_messages.F
+[  7%] Generating common/routine_map.F
+[  7%] Generating common/spherical_harmonics.F
+[  7%] Generating common/splines.F
+[  7%] Generating common/string_table.F
+[  7%] Generating common/structure_factor_types.F
+[  7%] Generating common/string_utilities.F
+[  7%] Generating common/structure_factors.F
+[  7%] Generating common/t_sh_p_s_c.F
+[  7%] Generating common/t_c_g0.F
+[  7%] Generating common/timings.F
+[  7%] Generating common/timings_base_type.F
+[  7%] Generating common/timings_types.F
+[  8%] Generating common/timings_report.F
+[  8%] Generating common/util.F
+[  8%] Generating common/whittaker.F
+[  8%] Generating common/xmgrace.F
+[  8%] Generating commutator_rkinetic.F
+[  8%] Generating commutator_rpnl.F
+[  8%] Generating constraint.F
+[  8%] Generating constraint_4x6.F
+[  8%] Generating constraint_3x3.F
+[  8%] Generating constraint_fxd.F
+[  8%] Generating constraint_clv.F
+[  8%] Generating constraint_util.F
+[  8%] Generating constraint_vsite.F
+[  8%] Generating core_ae.F
+[  8%] Generating core_ppl.F
+[  8%] Generating core_ppnl.F
+[  8%] Generating cp2k_debug.F
+[  8%] Generating cp2k_info.F
+[  8%] Generating cp_control_utils.F
+[  8%] Generating cp_control_types.F
+[  8%] Generating cp_dbcsr_cholesky.F
+[  8%] Generating cp_dbcsr_cp2k_link.F
+[  8%] Generating cp_dbcsr_diag.F
+[  8%] Generating cp_dbcsr_operations.F
+[  8%] Generating cp_dbcsr_output.F
+[  8%] Generating cp_ddapc.F
+[  8%] Generating cp_ddapc_forces.F
+[  8%] Generating cp_ddapc_methods.F
+[  8%] Generating cp_ddapc_util.F
+[  8%] Generating cp_ddapc_types.F
+[  9%] Generating cp_eri_mme_interface.F
+[  9%] Generating cp_external_control.F
+[  9%] Generating cp_realspace_grid_cube.F
+[  9%] Generating cp_realspace_grid_init.F
+[  9%] Generating cp_realspace_grid_openpmd.F
+[  9%] Generating cp_subsys_methods.F
+[  9%] Generating cryssym.F
+[  9%] Generating cp_symmetry.F
+[  9%] Generating csvr_system_types.F
+[  9%] Generating csvr_system_utils.F
+[  9%] Generating ct_methods.F
+[  9%] Generating ct_types.F
+[  9%] Generating dbm/dbm_api.F
+[  9%] Generating dbt/dbt_allocate_wrap.F
+[  9%] Generating dbm/dbm_tests.F
+[  9%] Generating dbt/dbt_api.F
+[  9%] Generating dbt/dbt_array_list_methods.F
+[  9%] Generating dbt/dbt_block.F
+[  9%] Generating dbt/dbt_index.F
+[  9%] Generating dbt/dbt_io.F
+[  9%] Generating dbt/dbt_methods.F
+[  9%] Generating dbt/dbt_reshape_ops.F
+[  9%] Generating dbt/dbt_split.F
+[  9%] Generating dbt/dbt_test.F
+[  9%] Generating dbt/tas/dbt_tas_base.F
+[  9%] Generating dbt/tas/dbt_tas_global.F
+[  9%] Generating dbt/dbt_types.F
+[  9%] Generating dbt/tas/dbt_tas_io.F
+[  9%] Generating dbt/tas/dbt_tas_mm.F
+[  9%] Generating dbt/tas/dbt_tas_reshape_ops.F
+[  9%] Generating dbt/tas/dbt_tas_test.F
+[  9%] Generating dbt/tas/dbt_tas_split.F
+[ 10%] Generating dft_plus_u.F
+[ 10%] Generating dbx/cp_dbcsr_api.F
+[ 10%] Generating distribution_2d_types.F
+[ 10%] Generating dbt/tas/dbt_tas_types.F
+[ 10%] Generating debug_os_integrals.F
+[ 10%] Generating dbt/tas/dbt_tas_util.F
+[ 10%] Generating deepmd_wrapper.F
+[ 10%] Generating dbx/cp_dbcsr_contrib.F
+[ 10%] Generating distribution_methods.F
+[ 10%] Generating dgemm_counter_types.F
+[ 10%] Generating dkh_main.F
+[ 10%] Generating dm_ls_chebyshev.F
+[ 10%] Generating dm_ls_scf.F
+[ 10%] Generating dm_ls_scf_create.F
+[ 10%] Generating dm_ls_scf_curvy.F
+[ 10%] Generating dm_ls_scf_qs.F
+[ 10%] Generating dm_ls_scf_methods.F
+[ 10%] Generating dm_ls_scf_types.F
+[ 10%] Generating domain_submatrix_methods.F
+[ 11%] Generating domain_submatrix_types.F
+[ 11%] Generating ec_efield_local.F
+[ 11%] Generating ec_environment.F
+[ 11%] Generating ec_env_types.F
+[ 11%] Generating ec_diag_solver.F
+[ 11%] Generating ec_external.F
+[ 11%] Generating ec_methods.F
+[ 11%] Generating ed_analysis.F
+[ 11%] Generating ec_orth_solver.F
+[ 11%] Generating eeq_input.F
+[ 11%] Generating eeq_data.F
+[ 11%] Generating eeq_method.F
+[ 11%] Generating efield_tb_methods.F
+[ 11%] Generating efield_utils.F
+[ 11%] Generating eip_environment.F
+[ 11%] Generating eip_environment_types.F
+[ 11%] Generating eip_silicon.F
+[ 11%] Generating embed_environment.F
+[ 11%] Generating embed_types.F
+[ 11%] Generating emd/rt_bse.F
+[ 11%] Generating embed_main.F
+[ 11%] Generating emd/rt_hfx_utils.F
+[ 11%] Generating emd/rt_bse_types.F
+[ 11%] Generating emd/rt_bse_io.F
+[ 11%] Generating emd/rt_delta_pulse.F
+[ 11%] Generating emd/rt_make_propagators.F
+[ 11%] Generating emd/rt_projection_mo_utils.F
+[ 11%] Generating emd/rt_propagation_output.F
+[ 11%] Generating emd/rt_propagation_methods.F
+[ 11%] Generating emd/rt_propagation_utils.F
+[ 11%] Generating emd/rt_propagation_ft.F
+[ 11%] Generating emd/rt_propagator_init.F
+[ 11%] Generating energy_corrections.F
+[ 11%] Generating environment.F
+[ 11%] Generating eri_mme/eri_mme_error_control.F
+[ 11%] Generating eri_mme/eri_mme_gaussian.F
+[ 11%] Generating eri_mme/eri_mme_integrate.F
+[ 11%] Generating eri_mme/eri_mme_lattice_summation.F
+[ 11%] Generating eri_mme/eri_mme_test.F
+[ 11%] Generating eri_mme/eri_mme_types.F
+[ 12%] Generating eri_mme/eri_mme_util.F
+[ 12%] Generating et_coupling_proj.F
+[ 12%] Generating et_coupling.F
+[ 12%] Generating et_coupling_types.F
+[ 12%] Generating ewald_environment_types.F
+[ 12%] Generating ewald_methods_tb.F
+[ 12%] Generating ewald_pw_methods.F
+[ 12%] Generating ewald_pw_types.F
+[ 12%] Generating ewald_spline_util.F
+[ 12%] Generating ewalds.F
+[ 12%] Generating ewalds_multipole.F
+[ 12%] Generating ex_property_calculation.F
+[ 12%] Generating excited_states.F
+[ 12%] Generating exclusion_types.F
+[ 12%] Generating exstates_types.F
+[ 12%] Generating extended_system_types.F
+[ 12%] Generating external_potential_methods.F
+[ 12%] Generating farming_types.F
+[ 12%] Generating farming_methods.F
+[ 12%] Generating fist_efield_methods.F
+[ 12%] Generating f77_interface.F
+[ 12%] Generating fist_efield_types.F
+[ 12%] Generating fist_energy_types.F
+[ 12%] Generating fist_environment.F
+[ 12%] Generating fist_environment_types.F
+[ 12%] Generating fist_force.F
+[ 12%] Generating fist_intra_force.F
+[ 12%] Generating fist_main.F
+[ 13%] Generating fist_neighbor_list_control.F
+[ 13%] Generating fist_neighbor_list_types.F
+[ 13%] Generating fist_neighbor_lists.F
+[ 13%] Generating fist_nonbond_env_types.F
+[ 13%] Generating fist_pol_scf.F
+[ 13%] Generating fist_nonbond_force.F
+[ 13%] Generating fm/cp_blacs_env.F
+[ 13%] Generating fm/cp_cfm_basic_linalg.F
+[ 13%] Generating fm/cp_blacs_types.F
+[ 13%] Generating fm/cp_cfm_cholesky.F
+[ 13%] Generating fm/cp_cfm_dlaf_api.F
+[ 13%] Generating fm/cp_cfm_diag.F
+[ 13%] Generating fm/cp_cfm_types.F
+[ 13%] Generating fm/cp_fm_cholesky.F
+[ 13%] Generating fm/cp_fm_cusolver_api.F
+[ 13%] Generating fm/cp_dlaf_utils_api.F
+[ 13%] Generating fm/cp_fm_basic_linalg.F
+[ 13%] Generating fm/cp_fm_diag.F
+[ 13%] Generating fm/cp_fm_diag_utils.F
+[ 13%] Generating fm/cp_fm_dlaf_api.F
+[ 13%] Generating fm/cp_fm_struct.F
+[ 14%] Generating fm/cp_fm_pool_types.F
+[ 13%] Generating fm/cp_fm_elpa.F
+[ 14%] Generating fm/cp_linked_list_fm.F
+[ 14%] Generating force_env_methods.F
+[ 14%] Generating fm/cp_fm_types.F
+[ 14%] Generating force_env_types.F
+[ 14%] Generating force_env_utils.F
+[ 14%] Generating force_field_types.F
+[ 14%] Generating force_fields.F
+[ 14%] Generating force_fields_all.F
+[ 14%] Generating force_fields_input.F
+[ 14%] Generating force_fields_ext.F
+[ 14%] Generating force_fields_util.F
+[ 14%] Generating fp_methods.F
+[ 14%] Generating fp_types.F
+[ 14%] Generating free_energy_types.F
+[ 14%] Generating gle_system_types.F
+[ 14%] Generating gapw_1c_basis_set.F
+[ 14%] Generating generic_os_integrals.F
+[ 14%] Generating global_types.F
+[ 14%] Generating graphcon.F
+[ 14%] Generating greenx_interface.F
+[ 14%] Generating grid/grid_api.F
+[ 14%] Generating group_dist_types.F
+[ 14%] Generating gw_integrals.F
+[ 14%] Generating grpp/libgrpp.F
+[ 14%] Generating gw_communication.F
+[ 14%] Generating grrm_utils.F
+[ 14%] Generating gw_large_cell_gamma.F
+[ 15%] Generating gw_main.F
+[ 15%] Generating gw_small_cell_full_kp.F
+[ 15%] Generating gw_utils.F
+[ 15%] Generating hairy_probes.F
+[ 15%] Generating hartree_local_methods.F
+[ 15%] Generating hartree_local_types.F
+[ 15%] Generating hdf5_wrapper.F
+[ 15%] Generating header.F
+[ 15%] Generating hfx_admm_utils.F
+[ 15%] Generating hfx_communication.F
+[ 15%] Generating hfx_compression_methods.F
+[ 15%] Generating hfx_derivatives.F
+[ 15%] Generating hfx_exx.F
+[ 15%] Generating hfx_energy_potential.F
+[ 15%] Generating hfx_helpers.F
+[ 15%] Generating hfx_libint_interface.F
+[ 15%] Generating hfx_load_balance_methods.F
+[ 15%] Generating hfx_pair_list_methods.F
+[ 15%] Generating hfx_pw_methods.F
+[ 15%] Generating hfx_ri.F
+[ 15%] Generating hfx_ri_kp.F
+[ 15%] Generating hfx_types.F
+[ 15%] Generating hfx_screening_methods.F
+[ 15%] Generating hfxbase/hfx_compression_core_methods.F
+[ 15%] Generating hfxbase/hfx_contract_block.F
+[ 15%] Generating hfxbase/hfx_contraction_methods.F
+[ 15%] Generating hirshfeld_methods.F
+[ 15%] Generating hirshfeld_types.F
+[ 15%] Generating iao_analysis.F
+[ 15%] Generating iao_types.F
+[ 15%] Generating input/cp_linked_list_input.F
+[ 15%] Generating input/cp_output_handling.F
+[ 15%] Generating input/cp_output_handling_openpmd.F
+[ 15%] Generating input/cp_parser_buffer_types.F
+[ 15%] Generating input/cp_parser_ilist_methods.F
+[ 15%] Generating input/cp_parser_ilist_types.F
+[ 15%] Generating input/cp_parser_inpp_methods.F
+[ 15%] Generating input/cp_parser_inpp_types.F
+[ 15%] Generating input/cp_parser_status_types.F
+[ 15%] Generating input/cp_parser_methods.F
+[ 15%] Generating input/cp_parser_types.F
+[ 15%] Generating input/input_enumeration_types.F
+[ 15%] Generating input/input_parsing.F
+[ 15%] Generating input/input_keyword_types.F
+[ 15%] Generating input/input_section_types.F
+[ 15%] Generating input/input_val_types.F
+[ 16%] Generating input_constants.F
+[ 16%] Generating input_cp2k_almo.F
+[ 16%] Generating input_cp2k_as.F
+[ 16%] Generating input_cp2k_atom.F
+[ 16%] Generating input_cp2k_atprop.F
+[ 16%] Generating input_cp2k_binary_restarts.F
+[ 16%] Generating input_cp2k_check.F
+[ 16%] Generating input_cp2k_colvar.F
+[ 16%] Generating input_cp2k_constraints.F
+[ 16%] Generating input_cp2k_dft.F
+[ 16%] Generating input_cp2k_embed.F
+[ 16%] Generating input_cp2k_eip.F
+[ 16%] Generating input_cp2k_ec.F
+[ 16%] Generating input_cp2k_distribution.F
+[ 16%] Generating input_cp2k_external.F
+[ 16%] Generating input_cp2k_exstate.F
+[ 16%] Generating input_cp2k_field.F
+[ 16%] Generating input_cp2k_force_eval.F
+[ 16%] Generating input_cp2k_free_energy.F
+[ 16%] Generating input_cp2k_global.F
+[ 16%] Generating input_cp2k_harris.F
+[ 16%] Generating input_cp2k_hfx.F
+[ 17%] Generating input_cp2k_kpoints.F
+[ 17%] Generating input_cp2k_loc.F
+[ 17%] Generating input_cp2k_ls.F
+[ 17%] Generating input_cp2k_mixed.F
+[ 17%] Generating input_cp2k_motion_print.F
+[ 17%] Generating input_cp2k_mm.F
+[ 17%] Generating input_cp2k_mp2.F
+[ 17%] Generating input_cp2k_neb.F
+[ 17%] Generating input_cp2k_negf.F
+[ 17%] Generating input_cp2k_nnp.F
+[ 17%] Generating input_cp2k_opt.F
+[ 17%] Generating input_cp2k_poisson.F
+[ 17%] Generating input_cp2k_print_dft.F
+[ 17%] Generating input_cp2k_projection_rtp.F
+[ 17%] Generating input_cp2k_properties_dft.F
+[ 17%] Generating input_cp2k_pwdft.F
+[ 17%] Generating input_cp2k_qs.F
+[ 17%] Generating input_cp2k_qmmm.F
+[ 17%] Generating input_cp2k_read.F
+[ 17%] Generating input_cp2k_restarts_util.F
+[ 17%] Generating input_cp2k_resp.F
+[ 17%] Generating input_cp2k_rsgrid.F
+[ 17%] Generating input_cp2k_scf.F
+[ 17%] Generating input_cp2k_se.F
+[ 17%] Generating input_cp2k_smeagol.F
+[ 17%] Generating input_cp2k_subsys.F
+[ 17%] Generating input_cp2k_tb.F
+[ 17%] Generating input_cp2k_thermostats.F
+[ 17%] Generating input_cp2k_transport.F
+[ 17%] Generating input_cp2k_voronoi.F
+[ 17%] Generating input_cp2k_xas.F
+[ 17%] Generating input_cp2k_xc.F
+[ 17%] Generating input_optimize_basis.F
+[ 18%] Generating input_optimize_input.F
+[ 18%] Generating input_restart_force_eval.F
+[ 18%] Generating input_restart_rng.F
+[ 18%] Generating integration_grid_types.F
+[ 18%] Generating ipi_driver.F
+[ 18%] Generating ipi_environment.F
+[ 18%] Generating ipi_environment_types.F
+[ 18%] Generating iterate_matrix.F
+[ 18%] Generating ipi_server.F
+[ 18%] Generating kg_correction.F
+[ 18%] Generating kg_environment.F
+[ 18%] Generating kg_environment_types.F
+[ 18%] Generating kg_tnadd_mat.F
+[ 18%] Generating kg_vertex_coloring_methods.F
+[ 18%] Generating kpoint_coulomb_2c.F
+[ 18%] Generating kpoint_methods.F
+[ 18%] Generating kpoint_io.F
+[ 18%] Generating kpoint_k_r_trafo_simple.F
+[ 18%] Generating kpoint_mo_dump.F
+[ 18%] Generating kpoint_transitional.F
+[ 18%] Generating kpsym.F
+[ 18%] Generating kpoint_types.F
+[ 18%] Generating libgrpp_integrals.F
+[ 18%] Generating libint_2c_3c.F
+[ 18%] Generating library_tests.F
+[ 19%] Generating linesearch.F
+[ 19%] Generating libint_wrapper.F
+[ 19%] Generating localization_tb.F
+[ 19%] Generating local_gemm_api.F
+[ 19%] Generating lri_compression.F
+[ 19%] Generating lri_environment_init.F
+[ 19%] Generating lri_environment_methods.F
+[ 19%] Generating lri_environment_types.F
+[ 19%] Generating lri_forces.F
+[ 19%] Generating lri_integrals.F
+[ 19%] Generating lri_ks_methods.F
+[ 19%] Generating lri_optimize_ri_basis.F
+[ 19%] Generating lri_optimize_ri_basis_types.F
+[ 19%] Generating manybody_ace.F
+[ 19%] Generating ls_matrix_exp.F
+[ 19%] Generating manybody_deepmd.F
+[ 19%] Generating manybody_eam.F
+[ 19%] Generating manybody_gal.F
+[ 19%] Generating manybody_gal21.F
+[ 19%] Generating manybody_potential.F
+[ 19%] Generating manybody_nequip.F
+[ 19%] Generating manybody_siepmann.F
+[ 19%] Generating manybody_tersoff.F
+[ 19%] Generating mao_basis.F
+[ 19%] Generating mao_methods.F
+[ 19%] Generating mao_optimizer.F
+[ 19%] Generating mao_wfn_analysis.F
+[ 19%] Generating matrix_exp.F
+[ 19%] Generating maxwell_solver_interface.F
+[ 19%] Generating mdctrl_types.F
+[ 19%] Generating metadyn_tools/graph_methods.F
+[ 19%] Generating metadyn_tools/graph_utils.F
+[ 20%] Generating metadynamics.F
+[ 20%] Generating metadynamics_types.F
+[ 20%] Generating metadynamics_utils.F
+[ 20%] Generating mimic/mcl_wrapper/mcl_api.F
+[ 21%] Generating mimic/mcl_wrapper/mcl_requests.F
+[ 21%] Generating mimic/mimic_communicator.F
+[ 21%] Generating min_basis_set.F
+[ 21%] Generating mimic/mimic_loop.F
+[ 21%] Generating minbas_methods.F
+[ 21%] Generating minbas_wfn_analysis.F
+[ 21%] Generating minimax/minimax_exp.F
+[ 21%] Generating minimax/minimax_exp_gw.F
+[ 21%] Generating minimax/minimax_exp_k15.F
+[ 21%] Generating mixed_cdft_types.F
+[ 21%] Generating minimax/minimax_exp_k53.F
+[ 21%] Generating minimax/minimax_rpa.F
+[ 21%] Generating mixed_cdft_methods.F
+[ 21%] Generating mixed_cdft_utils.F
+[ 21%] Generating mixed_energy_types.F
+[ 21%] Generating mixed_environment.F
+[ 21%] Generating mixed_environment_types.F
+[ 21%] Generating mixed_environment_utils.F
+[ 21%] Generating mixed_main.F
+[ 21%] Generating molden_utils.F
+[ 21%] Generating mm_collocate_potential.F
+[ 21%] Generating molecular_moments.F
+[ 21%] Generating mm_mapping_library.F
+[ 21%] Generating molsym.F
+[ 21%] Generating motion/cell_opt.F
+[ 21%] Generating mode_selective.F
+[ 21%] Generating mol_force.F
+[ 21%] Generating molecular_states.F
+[ 21%] Generating motion/averages_types.F
+[ 21%] Generating molecular_dipoles.F
+[ 21%] Generating moments_utils.F
+[ 21%] Generating motion/bfgs_optimizer.F
+[ 21%] Generating motion/cell_opt_types.F
+[ 21%] Generating motion/cell_opt_utils.F
+[ 21%] Generating motion/cg_optimizer.F
+[ 21%] Generating motion/cg_utils.F
+[ 21%] Generating motion/cp_lbfgs.F
+[ 21%] Generating motion/cp_lbfgs_geo.F
+[ 21%] Generating motion/dimer_methods.F
+[ 21%] Generating motion/cp_lbfgs_optimizer_gopt.F
+[ 21%] Generating motion/dimer_types.F
+[ 21%] Generating motion/dimer_utils.F
+[ 21%] Generating motion/geo_opt.F
+[ 21%] Generating motion/free_energy_methods.F
+[ 21%] Generating motion/glbopt_callback.F
+[ 21%] Generating motion/gopt_f77_methods.F
+[ 21%] Generating motion/gopt_f_methods.F
+[ 21%] Generating motion/helium_common.F
+[ 21%] Generating motion/gopt_f_types.F
+[ 21%] Generating motion/gopt_param_types.F
+[ 21%] Generating motion/helium_methods.F
+[ 21%] Generating motion/helium_io.F
+[ 22%] Generating motion/helium_interactions.F
+[ 22%] Generating motion/helium_nnp.F
+[ 22%] Generating motion/helium_types.F
+[ 22%] Generating motion/helium_sampling.F
+[ 22%] Generating motion/helium_worm.F
+[ 22%] Generating motion/input_cp2k_md.F
+[ 22%] Generating motion/input_cp2k_restarts.F
+[ 22%] Generating motion/input_cp2k_vib.F
+[ 22%] Generating motion/integrator.F
+[ 22%] Generating motion/mc/mc_control.F
+[ 22%] Generating motion/integrator_utils.F
+[ 22%] Generating motion/mc/mc_ensembles.F
+[ 22%] Generating motion/mc/mc_coordinates.F
+[ 22%] Generating motion/mc/mc_environment_types.F
+[ 22%] Generating motion/mc/mc_ge_moves.F
+[ 22%] Generating motion/mc/mc_move_control.F
+[ 22%] Generating motion/mc/mc_misc.F
+[ 22%] Generating motion/mc/mc_moves.F
+[ 22%] Generating motion/mc/mc_types.F
+[ 22%] Generating motion/mc/mc_run.F
+[ 22%] Generating motion/mc/tamc_run.F
+[ 22%] Generating motion/md_conserved_quantities.F
+[ 22%] Generating motion/md_energies.F
+[ 22%] Generating motion/md_ener_types.F
+[ 22%] Generating motion/md_environment_types.F
+[ 23%] Generating motion/md_run.F
+[ 23%] Generating motion/md_vel_utils.F
+[ 23%] Generating motion/md_util.F
+[ 23%] Generating motion/neb_io.F
+[ 23%] Generating motion/neb_methods.F
+[ 23%] Generating motion/mdctrl_methods.F
+[ 23%] Generating motion/neb_md_utils.F
+[ 23%] Generating motion/neb_opt_utils.F
+[ 23%] Generating motion/neb_types.F
+[ 23%] Generating motion/neb_utils.F
+[ 23%] Generating motion/pint_io.F
+[ 23%] Generating motion/pint_gle.F
+[ 23%] Generating motion/pint_methods.F
+[ 23%] Generating motion/pint_pile.F
+[ 23%] Generating motion/pint_normalmode.F
+[ 23%] Generating motion/pint_public.F
+[ 23%] Generating motion/pint_piglet.F
+[ 23%] Generating motion/pint_qtb.F
+[ 23%] Generating motion/pint_staging.F
+[ 23%] Generating motion/pint_transformations.F
+[ 23%] Generating motion/pint_types.F
+[ 23%] Generating motion/reftraj_types.F
+[ 23%] Generating motion/reftraj_util.F
+[ 23%] Generating motion/rt_propagation.F
+[ 23%] Generating motion/space_groups.F
+[ 24%] Generating motion/space_groups_types.F
+[ 23%] Generating motion/shell_opt.F
+[ 24%] Generating motion/thermal_region_types.F
+[ 23%] Generating motion/simpar_methods.F
+[ 24%] Generating motion/thermal_region_utils.F
+[ 24%] Generating motion/thermostat/al_system_dynamics.F
+[ 24%] Generating motion/thermostat/al_system_init.F
+[ 24%] Generating motion/thermostat/barostat_types.F
+[ 24%] Generating motion/thermostat/al_system_mapping.F
+[ 24%] Generating motion/thermostat/barostat_utils.F
+[ 24%] Generating motion/thermostat/csvr_system_dynamics.F
+[ 24%] Generating motion/thermostat/csvr_system_init.F
+[ 24%] Generating motion/thermostat/csvr_system_mapping.F
+[ 24%] Generating motion/thermostat/extended_system_dynamics.F
+[ 24%] Generating motion/thermostat/extended_system_init.F
+[ 24%] Generating motion/thermostat/gle_system_dynamics.F
+[ 24%] Generating motion/thermostat/extended_system_mapping.F
+[ 24%] Generating motion/thermostat/thermostat_methods.F
+[ 24%] Generating motion/thermostat/input_cp2k_barostats.F
+[ 24%] Generating motion/thermostat/thermostat_mapping.F
+[ 24%] Generating motion/thermostat/thermostat_types.F
+[ 24%] Generating motion/vibrational_analysis.F
+[ 24%] Generating motion/velocity_verlet_control.F
+[ 24%] Generating motion/thermostat/thermostat_utils.F
+[ 24%] Generating mp2.F
+[ 24%] Generating motion/wiener_process.F
+[ 24%] Generating motion_utils.F
+[ 24%] Generating mp2_direct_method.F
+[ 25%] Generating mp2_cphf.F
+[ 24%] Generating mp2_eri_gpw.F
+[ 25%] Generating mp2_gpw.F
+[ 25%] Generating mp2_eri.F
+[ 25%] Generating mp2_gpw_method.F
+[ 25%] Generating mp2_integrals.F
+[ 25%] Generating mp2_grids.F
+[ 25%] Generating mp2_laplace.F
+[ 25%] Generating mp2_ri_2c.F
+[ 25%] Generating mp2_optimize_ri_basis.F
+[ 25%] Generating mp2_ri_gpw.F
+[ 25%] Generating mp2_ri_grad.F
+[ 25%] Generating mp2_ri_grad_util.F
+[ 25%] Generating mp2_setup.F
+[ 25%] Generating mp2_types.F
+[ 25%] Generating mpiwrap/message_passing.F
+[ 25%] Generating mpiwrap/mp_perf_env.F
+[ 25%] Generating mp2_ri_libint.F
+[ 25%] Generating mpiwrap/mp_perf_test.F
+[ 25%] Generating mscfg_types.F
+[ 25%] Generating mscfg_methods.F
+[ 25%] Generating mulliken.F
+[ 25%] Generating negf_alloc_types.F
+[ 25%] Generating negf_atom_map.F
+[ 25%] Generating negf_control_types.F
+[ 25%] Generating negf_green_cache.F
+[ 25%] Generating negf_env_types.F
+[ 25%] Generating negf_green_methods.F
+[ 25%] Generating negf_integr_utils.F
+[ 26%] Generating negf_integr_simpson.F
+[ 25%] Generating negf_integr_cc.F
+[ 26%] Generating negf_io.F
+[ 26%] Generating negf_subgroup_types.F
+[ 26%] Generating negf_methods.F
+[ 26%] Generating negf_matrix_utils.F
+[ 26%] Generating negf_vectors.F
+[ 26%] Generating nnp_acsf.F
+[ 26%] Generating nnp_force.F
+[ 26%] Generating nnp_environment.F
+[ 26%] Generating nnp_environment_types.F
+[ 26%] Generating nnp_model.F
+[ 26%] Generating offload/offload_api.F
+[ 26%] Generating openpmd_api.F
+[ 26%] Generating optbas_fenv_manipulation.F
+[ 26%] Generating optbas_opt_utils.F
+[ 26%] Generating optimize_basis.F
+[ 26%] Generating optimize_basis_types.F
+[ 26%] Generating optimize_dmfet_potential.F
+[ 26%] Generating optimize_basis_utils.F
+[ 26%] Generating optimize_embedding_potential.F
+[ 26%] Generating optimize_input.F
+[ 26%] Generating outer_scf_control_types.F
+[ 26%] Generating pair_potential.F
+[ 26%] Generating pair_potential_coulomb.F
+[ 26%] Generating pair_potential_types.F
+[ 26%] Generating pair_potential_util.F
+[ 27%] Generating pao_input.F
+[ 27%] Generating pao_io.F
+[ 27%] Generating pao_linpot_full.F
+[ 27%] Generating pao_linpot_rotinv.F
+[ 27%] Generating pao_main.F
+[ 27%] Generating pao_methods.F
+[ 27%] Generating pao_ml.F
+[ 27%] Generating pao_ml_descriptor.F
+[ 27%] Generating pao_ml_neuralnet.F
+[ 27%] Generating pao_ml_gaussprocess.F
+[ 27%] Generating pao_model.F
+[ 27%] Generating pao_optimizer.F
+[ 27%] Generating pao_param_fock.F
+[ 27%] Generating pao_param.F
+[ 27%] Generating pao_param_exp.F
+[ 27%] Generating pao_param_equi.F
+[ 27%] Generating pao_param_linpot.F
+[ 27%] Generating pao_param_gth.F
+[ 27%] Generating pao_param_methods.F
+[ 27%] Generating pao_potentials.F
+[ 27%] Generating pao_types.F
+[ 27%] Generating parallel_gemm_api.F
+[ 27%] Generating pexsi_interface.F
+[ 27%] Generating particle_methods.F
+[ 27%] Generating pexsi_methods.F
+[ 27%] Generating pexsi_types.F
+[ 27%] Generating paw_proj_set_types.F
+[ 27%] Generating pilaenv_hack.F
+[ 27%] Generating pme.F
+[ 28%] Generating pme_tools.F
+[ 28%] Generating population_analyses.F
+[ 28%] Generating post_scf_bandstructure_methods.F
+[ 28%] Generating post_scf_bandstructure_types.F
+[ 28%] Generating post_scf_bandstructure_utils.F
+[ 28%] Generating preconditioner.F
+[ 28%] Generating preconditioner_apply.F
+[ 28%] Generating preconditioner_solvers.F
+[ 28%] Generating preconditioner_makes.F
+[ 28%] Generating pw/cp_linked_list_pw.F
+[ 28%] Generating preconditioner_types.F
+[ 28%] Generating pw/cube_utils.F
+[ 28%] Generating pw/dct.F
+[ 28%] Generating pw/dg_types.F
+[ 28%] Generating pw/dg_rho0_types.F
+[ 29%] Generating pw/dgs.F
+[ 29%] Generating pw/dielectric_methods.F
+[ 29%] Generating pw/dirichlet_bc_methods.F
+[ 29%] Generating pw/dielectric_types.F
+[ 29%] Generating pw/dirichlet_bc_types.F
+[ 29%] Generating pw/fft/fft_kinds.F
+[ 29%] Generating pw/fft/fft_lib.F
+[ 29%] Generating pw/fft/fft_plan.F
+[ 29%] Generating pw/fft/fftw3_lib.F
+[ 29%] Generating pw/fft/fftsg_lib.F
+[ 29%] Generating pw/fft/mltfftsg_tools.F
+[ 29%] Generating pw/lazy.F
+[ 29%] Generating pw/fft_tools.F
+[ 29%] Generating pw/ps_implicit_methods.F
+[ 29%] Generating pw/mt_util.F
+[ 29%] Generating pw/ps_implicit_types.F
+[ 29%] Generating pw/ps_wavelet_base.F
+[ 29%] Generating pw/ps_wavelet_kernel.F
+[ 29%] Generating pw/ps_wavelet_fft3d.F
+[ 29%] Generating pw/ps_wavelet_methods.F
+[ 29%] Generating pw/ps_wavelet_scaling_function.F
+[ 30%] Generating pw/ps_wavelet_types.F
+[ 30%] Generating pw/ps_wavelet_util.F
+[ 30%] Generating pw/pw_copy_all.F
+[ 30%] Generating pw/pw_fpga.F
+[ 30%] Generating pw/pw_grid_info.F
+[ 30%] Generating pw/pw_gpu.F
+[ 30%] Generating pw/pw_grid_types.F
+[ 30%] Generating pw/pw_grids.F
+[ 30%] Generating pw/pw_methods.F
+[ 30%] Generating pw/pw_poisson_methods.F
+[ 30%] Generating pw/pw_poisson_types.F
+[ 30%] Generating pw/pw_types.F
+[ 30%] Generating pw/pw_spline_utils.F
+[ 30%] Generating pw/pw_pool_types.F
+[ 30%] Generating pw/realspace_grid_cube.F
+[ 30%] Generating pw/realspace_grid_openpmd.F
+[ 30%] Generating pw/realspace_grid_types.F
+[ 30%] Generating pw/rs_methods.F
+[ 30%] Generating pw_env/cp_spline_utils.F
+[ 30%] Generating pw_env/gaussian_gridlevels.F
+[ 30%] Generating pw_env/pw_env_types.F
+[ 30%] Generating pw_env/rs_pw_interface.F
+[ 30%] Generating pw_env_methods.F
+[ 30%] Generating pw_poisson_read_input.F
+[ 30%] Generating pwdft_environment.F
+[ 30%] Generating pwdft_environment_types.F
+[ 30%] Generating qmmm_create.F
+[ 30%] Generating qcschema.F
+[ 30%] Generating qmmm_elpot.F
+[ 30%] Generating qmmm_ff_fist.F
+[ 30%] Generating qmmm_force.F
+[ 30%] Generating qmmm_gaussian_data.F
+[ 30%] Generating qmmm_gaussian_init.F
+[ 30%] Generating qmmm_gaussian_input.F
+[ 30%] Generating qmmm_gaussian_types.F
+[ 30%] Generating qmmm_gpw_forces.F
+[ 30%] Generating qmmm_gpw_energy.F
+[ 30%] Generating qmmm_image_charge.F
+[ 30%] Generating qmmm_init.F
+[ 30%] Generating qmmm_per_elpot.F
+[ 30%] Generating qmmm_links_methods.F
+[ 30%] Generating qmmm_pw_grid.F
+[ 30%] Generating qmmm_se_energy.F
+[ 30%] Generating qmmm_se_forces.F
+[ 30%] Generating qmmm_tb_coulomb.F
+[ 30%] Generating qmmm_topology_util.F
+[ 30%] Generating qmmm_tb_methods.F
+[ 30%] Generating qmmm_types.F
+[ 31%] Generating qmmm_types_low.F
+[ 31%] Generating qmmm_util.F
+[ 31%] Generating qmmmx_create.F
+[ 31%] Generating qmmmx_force.F
+[ 31%] Generating qmmmx_types.F
+[ 31%] Generating qmmmx_update.F
+[ 31%] Generating qmmmx_util.F
+[ 31%] Generating qs_2nd_kernel_ao.F
+[ 31%] Generating qs_active_space_types.F
+[ 31%] Generating qs_active_space_methods.F
+[ 31%] Generating qs_active_space_utils.F
+[ 31%] Generating qs_apt_fdiff_methods.F
+[ 31%] Generating qs_apt_fdiff_types.F
+[ 31%] Generating qs_basis_gradient.F
+[ 31%] Generating qs_band_structure.F
+[ 31%] Generating qs_atomic_block.F
+[ 31%] Generating qs_basis_rotation_methods.F
+[ 31%] Generating qs_block_davidson_types.F
+[ 31%] Generating qs_cdft_methods.F
+[ 31%] Generating qs_cdft_opt_types.F
+[ 31%] Generating qs_cdft_scf_utils.F
+[ 31%] Generating qs_cdft_types.F
+[ 31%] Generating qs_cdft_utils.F
+[ 31%] Generating qs_charge_mixing.F
+[ 31%] Generating qs_chargemol.F
+[ 32%] Generating qs_charges_types.F
+[ 32%] Generating qs_cneo_ggrid.F
+[ 32%] Generating qs_cneo_types.F
+[ 32%] Generating qs_cneo_utils.F
+[ 32%] Generating qs_collocate_density.F
+[ 32%] Generating qs_cneo_methods.F
+[ 32%] Generating qs_commutators.F
+[ 32%] Generating qs_condnum.F
+[ 32%] Generating qs_core_energies.F
+[ 32%] Generating qs_dcdr.F
+[ 32%] Generating qs_core_matrices.F
+[ 32%] Generating qs_core_hamiltonian.F
+[ 32%] Generating qs_dcdr_ao.F
+[ 32%] Generating qs_dcdr_utils.F
+[ 32%] Generating qs_density_matrices.F
+[ 32%] Generating qs_density_mixing_types.F
+[ 32%] Generating qs_dftb3_methods.F
+[ 32%] Generating qs_dftb_coulomb.F
+[ 32%] Generating qs_dftb_dispersion.F
+[ 32%] Generating qs_dftb_matrices.F
+[ 32%] Generating qs_dftb_parameters.F
+[ 32%] Generating qs_dftb_types.F
+[ 32%] Generating qs_dftb_utils.F
+[ 32%] Generating qs_diis.F
+[ 32%] Generating qs_diis_types.F
+[ 32%] Generating qs_dispersion_cnum.F
+[ 32%] Generating qs_dispersion_d2.F
+[ 33%] Generating qs_dispersion_d3.F
+[ 33%] Generating qs_dispersion_pairpot.F
+[ 33%] Generating qs_dispersion_d4.F
+[ 33%] Generating qs_dispersion_nonloc.F
+[ 33%] Generating qs_dispersion_types.F
+[ 33%] Generating qs_dispersion_utils.F
+[ 33%] Generating qs_dos.F
+[ 33%] Generating qs_efield_berry.F
+[ 33%] Generating qs_eht_guess.F
+[ 33%] Generating qs_efield_local.F
+[ 33%] Generating qs_elec_field.F
+[ 33%] Generating qs_electric_field_gradient.F
+[ 33%] Generating qs_elf_methods.F
+[ 33%] Generating qs_energy.F
+[ 33%] Generating qs_energy_init.F
+[ 33%] Generating qs_energy_types.F
+[ 33%] Generating qs_energy_window.F
+[ 33%] Generating qs_energy_utils.F
+[ 33%] Generating qs_environment.F
+[ 33%] Generating qs_environment_methods.F
+[ 33%] Generating qs_environment_types.F
+[ 33%] Generating qs_epr_hyp.F
+[ 33%] Generating qs_external_density.F
+[ 33%] Generating qs_external_potential.F
+[ 33%] Generating qs_fb_atomic_halo_types.F
+[ 33%] Generating qs_fb_atomic_matrix_methods.F
+[ 33%] Generating qs_fb_buffer_types.F
+[ 33%] Generating qs_fb_com_tasks_types.F
+[ 33%] Generating qs_fb_distribution_methods.F
+[ 34%] Generating qs_fb_env_methods.F
+[ 34%] Generating qs_fb_filter_matrix_methods.F
+[ 34%] Generating qs_fb_env_types.F
+[ 34%] Generating qs_fb_hash_table_types.F
+[ 34%] Generating qs_fb_matrix_data_types.F
+[ 34%] Generating qs_fb_input.F
+[ 34%] Generating qs_fb_trial_fns_types.F
+[ 34%] Generating qs_fermi_contact.F
+[ 34%] Generating qs_force.F
+[ 34%] Generating qs_force_types.F
+[ 34%] Generating qs_gamma2kp.F
+[ 34%] Generating qs_fxc.F
+[ 34%] Generating qs_gapw_densities.F
+[ 34%] Generating qs_gcp_method.F
+[ 34%] Generating qs_gcp_types.F
+[ 34%] Generating qs_gcp_utils.F
+[ 34%] Generating qs_grid_atom.F
+[ 34%] Generating qs_gspace_mixing.F
+[ 34%] Generating qs_harris_types.F
+[ 34%] Generating qs_harmonics_atom.F
+[ 34%] Generating qs_harris_utils.F
+[ 34%] Generating qs_hash_table_functions.F
+[ 34%] Generating qs_initial_guess.F
+[ 34%] Generating qs_integral_utils.F
+[ 34%] Generating qs_integrate_potential.F
+[ 34%] Generating qs_integrate_potential_product.F
+[ 34%] Generating qs_integrate_potential_single.F
+[ 35%] Generating qs_interactions.F
+[ 35%] Generating qs_kernel_methods.F
+[ 35%] Generating qs_kernel_types.F
+[ 35%] Generating qs_kind_types.F
+[ 35%] Generating qs_kinetic.F
+[ 35%] Generating qs_kpp1_env_methods.F
+[ 35%] Generating qs_ks_apply_restraints.F
+[ 35%] Generating qs_ks_atom.F
+[ 35%] Generating qs_kpp1_env_types.F
+[ 35%] Generating qs_ks_qmmm_methods.F
+[ 35%] Generating qs_ks_methods.F
+[ 35%] Generating qs_ks_reference.F
+[ 35%] Generating qs_ks_qmmm_types.F
+[ 35%] Generating qs_ks_types.F
+[ 35%] Generating qs_linres_atom_current.F
+[ 35%] Generating qs_ks_utils.F
+[ 35%] Generating qs_linres_current.F
+[ 35%] Generating qs_linres_current_utils.F
+[ 35%] Generating qs_linres_epr_nablavks.F
+[ 35%] Generating qs_linres_epr_ownutils.F
+[ 35%] Generating qs_linres_epr_utils.F
+[ 35%] Generating qs_linres_issc_utils.F
+[ 35%] Generating qs_linres_methods.F
+[ 35%] Generating qs_linres_kernel.F
+[ 35%] Generating qs_linres_nmr_epr_common_utils.F
+[ 35%] Generating qs_linres_module.F
+[ 36%] Generating qs_linres_nmr_utils.F
+[ 36%] Generating qs_linres_nmr_shift.F
+[ 36%] Generating qs_linres_op.F
+[ 36%] Generating qs_linres_polar_utils.F
+[ 36%] Generating qs_linres_types.F
+[ 36%] Generating qs_loc_dipole.F
+[ 36%] Generating qs_loc_main.F
+[ 36%] Generating qs_loc_methods.F
+[ 36%] Generating qs_loc_molecules.F
+[ 36%] Generating qs_loc_states.F
+[ 36%] Generating qs_loc_types.F
+[ 36%] Generating qs_loc_utils.F
+[ 36%] Generating qs_local_properties.F
+[ 36%] Generating qs_local_rho_types.F
+[ 36%] Generating qs_localization_methods.F
+[ 36%] Generating qs_matrix_pools.F
+[ 36%] Generating qs_matrix_w.F
+[ 36%] Generating qs_mixing_utils.F
+[ 36%] Generating qs_mfp.F
+[ 36%] Generating qs_mo_io.F
+[ 36%] Generating qs_mo_occupation.F
+[ 36%] Generating qs_mo_methods.F
+[ 36%] Generating qs_mo_types.F
+[ 36%] Generating qs_mom_methods.F
+[ 36%] Generating qs_moments.F
+[ 36%] Generating qs_mom_types.F
+[ 36%] Generating qs_neighbor_list_types.F
+[ 36%] Generating qs_neighbor_lists.F
+[ 36%] Generating qs_nl_hash_table_types.F
+[ 37%] Generating qs_nonscf.F
+[ 37%] Generating qs_nonscf_utils.F
+[ 37%] Generating qs_o3c_methods.F
+[ 37%] Generating qs_o3c_types.F
+[ 37%] Generating qs_oce_types.F
+[ 37%] Generating qs_oce_methods.F
+[ 37%] Generating qs_operators_ao.F
+[ 37%] Generating qs_ot_eigensolver.F
+[ 37%] Generating qs_ot.F
+[ 37%] Generating qs_ot_minimizer.F
+[ 37%] Generating qs_ot_scf.F
+[ 37%] Generating qs_ot_types.F
+[ 37%] Generating qs_outer_scf.F
+[ 37%] Generating qs_overlap.F
+[ 37%] Generating qs_p_env_methods.F
+[ 37%] Generating qs_p_env_types.F
+[ 37%] Generating qs_pdos.F
+[ 37%] Generating qs_resp.F
+[ 37%] Generating qs_period_efield_types.F
+[ 37%] Generating qs_rho0_ggrid.F
+[ 37%] Generating qs_rho_atom_types.F
+[ 37%] Generating qs_rho0_methods.F
+[ 37%] Generating qs_rho0_types.F
+[ 37%] Generating qs_rho_atom_methods.F
+[ 37%] Generating qs_rho_methods.F
+[ 37%] Generating qs_rho_types.F
+[ 37%] Generating qs_sccs.F
+[ 37%] Generating qs_scf.F
+[ 37%] Generating qs_scf_block_davidson.F
+[ 38%] Generating qs_scf_csr_write.F
+[ 38%] Generating qs_scf_diagonalization.F
+[ 38%] Generating qs_scf_initialization.F
+[ 38%] Generating qs_scf_lanczos.F
+[ 38%] Generating qs_scf_loop_utils.F
+[ 38%] Generating qs_scf_methods.F
+[ 38%] Generating qs_scf_output.F
+[ 38%] Generating qs_scf_post_gpw.F
+[ 38%] Generating qs_scf_post_scf.F
+[ 38%] Generating qs_scf_post_se.F
+[ 38%] Generating qs_scf_post_tb.F
+[ 38%] Generating qs_scf_types.F
+[ 38%] Generating qs_spin_orbit.F
+[ 38%] Generating qs_scf_wfn_mix.F
+[ 38%] Generating qs_subsys_methods.F
+[ 38%] Generating qs_subsys_types.F
+[ 38%] Generating qs_tddfpt2_assign.F
+[ 38%] Generating qs_tddfpt2_bse_utils.F
+[ 38%] Generating qs_tddfpt2_densities.F
+[ 38%] Generating qs_tddfpt2_eigensolver.F
+[ 38%] Generating qs_tddfpt2_fhxc.F
+[ 38%] Generating qs_tddfpt2_fhxc_forces.F
+[ 38%] Generating qs_tddfpt2_forces.F
+[ 38%] Generating qs_tddfpt2_lri_utils.F
+[ 38%] Generating qs_tddfpt2_methods.F
+[ 38%] Generating qs_tddfpt2_fprint.F
+[ 38%] Generating qs_tddfpt2_operators.F
+[ 38%] Generating qs_tddfpt2_properties.F
+[ 39%] Generating qs_tddfpt2_restart.F
+[ 39%] Generating qs_tddfpt2_smearing_methods.F
+[ 39%] Generating qs_tddfpt2_soc.F
+[ 39%] Generating qs_tddfpt2_soc_utils.F
+[ 39%] Generating qs_tddfpt2_soc_types.F
+[ 39%] Generating qs_tddfpt2_stda_types.F
+[ 39%] Generating qs_tddfpt2_stda_utils.F
+[ 39%] Generating qs_tddfpt2_subgroups.F
+[ 39%] Generating qs_tddfpt2_utils.F
+[ 39%] Generating qs_tddfpt2_types.F
+[ 39%] Generating qs_tensors.F
+[ 39%] Generating qs_tensors_types.F
+[ 39%] Generating qs_update_s_mstruct.F
+[ 39%] Generating qs_vcd.F
+[ 39%] Generating qs_vcd_ao.F
+[ 39%] Generating qs_vcd_utils.F
+[ 39%] Generating qs_vxc.F
+[ 39%] Generating qs_vxc_atom.F
+[ 39%] Generating qs_wf_history_types.F
+[ 39%] Generating qs_wannier90.F
+[ 39%] Generating qs_wf_history_methods.F
+[ 39%] Generating rel_control_types.F
+[ 39%] Generating replica_methods.F
+[ 39%] Generating replica_types.F
+[ 39%] Generating restraint.F
+[ 39%] Generating response_solver.F
+[ 40%] Generating ri_environment_methods.F
+[ 40%] Generating rixs_types.F
+[ 40%] Generating rixs_methods.F
+[ 40%] Generating rpa_communication.F
+[ 40%] Generating rmsd.F
+[ 40%] Generating rpa_gw.F
+[ 40%] Generating rpa_exchange.F
+[ 40%] Generating rpa_grad.F
+[ 40%] Generating rpa_gw_ic.F
+[ 40%] Generating rpa_gw_kpoints_util.F
+[ 40%] Generating rpa_gw_im_time_util.F
+[ 40%] Generating rpa_gw_sigma_x.F
+[ 40%] Generating rpa_im_time.F
+[ 40%] Generating rpa_im_time_force_methods.F
+[ 40%] Generating rpa_im_time_force_types.F
+[ 40%] Generating rpa_rse.F
+[ 40%] Generating rpa_main.F
+[ 40%] Generating rpa_sigma_functional.F
+[ 40%] Generating rpa_util.F
+[ 40%] Generating rt_propagation_forces.F
+[ 40%] Generating rt_propagation_types.F
+[ 40%] Generating rt_propagation_velocity_gauge.F
+[ 40%] Generating rtp_admm_methods.F
+[ 40%] Generating s_square_methods.F
+[ 40%] Generating sap_kind_types.F
+[ 40%] Generating scf_control_types.F
+[ 40%] Generating se_core_matrix.F
+[ 40%] Generating se_core_core.F
+[ 40%] Generating scine_utils.F
+[ 40%] Generating se_fock_matrix.F
+[ 41%] Generating se_fock_matrix_coulomb.F
+[ 41%] Generating se_fock_matrix_dbg.F
+[ 41%] Generating se_fock_matrix_exchange.F
+[ 41%] Generating se_fock_matrix_integrals.F
+[ 41%] Generating semi_empirical_expns3_methods.F
+[ 41%] Generating semi_empirical_expns3_types.F
+[ 41%] Generating semi_empirical_int3_utils.F
+[ 41%] Generating semi_empirical_int_arrays.F
+[ 41%] Generating semi_empirical_int_ana.F
+[ 41%] Generating semi_empirical_int_debug.F
+[ 41%] Generating semi_empirical_int_gks.F
+[ 41%] Generating semi_empirical_int_num.F
+[ 41%] Generating semi_empirical_int_utils.F
+[ 41%] Generating semi_empirical_par_utils.F
+[ 41%] Generating semi_empirical_integrals.F
+[ 41%] Generating semi_empirical_mpole_methods.F
+[ 41%] Generating semi_empirical_mpole_types.F
+[ 41%] Generating semi_empirical_parameters.F
+[ 41%] Generating semi_empirical_store_int_types.F
+[ 41%] Generating semi_empirical_types.F
+[ 41%] Generating semi_empirical_utils.F
+[ 41%] Generating shg_int/constants_operator.F
+[ 41%] Generating shg_int/construct_shg.F
+[ 41%] Generating shg_int/generic_shg_integrals.F
+[ 41%] Generating shg_int/generic_shg_integrals_init.F
+[ 41%] Generating shg_int/s_contract_shg.F
+[ 41%] Generating shg_integrals_test.F
+[ 41%] Generating simpar_types.F
+[ 41%] Generating sirius_interface.F
+[ 41%] Generating smeagol_control_types.F
+[ 41%] Generating smeagol_emtoptions.F
+[ 41%] Generating smeagol_interface.F
+[ 41%] Generating smeagol_matrix_utils.F
+[ 42%] Generating smearing_utils.F
+[ 42%] Generating soc_pseudopotential_methods.F
+[ 42%] Generating soc_pseudopotential_utils.F
+[ 42%] Generating sockets_interface.F
+[ 42%] Generating spglib_f08.F
+[ 42%] Generating splines_methods.F
+[ 42%] Generating splines_types.F
+[ 42%] Generating spme.F
+[ 42%] Generating start/cp2k_shell.F
+[ 42%] Generating start/cp2k_runs.F
+[ 42%] Generating start/input_cp2k.F
+[ 42%] Generating start/input_cp2k_motion.F
+[ 42%] Generating start/libcp2k.F
+[ 42%] Generating statistical_methods.F
+[ 42%] Generating subcell_types.F
+[ 42%] Generating stm_images.F
+[ 43%] Generating submatrix_types.F
+[ 43%] Generating subsys/atomic_kind_list_types.F
+[ 43%] Generating submatrix_dissection.F
+[ 43%] Generating subsys/atomic_kind_types.F
+[ 43%] Generating subsys/cell_types.F
+[ 43%] Generating subsys/atprop_types.F
+[ 43%] Generating subsys/colvar_types.F
+[ 43%] Generating subsys/damping_dipole_types.F
+[ 43%] Generating subsys/cp_subsys_types.F
+[ 43%] Generating subsys/external_potential_types.F
+[ 43%] Generating subsys/molecule_kind_list_types.F
+[ 43%] Generating subsys/force_field_kind_types.F
+[ 43%] Generating subsys/molecule_kind_types.F
+[ 43%] Generating subsys/molecule_list_types.F
+[ 43%] Generating subsys/molecule_types.F
+[ 43%] Generating subsys/multipole_types.F
+[ 43%] Generating subsys/particle_list_types.F
+[ 43%] Generating subsys/shell_potential_types.F
+[ 43%] Generating subsys/particle_types.F
+[ 43%] Generating subsys/virial_types.F
+[ 43%] Generating surface_dipole.F
+[ 43%] Generating swarm/glbopt_history.F
+[ 43%] Generating swarm/glbopt_master.F
+[ 43%] Generating swarm/glbopt_input.F
+[ 43%] Generating swarm/glbopt_mincrawl.F
+[ 43%] Generating swarm/glbopt_minhop.F
+[ 43%] Generating swarm/glbopt_worker.F
+[ 43%] Generating swarm/swarm.F
+[ 43%] Generating swarm/swarm_master.F
+[ 43%] Generating swarm/swarm_input.F
+[ 43%] Generating swarm/swarm_mpi.F
+[ 44%] Generating swarm/swarm_message.F
+[ 44%] Generating swarm/swarm_worker.F
+[ 44%] Generating task_list_methods.F
+[ 44%] Generating taper_types.F
+[ 44%] Linking C executable ../bin/grid_miniapp.psmp
+[ 44%] Generating task_list_types.F
+[ 44%] Generating tblite_interface.F
+[ 44%] Generating tmc/tmc_analysis.F
+[ 44%] Generating tip_scan_methods.F
+[ 44%] Generating tblite_types.F
+[ 44%] Generating tblite_ks_matrix.F
+[ 44%] Generating tip_scan_types.F
+[ 44%] Generating tmc/input_cp2k_tmc.F
+[ 44%] Generating tmc/tmc_calculations.F
+[ 44%] Generating tmc/tmc_file_io.F
+[ 44%] Generating tmc/tmc_analysis_types.F
+[ 44%] Generating tmc/tmc_master.F
+[ 44%] Generating tmc/tmc_cancelation.F
+[ 44%] Generating tmc/tmc_move_handle.F
+[ 44%] Generating tmc/tmc_dot_tree.F
+[ 44%] Generating tmc/tmc_messages.F
+[ 44%] Generating tmc/tmc_move_types.F
+[ 44%] Generating tmc/tmc_moves.F
+[ 44%] Generating tmc/tmc_setup.F
+[ 44%] Generating tmc/tmc_stati.F
+[ 44%] Generating tmc/tmc_tree_acceptance.F
+[ 44%] Generating tmc/tmc_tree_build.F
+[ 44%] Generating tmc/tmc_tree_references.F
+[ 44%] Generating tmc/tmc_utils.F
+[ 44%] Generating tmc/tmc_tree_types.F
+[ 44%] Generating tmc/tmc_worker.F
+[ 44%] Generating tmc/tmc_tree_search.F
+[ 44%] Generating tmc/tmc_types.F
+[ 44%] Generating topology.F
+[ 44%] Generating topology_connectivity_util.F
+[ 44%] Generating topology_amber.F
+[ 44%] Generating topology_constraint_util.F
+[ 44%] Generating topology_coordinate_util.F
+[ 44%] Generating topology_cif.F
+[ 44%] Generating topology_cp2k.F
+[ 45%] Generating topology_generate_util.F
+[ 45%] Generating topology_multiple_unit_cell.F
+[ 45%] Generating topology_gromos.F
+[ 45%] Generating topology_psf.F
+[ 45%] Generating topology_pdb.F
+[ 45%] Generating topology_input.F
+[ 45%] Generating topology_types.F
+[ 45%] Generating topology_util.F
+[ 45%] Generating topology_xtl.F
+[ 45%] Generating topology_xyz.F
+[ 45%] Generating torch_api.F
+[ 45%] Built target grid_miniapp
+[ 45%] Generating transport.F
+[ 45%] Generating transport_env_types.F
+[ 45%] Generating trexio.F
+[ 45%] Generating trexio_utils.F
+[ 45%] Generating uff_vdw_radii_table.F
+[ 45%] Generating voronoi_interface.F
+[ 45%] Generating virial_methods.F
+[ 45%] Generating wannier_states_types.F
+[ 45%] Generating wannier90.F
+[ 45%] Generating wannier_states.F
+[ 45%] Generating xas_methods.F
+[ 45%] Generating xas_env_types.F
+[ 45%] Generating xas_control.F
+[ 45%] Generating xas_restart.F
+[ 45%] Generating xas_tdp_atom.F
+[ 45%] Generating xas_tdp_integrals.F
+[ 45%] Generating xas_tdp_correction.F
+[ 46%] Generating xas_tdp_kernel.F
+[ 46%] Generating xas_tdp_types.F
+[ 46%] Generating xas_tdp_methods.F
+[ 46%] Generating xas_tdp_utils.F
+[ 46%] Generating xas_tp_scf.F
+[ 46%] Generating xc/cp_linked_list_xc_deriv.F
+[ 46%] Generating xc/xc.F
+[ 46%] Generating xc/xc_atom.F
+[ 46%] Generating xc/xc_b97.F
+[ 46%] Generating xc/xc_cs1.F
+[ 46%] Generating xc/xc_b97_fxc.F
+[ 46%] Generating xc/xc_derivative_desc.F
+[ 46%] Generating xc/xc_derivative_set_types.F
+[ 46%] Generating xc/xc_derivative_types.F
+[ 46%] Generating xc/xc_derivatives.F
+[ 46%] Generating xc/xc_exchange_gga.F
+[ 46%] Generating xc/xc_functionals_utilities.F
+[ 46%] Generating xc/xc_fxc_kernel.F
+[ 46%] Generating xc/xc_input_constants.F
+[ 46%] Generating xc/xc_hcth.F
+[ 46%] Generating xc/xc_libxc.F
+[ 46%] Generating xc/xc_ke_gga.F
+[ 46%] Generating xc/xc_lyp.F
+[ 46%] Generating xc/xc_libxc_wrap.F
+[ 46%] Generating xc/xc_lyp_adiabatic.F
+[ 46%] Generating xc/xc_optx.F
+[ 46%] Generating xc/xc_pade.F
+[ 46%] Generating xc/xc_perdew86.F
+[ 46%] Generating xc/xc_pbe.F
+[ 46%] Generating xc/xc_perdew_zunger.F
+[ 46%] Generating xc/xc_rho_cflags_types.F
+[ 46%] Generating xc/xc_tfw.F
+[ 47%] Generating xc/xc_tpss.F
+[ 46%] Generating xc/xc_perdew_wang.F
+[ 47%] Generating xc/xc_rho_set_types.F
+[ 47%] Generating xc/xc_util.F
+[ 47%] Generating xc/xc_thomas_fermi.F
+[ 47%] Generating xc/xc_vwn.F
+[ 47%] Generating xc/xc_xalpha.F
+[ 47%] Generating xc/xc_xbecke88_long_range.F
+[ 47%] Generating xc/xc_xbecke88.F
+[ 47%] Generating xc/xc_xbecke88_lr_adiabatic.F
+[ 47%] Generating xc/xc_xbecke_roussel.F
+[ 47%] Generating xc/xc_xbeef.F
+[ 47%] Generating xc/xc_xbr_pbe_lda_hole_t_c_lr.F
+[ 47%] Generating xc/xc_xlda_hole_t_c_lr.F
+[ 47%] Generating xc/xc_xpbe_hole_t_c_lr.F
+[ 47%] Generating xc_adiabatic_methods.F
+[ 47%] Generating xc_adiabatic_utils.F
+[ 48%] Generating xc/xc_xwpbe.F
+[ 48%] Generating xc_pot_saop.F
+[ 48%] Generating xray_diffraction.F
+[ 48%] Generating xc_write_output.F
+[ 48%] Linking C executable ../bin/grid_unittest.psmp
+[ 48%] Generating xtb_coulomb.F
+[ 48%] Generating xtb_eeq.F
+[ 48%] Generating xtb_ehess.F
+[ 48%] Generating xtb_hab_force.F
+[ 48%] Generating xtb_ehess_force.F
+[ 48%] Generating xtb_hcore.F
+[ 48%] Generating xtb_ks_matrix.F
+[ 48%] Generating xtb_matrices.F
+[ 48%] Generating xtb_parameters.F
+[ 48%] Generating xtb_potentials.F
+[ 48%] Generating xtb_qresp.F
+[ 48%] Built target grid_unittest
+[ 48%] Building Fortran object src/CMakeFiles/cp2k.dir/base/kinds.F.o
+[ 48%] Building Fortran object src/CMakeFiles/cp2k.dir/pw/fft/fft_plan.F.o
+[ 48%] Building Fortran object src/CMakeFiles/cp2k.dir/pw/fft/fft_kinds.F.o
+[ 48%] Building Fortran object src/CMakeFiles/cp2k.dir/grpp/libgrpp.F.o
+[ 48%] Building Fortran object src/CMakeFiles/cp2k.dir/common/kahan_sum.F.o
+[ 48%] Building Fortran object src/CMakeFiles/cp2k.dir/xc/xc_input_constants.F.o
+[ 48%] Building Fortran object src/CMakeFiles/cp2k.dir/shg_int/constants_operator.F.o
+[ 48%] Building Fortran object src/CMakeFiles/cp2k.dir/spglib_f08.F.o
+[ 48%] Building Fortran object src/CMakeFiles/cp2k.dir/openpmd_api.F.o
+[ 48%] Building Fortran object src/CMakeFiles/cp2k.dir/trexio.F.o
+[ 48%] Building Fortran object src/CMakeFiles/cp2k.dir/mimic/mcl_wrapper/mcl_requests.F.o
+[ 48%] Building C object src/CMakeFiles/cp2k.dir/fm/cp_fm_cusolver.c.o
+[ 48%] Building Fortran object src/CMakeFiles/cp2k.dir/pilaenv_hack.F.o
+[ 48%] Building C object src/CMakeFiles/cp2k.dir/base/machine_cpuid.c.o
+[ 48%] Building C object src/CMakeFiles/cp2k.dir/grpp/grpp_binomial.c.o
+[ 48%] Building C object src/CMakeFiles/cp2k.dir/common/cp_data_dir.c.o
+[ 48%] Building C object src/CMakeFiles/cp2k.dir/base/openmp_trace.c.o
+[ 48%] Building C object src/CMakeFiles/cp2k.dir/grpp/grpp_diff_gaussian.c.o
+[ 48%] Building C object src/CMakeFiles/cp2k.dir/sockets.c.o
+[ 48%] Building C object src/CMakeFiles/cp2k.dir/grpp/grpp_fortran.c.o
+[ 48%] Building C object src/CMakeFiles/cp2k.dir/grpp/grpp_factorial.c.o
+[ 48%] Building C object src/CMakeFiles/cp2k.dir/grpp/grpp_integrals_gradient.c.o
+[ 49%] Building C object src/CMakeFiles/cp2k.dir/grpp/grpp_momentum.c.o
+[ 49%] Building C object src/CMakeFiles/cp2k.dir/grpp/grpp_norm_gaussian.c.o
+[ 48%] Building C object src/CMakeFiles/cp2k.dir/grpp/grpp_angular_integrals.c.o
+[ 48%] Building C object src/CMakeFiles/cp2k.dir/grpp/grpp_full_grpp_integrals.c.o
+[ 48%] Building C object src/CMakeFiles/cp2k.dir/grpp/grpp_kinetic.c.o
+[ 49%] Building C object src/CMakeFiles/cp2k.dir/grpp/grpp_lmatrix.c.o
+[ 48%] Building C object src/CMakeFiles/cp2k.dir/grpp/grpp.c.o
+[ 49%] Building C object src/CMakeFiles/cp2k.dir/grpp/grpp_init_finalize.c.o
+[ 49%] Building C object src/CMakeFiles/cp2k.dir/grpp/grpp_nuclear_attraction.c.o
+[ 49%] Building C object src/CMakeFiles/cp2k.dir/grpp/grpp_nuclear_models.c.o
+[ 49%] Building C object src/CMakeFiles/cp2k.dir/grpp/grpp_outercore_integrals.c.o
+[ 49%] Building C object src/CMakeFiles/cp2k.dir/grpp/grpp_overlap.c.o
+[ 49%] Building C object src/CMakeFiles/cp2k.dir/grpp/grpp_overlap_gradient.c.o
+[ 49%] Building C object src/CMakeFiles/cp2k.dir/grpp/grpp_parameters.c.o
+[ 49%] Building C object src/CMakeFiles/cp2k.dir/grpp/grpp_radial_type2_integral.c.o
+[ 49%] Building C object src/CMakeFiles/cp2k.dir/grpp/grpp_screening.c.o
+[ 49%] Building C object src/CMakeFiles/cp2k.dir/grpp/grpp_radial_type1_integral.c.o
+[ 49%] Building C object src/CMakeFiles/cp2k.dir/grpp/grpp_potential.c.o
+[ 49%] Building C object src/CMakeFiles/cp2k.dir/grpp/grpp_shell.c.o
+[ 49%] Building C object src/CMakeFiles/cp2k.dir/grpp/grpp_specfunc_bessel_table.c.o
+[ 49%] Building C object src/CMakeFiles/cp2k.dir/grpp/grpp_specfunc_boys.c.o
+[ 49%] Building C object src/CMakeFiles/cp2k.dir/grpp/grpp_specfunc_dawson.c.o
+[ 49%] Building C object src/CMakeFiles/cp2k.dir/grpp/grpp_specfunc_fermi_sk.c.o
+[ 49%] Building C object src/CMakeFiles/cp2k.dir/grpp/grpp_specfunc_gfun.c.o
+[ 49%] Building C object src/CMakeFiles/cp2k.dir/grpp/grpp_specfunc_scaled_mod_sph_bessel.c.o
+[ 49%] Building C object src/CMakeFiles/cp2k.dir/grpp/grpp_spherical_harmonics.c.o
+[ 49%] Building C object src/CMakeFiles/cp2k.dir/grpp/grpp_spin_orbit_integrals.c.o
+[ 49%] Building C object src/CMakeFiles/cp2k.dir/grpp/grpp_type1_integrals.c.o
+[ 49%] Building C object src/CMakeFiles/cp2k.dir/grpp/grpp_type1_mcmurchie_davidson.c.o
+[ 49%] Building C object src/CMakeFiles/cp2k.dir/grpp/grpp_type2_integrals.c.o
+[ 49%] Building C object src/CMakeFiles/cp2k.dir/grpp/grpp_utils.c.o
+[ 49%] Building C object src/CMakeFiles/cp2k.dir/offload/offload_buffer.c.o
+[ 49%] Building C object src/CMakeFiles/cp2k.dir/offload/offload_library.c.o
+[ 50%] Building C object src/CMakeFiles/cp2k.dir/offload/offload_mempool.c.o
+[ 50%] Building C object src/CMakeFiles/cp2k.dir/mpiwrap/cp_mpi.c.o
+[ 50%] Building C object src/CMakeFiles/cp2k.dir/dbm/dbm_distribution.c.o
+[ 50%] Building C object src/CMakeFiles/cp2k.dir/dbm/dbm_library.c.o
+[ 50%] Building C object src/CMakeFiles/cp2k.dir/dbm/dbm_matrix.c.o
+[ 50%] Building C object src/CMakeFiles/cp2k.dir/dbm/dbm_multiply.c.o
+[ 50%] Building C object src/CMakeFiles/cp2k.dir/dbm/dbm_multiply_comm.c.o
+[ 50%] Building C object src/CMakeFiles/cp2k.dir/dbm/dbm_multiply_cpu.c.o
+[ 50%] Building C object src/CMakeFiles/cp2k.dir/dbm/dbm_shard.c.o
+[ 50%] Building C object src/CMakeFiles/cp2k.dir/grid/common/grid_basis_set.c.o
+[ 50%] Building C object src/CMakeFiles/cp2k.dir/grid/common/grid_library.c.o
+[ 50%] Building C object src/CMakeFiles/cp2k.dir/grid/common/grid_sphere_cache.c.o
+[ 50%] Building C object src/CMakeFiles/cp2k.dir/grid/dgemm/grid_dgemm_coefficients.c.o
+[ 50%] Building C object src/CMakeFiles/cp2k.dir/grid/dgemm/grid_dgemm_collocation_integration.c.o
+[ 50%] Building C object src/CMakeFiles/cp2k.dir/grid/dgemm/grid_dgemm_collocate.c.o
+[ 50%] Building C object src/CMakeFiles/cp2k.dir/grid/dgemm/grid_dgemm_context.c.o
+[ 50%] Building C object src/CMakeFiles/cp2k.dir/grid/dgemm/grid_dgemm_integrate.c.o
+[ 50%] Building C object src/CMakeFiles/cp2k.dir/grid/dgemm/grid_dgemm_prepare_pab.c.o
+[ 50%] Building C object src/CMakeFiles/cp2k.dir/grid/dgemm/grid_dgemm_non_orthorombic_corrections.c.o
+[ 50%] Building C object src/CMakeFiles/cp2k.dir/grid/dgemm/grid_dgemm_tensor_local.c.o
+[ 50%] Building C object src/CMakeFiles/cp2k.dir/grid/dgemm/grid_dgemm_utils.c.o
+[ 50%] Building C object src/CMakeFiles/cp2k.dir/grid/grid_task_list.c.o
+[ 50%] Building C object src/CMakeFiles/cp2k.dir/grid/ref/grid_ref_collocate.c.o
+[ 50%] Building C object src/CMakeFiles/cp2k.dir/grid/ref/grid_ref_integrate.c.o
+[ 50%] Building C object src/CMakeFiles/cp2k.dir/grid/ref/grid_ref_prepare_pab.c.o
+[ 50%] Building C object src/CMakeFiles/cp2k.dir/grid/ref/grid_ref_task_list.c.o
+[ 50%] Building C object src/CMakeFiles/cp2k.dir/grid/cpu/grid_cpu_collocate.c.o
+[ 50%] Building C object src/CMakeFiles/cp2k.dir/grid/cpu/grid_cpu_integrate.c.o
+[ 51%] Building C object src/CMakeFiles/cp2k.dir/grid/cpu/grid_cpu_prepare_pab.c.o
+[ 51%] Building C object src/CMakeFiles/cp2k.dir/grid/cpu/grid_cpu_task_list.c.o
+[ 51%] Building C object src/CMakeFiles/cp2k.dir/grid/grid_replay.c.o
+[ 51%] Building CXX object src/CMakeFiles/cp2k.dir/torch_c_api.cpp.o
+[ 51%] Building CXX object src/CMakeFiles/cp2k.dir/ace_c_api.cpp.o
+[ 51%] Building CXX object src/CMakeFiles/cp2k.dir/openpmd_c_api.cpp.o
+[ 51%] Building Fortran object src/CMakeFiles/cp2k.dir/minimax/minimax_exp_k53.F.o
+[ 52%] Building Fortran object src/CMakeFiles/cp2k.dir/common/mathconstants.F.o
+[ 52%] Building Fortran object src/CMakeFiles/cp2k.dir/base/machine.F.o
+[ 52%] Building Fortran object src/CMakeFiles/cp2k.dir/common/string_utilities.F.o
+[ 52%] Building Fortran object src/CMakeFiles/cp2k.dir/common/timings_base_type.F.o
+[ 52%] Building Fortran object src/CMakeFiles/cp2k.dir/input_constants.F.o
+[ 52%] Building Fortran object src/CMakeFiles/cp2k.dir/common/physcon.F.o
+[ 52%] Building Fortran object src/CMakeFiles/cp2k.dir/common/erf_complex.F.o
+[ 52%] Building Fortran object src/CMakeFiles/cp2k.dir/base/base_hooks.F.o
+[ 52%] Building Fortran object src/CMakeFiles/cp2k.dir/common/cp_files.F.o
+[ 52%] Building Fortran object src/CMakeFiles/cp2k.dir/aobasis/orbital_pointers.F.o
+[ 52%] Building Fortran object src/CMakeFiles/cp2k.dir/subsys/damping_dipole_types.F.o
+[ 52%] Building Fortran object src/CMakeFiles/cp2k.dir/common/cp_array_sort.F.o
+[ 52%] Building Fortran object src/CMakeFiles/cp2k.dir/mpiwrap/mp_perf_env.F.o
+[ 52%] Building Fortran object src/CMakeFiles/cp2k.dir/input/cp_parser_ilist_types.F.o
+[ 52%] Building Fortran object src/CMakeFiles/cp2k.dir/input/cp_parser_buffer_types.F.o
+[ 52%] Building Fortran object src/CMakeFiles/cp2k.dir/common/cp_iter_types.F.o
+[ 52%] Building Fortran object src/CMakeFiles/cp2k.dir/input/cp_parser_inpp_types.F.o
+[ 52%] Building Fortran object src/CMakeFiles/cp2k.dir/common/list_callstackentry.F.o
+[ 52%] Building Fortran object src/CMakeFiles/cp2k.dir/common/callgraph.F.o
+[ 52%] Building Fortran object src/CMakeFiles/cp2k.dir/common/list_routinereport.F.o
+[ 52%] Building Fortran object src/CMakeFiles/cp2k.dir/common/list_routinestat.F.o
+[ 52%] Building Fortran object src/CMakeFiles/cp2k.dir/common/routine_map.F.o
+[ 52%] Building Fortran object src/CMakeFiles/cp2k.dir/common/memory_utilities.F.o
+[ 52%] Building Fortran object src/CMakeFiles/cp2k.dir/common/print_messages.F.o
+[ 52%] Building Fortran object src/CMakeFiles/cp2k.dir/common/mathlib.F.o
+[ 52%] Building Fortran object src/CMakeFiles/cp2k.dir/aobasis/orbital_symbols.F.o
+[ 52%] Building Fortran object src/CMakeFiles/cp2k.dir/subsys/shell_potential_types.F.o
+[ 52%] Building Fortran object src/CMakeFiles/cp2k.dir/ace_wrapper.F.o
+[ 52%] Building Fortran object src/CMakeFiles/cp2k.dir/splines_types.F.o
+[ 52%] Building Fortran object src/CMakeFiles/cp2k.dir/pw/fft/mltfftsg_tools.F.o
+[ 53%] Building Fortran object src/CMakeFiles/cp2k.dir/dbt/dbt_allocate_wrap.F.o
+[ 53%] Building Fortran object src/CMakeFiles/cp2k.dir/common/gamma.F.o
+[ 53%] Building Fortran object src/CMakeFiles/cp2k.dir/common/lebedev.F.o
+[ 53%] Building Fortran object src/CMakeFiles/cp2k.dir/common/spherical_harmonics.F.o
+[ 53%] Building Fortran object src/CMakeFiles/cp2k.dir/aobasis/sto_ng.F.o
+[ 54%] Building Fortran object src/CMakeFiles/cp2k.dir/common/bessel_lib.F.o
+[ 54%] Building Fortran object src/CMakeFiles/cp2k.dir/pw/ps_wavelet_types.F.o
+[ 54%] Building Fortran object src/CMakeFiles/cp2k.dir/aobasis/ai_onecenter.F.o
+[ 54%] Building Fortran object src/CMakeFiles/cp2k.dir/common/splines.F.o
+[ 54%] Building Fortran object src/CMakeFiles/cp2k.dir/common/powell.F.o
+[ 54%] Building Fortran object src/CMakeFiles/cp2k.dir/qs_dftb_types.F.o
+[ 54%] Building Fortran object src/CMakeFiles/cp2k.dir/semi_empirical_expns3_types.F.o
+[ 54%] Building Fortran object src/CMakeFiles/cp2k.dir/semi_empirical_mpole_types.F.o
+[ 54%] Building Fortran object src/CMakeFiles/cp2k.dir/taper_types.F.o
+[ 55%] Building Fortran object src/CMakeFiles/cp2k.dir/semi_empirical_int_arrays.F.o
+[ 55%] Building Fortran object src/CMakeFiles/cp2k.dir/qs_rho_atom_types.F.o
+[ 55%] Building Fortran object src/CMakeFiles/cp2k.dir/common/whittaker.F.o
+[ 55%] Building Fortran object src/CMakeFiles/cp2k.dir/block_p_types.F.o
+[ 55%] Building Fortran object src/CMakeFiles/cp2k.dir/subsys/atprop_types.F.o
+[ 55%] Building Fortran object src/CMakeFiles/cp2k.dir/common/fparser.F.o
+[ 55%] Building Fortran object src/CMakeFiles/cp2k.dir/subsys/force_field_kind_types.F.o
+[ 55%] Building Fortran object src/CMakeFiles/cp2k.dir/common/cp_result_types.F.o
+[ 55%] Building Fortran object src/CMakeFiles/cp2k.dir/subsys/virial_types.F.o
+[ 55%] Building Fortran object src/CMakeFiles/cp2k.dir/torch_api.F.o
+[ 55%] Building Fortran object src/CMakeFiles/cp2k.dir/hfx_helpers.F.o
+[ 56%] Building Fortran object src/CMakeFiles/cp2k.dir/qmmm_ff_fist.F.o
+[ 56%] Building Fortran object src/CMakeFiles/cp2k.dir/xc/xc_rho_cflags_types.F.o
+[ 56%] Building Fortran object src/CMakeFiles/cp2k.dir/common/structure_factor_types.F.o
+[ 56%] Building Fortran object src/CMakeFiles/cp2k.dir/pw/ps_wavelet_fft3d.F.o
+[ 56%] Building Fortran object src/CMakeFiles/cp2k.dir/pw/lazy.F.o
+[ 56%] Building Fortran object src/CMakeFiles/cp2k.dir/deepmd_wrapper.F.o
+[ 56%] Building Fortran object src/CMakeFiles/cp2k.dir/exclusion_types.F.o
+[ 56%] Building Fortran object src/CMakeFiles/cp2k.dir/integration_grid_types.F.o
+[ 56%] Building Fortran object src/CMakeFiles/cp2k.dir/minimax/minimax_exp_k15.F.o
+[ 56%] Building Fortran object src/CMakeFiles/cp2k.dir/eri_mme/eri_mme_util.F.o
+[ 56%] Building Fortran object src/CMakeFiles/cp2k.dir/qmmm_gaussian_types.F.o
+[ 56%] Building Fortran object src/CMakeFiles/cp2k.dir/qs_charges_types.F.o
+[ 56%] Building Fortran object src/CMakeFiles/cp2k.dir/qs_fb_trial_fns_types.F.o
+[ 56%] Building Fortran object src/CMakeFiles/cp2k.dir/qs_energy_types.F.o
+[ 56%] Building Fortran object src/CMakeFiles/cp2k.dir/hfxbase/hfx_compression_core_methods.F.o
+[ 57%] Building Fortran object src/CMakeFiles/cp2k.dir/wannier_states_types.F.o
+[ 57%] Building Fortran object src/CMakeFiles/cp2k.dir/aobasis/ai_overlap_debug.F.o
+[ 57%] Building Fortran object src/CMakeFiles/cp2k.dir/common/gfun.F.o
+[ 57%] Building Fortran object src/CMakeFiles/cp2k.dir/aobasis/ai_contraction_sphi.F.o
+[ 57%] Building Fortran object src/CMakeFiles/cp2k.dir/aobasis/ai_overlap3_debug.F.o
+[ 57%] Building Fortran object src/CMakeFiles/cp2k.dir/xc/xc_functionals_utilities.F.o
+[ 57%] Building Fortran object src/CMakeFiles/cp2k.dir/common/xmgrace.F.o
+[ 57%] Building Fortran object src/CMakeFiles/cp2k.dir/fm/cp_dlaf_utils_api.F.o
+[ 57%] Building Fortran object src/CMakeFiles/cp2k.dir/arnoldi/arnoldi_geev.F.o
+[ 57%] Building Fortran object src/CMakeFiles/cp2k.dir/aobasis/ai_contraction.F.o
+[ 57%] Building Fortran object src/CMakeFiles/cp2k.dir/qs_hash_table_functions.F.o
+[ 57%] Building Fortran object src/CMakeFiles/cp2k.dir/simpar_types.F.o
+[ 58%] Building Fortran object src/CMakeFiles/cp2k.dir/hfxbase/hfx_contraction_methods.F.o
+[ 58%] Building Fortran object src/CMakeFiles/cp2k.dir/hfxbase/hfx_contract_block.F.o
+[ 58%] Building Fortran object src/CMakeFiles/cp2k.dir/fist_energy_types.F.o
+[ 58%] Building Fortran object src/CMakeFiles/cp2k.dir/common/d3_poly.F.o
+[ 58%] Building Fortran object src/CMakeFiles/cp2k.dir/negf_alloc_types.F.o
+[ 58%] Building Fortran object src/CMakeFiles/cp2k.dir/common/cp_min_heap.F.o
+[ 58%] Building Fortran object src/CMakeFiles/cp2k.dir/sockets_interface.F.o
+[ 58%] Building Fortran object src/CMakeFiles/cp2k.dir/mixed_energy_types.F.o
+[ 58%] Building Fortran object src/CMakeFiles/cp2k.dir/eeq_data.F.o
+[ 58%] Building Fortran object src/CMakeFiles/cp2k.dir/common/string_table.F.o
+[ 58%] Building Fortran object src/CMakeFiles/cp2k.dir/mm_mapping_library.F.o
+[ 58%] Building Fortran object src/CMakeFiles/cp2k.dir/qs_fb_buffer_types.F.o
+[ 58%] Building Fortran object src/CMakeFiles/cp2k.dir/common/eigenvalueproblems.F.o
+[ 58%] Building Fortran object src/CMakeFiles/cp2k.dir/uff_vdw_radii_table.F.o
+[ 58%] Building Fortran object src/CMakeFiles/cp2k.dir/wannier90.F.o
+[ 58%] Building Fortran object src/CMakeFiles/cp2k.dir/common/linear_systems.F.o
+[ 58%] Building Fortran object src/CMakeFiles/cp2k.dir/beta_gamma_psi.F.o
+[ 58%] Building Fortran object src/CMakeFiles/cp2k.dir/minimax/minimax_exp_gw.F.o
+[ 58%] Building Fortran object src/CMakeFiles/cp2k.dir/minimax/minimax_rpa.F.o
+[ 58%] Building Fortran object src/CMakeFiles/cp2k.dir/qs_apt_fdiff_types.F.o
+[ 58%] Building Fortran object src/CMakeFiles/cp2k.dir/qmmm_gaussian_data.F.o
+[ 58%] Building Fortran object src/CMakeFiles/cp2k.dir/farming_types.F.o
+[ 58%] Building Fortran object src/CMakeFiles/cp2k.dir/mdctrl_types.F.o
+[ 58%] Building Fortran object src/CMakeFiles/cp2k.dir/metadyn_tools/graph_utils.F.o
+[ 58%] Building Fortran object src/CMakeFiles/cp2k.dir/mimic/mcl_wrapper/mcl_api.F.o
+[ 58%] Building Fortran object src/CMakeFiles/cp2k.dir/motion/md_ener_types.F.o
+[ 58%] Building Fortran object src/CMakeFiles/cp2k.dir/negf_integr_utils.F.o
+[ 58%] Building Fortran object src/CMakeFiles/cp2k.dir/tmc/tmc_stati.F.o
+[ 58%] Building Fortran object src/CMakeFiles/cp2k.dir/tmc/tmc_tree_types.F.o
+[ 58%] Building Fortran object src/CMakeFiles/cp2k.dir/tmc/tmc_move_types.F.o
+[ 58%] Building Fortran object src/CMakeFiles/cp2k.dir/tmc/tmc_utils.F.o
+[ 58%] Building Fortran object src/CMakeFiles/cp2k.dir/pw/fft/fftw3_lib.F.o
+[ 58%] Building Fortran object src/CMakeFiles/cp2k.dir/pw/pw_fpga.F.o
+[ 58%] Building Fortran object src/CMakeFiles/cp2k.dir/aobasis/ai_os_rr.F.o
+[ 58%] Building Fortran object src/CMakeFiles/cp2k.dir/aobasis/ai_derivatives.F.o
+[ 59%] Building Fortran object src/CMakeFiles/cp2k.dir/hartree_local_types.F.o
+[ 59%] Building Fortran object src/CMakeFiles/cp2k.dir/aobasis/ai_oneelectron.F.o
+[ 59%] Building Fortran object src/CMakeFiles/cp2k.dir/aobasis/ai_overlap_aabb.F.o
+[ 59%] Building Fortran object src/CMakeFiles/cp2k.dir/aobasis/ai_overlap3.F.o
+[ 59%] Building Fortran object src/CMakeFiles/cp2k.dir/shg_int/construct_shg.F.o
+[ 59%] Building Fortran object src/CMakeFiles/cp2k.dir/shg_int/s_contract_shg.F.o
+[ 59%] Building Fortran object src/CMakeFiles/cp2k.dir/aobasis/ai_verfc.F.o
+[ 59%] Building Fortran object src/CMakeFiles/cp2k.dir/aobasis/ai_angmom.F.o
+[ 59%] Building Fortran object src/CMakeFiles/cp2k.dir/aobasis/ai_fermi_contact.F.o
+[ 59%] Building Fortran object src/CMakeFiles/cp2k.dir/qs_fb_hash_table_types.F.o
+[ 59%] Building Fortran object src/CMakeFiles/cp2k.dir/aobasis/ai_eri_debug.F.o
+[ 59%] Building Fortran object src/CMakeFiles/cp2k.dir/mol_force.F.o
+[ 59%] Building Fortran object src/CMakeFiles/cp2k.dir/aobasis/ao_util.F.o
+[ 59%] Building Fortran object src/CMakeFiles/cp2k.dir/mpiwrap/message_passing.F.o
+/local/data/public/crm98/cp2k-buildtree/build/src/mpiwrap/message_passing.F:67:8:
+
+   67 |    USE mpi_f08
+      |        1
+Warning: USE statement at (1) has no ONLY qualifier [-Wuse-without-only]
+[ 59%] Building Fortran object src/CMakeFiles/cp2k.dir/common/util.F.o
+[ 59%] Building Fortran object src/CMakeFiles/cp2k.dir/input/cp_parser_status_types.F.o
+[ 59%] Building Fortran object src/CMakeFiles/cp2k.dir/common/timings_types.F.o
+[ 59%] Building Fortran object src/CMakeFiles/cp2k.dir/pair_potential_types.F.o
+[ 59%] Building Fortran object src/CMakeFiles/cp2k.dir/dbt/dbt_index.F.o
+[ 59%] Building Fortran object src/CMakeFiles/cp2k.dir/qs_grid_atom.F.o
+[ 59%] Building Fortran object src/CMakeFiles/cp2k.dir/aobasis/ai_coulomb.F.o
+[ 59%] Building Fortran object src/CMakeFiles/cp2k.dir/pw/ps_wavelet_scaling_function.F.o
+[ 59%] Building Fortran object src/CMakeFiles/cp2k.dir/common/structure_factors.F.o
+[ 59%] Building Fortran object src/CMakeFiles/cp2k.dir/aobasis/ai_operator_ra2m.F.o
+[ 59%] Building Fortran object src/CMakeFiles/cp2k.dir/aobasis/ai_kinetic.F.o
+[ 59%] Building Fortran object src/CMakeFiles/cp2k.dir/aobasis/ai_elec_field.F.o
+[ 59%] Building Fortran object src/CMakeFiles/cp2k.dir/aobasis/ai_spin_orbit.F.o
+[ 59%] Building Fortran object src/CMakeFiles/cp2k.dir/dbt/tas/dbt_tas_global.F.o
+[ 59%] Building Fortran object src/CMakeFiles/cp2k.dir/dbt/tas/dbt_tas_util.F.o
+[ 59%] Building Fortran object src/CMakeFiles/cp2k.dir/qs_neighbor_list_types.F.o
+[ 59%] Building Fortran object src/CMakeFiles/cp2k.dir/xc/xc_derivative_desc.F.o
+[ 59%] Building Fortran object src/CMakeFiles/cp2k.dir/libgrpp_integrals.F.o
+[ 59%] Building Fortran object src/CMakeFiles/cp2k.dir/graphcon.F.o
+[ 59%] Building Fortran object src/CMakeFiles/cp2k.dir/qs_fb_matrix_data_types.F.o
+[ 59%] Building Fortran object src/CMakeFiles/cp2k.dir/common/list_timerenv.F.o
+[ 59%] Building Fortran object src/CMakeFiles/cp2k.dir/qs_nl_hash_table_types.F.o
+[ 59%] Building Fortran object src/CMakeFiles/cp2k.dir/qs_gcp_types.F.o
+[ 59%] Building Fortran object src/CMakeFiles/cp2k.dir/dbt/dbt_array_list_methods.F.o
+[ 59%] Building Fortran object src/CMakeFiles/cp2k.dir/common/list.F.o
+/local/data/public/crm98/cp2k-buildtree/build/src/mpiwrap/message_passing.F:28719:27:
+
+28719 |       CALL MPI_Get_address(ptr, type_descriptor%base, ierr)
+      |                           1
+......
+33514 |       CALL MPI_Get_address(ptr, type_descriptor%base, ierr)
+      |                           2
+Warning: Type mismatch between actual argument at (1) and actual argument at (2) (COMPLEX(8)/COMPLEX(4)).
+[ 59%] Building Fortran object src/CMakeFiles/cp2k.dir/force_field_types.F.o
+[ 59%] Building Fortran object src/CMakeFiles/cp2k.dir/pair_potential_util.F.o
+[ 59%] Building Fortran object src/CMakeFiles/cp2k.dir/aobasis/orbital_transformation_matrices.F.o
+[ 59%] Building Fortran object src/CMakeFiles/cp2k.dir/molsym.F.o
+[ 59%] Building Fortran object src/CMakeFiles/cp2k.dir/aobasis/ai_overlap_ppl.F.o
+[ 59%] Building Fortran object src/CMakeFiles/cp2k.dir/optimize_basis_types.F.o
+[ 59%] Building Fortran object src/CMakeFiles/cp2k.dir/aobasis/ai_overlap.F.o
+[ 59%] Building Fortran object src/CMakeFiles/cp2k.dir/pw/fft/fftsg_lib.F.o
+[ 59%] Building Fortran object src/CMakeFiles/cp2k.dir/pw/fft/fft_lib.F.o
+[ 59%] Building Fortran object src/CMakeFiles/cp2k.dir/emd/rt_propagation_ft.F.o
+[ 59%] Building Fortran object src/CMakeFiles/cp2k.dir/aobasis/ai_coulomb_test.F.o
+[ 59%] Building Fortran object src/CMakeFiles/cp2k.dir/aobasis/ai_moments.F.o
+[ 59%] Building Fortran object src/CMakeFiles/cp2k.dir/debug_os_integrals.F.o
+[ 59%] Building Fortran object src/CMakeFiles/cp2k.dir/fm/cp_blacs_types.F.o
+[ 59%] Building Fortran object src/CMakeFiles/cp2k.dir/offload/offload_api.F.o
+[ 59%] Building Fortran object src/CMakeFiles/cp2k.dir/submatrix_types.F.o
+[ 59%] Building Fortran object src/CMakeFiles/cp2k.dir/dgemm_counter_types.F.o
+[ 59%] Building Fortran object src/CMakeFiles/cp2k.dir/common/t_sh_p_s_c.F.o
+[ 59%] Building Fortran object src/CMakeFiles/cp2k.dir/mpiwrap/mp_perf_test.F.o
+[ 59%] Building Fortran object src/CMakeFiles/cp2k.dir/pexsi_interface.F.o
+[ 59%] Building Fortran object src/CMakeFiles/cp2k.dir/dbm/dbm_api.F.o
+[ 59%] Building Fortran object src/CMakeFiles/cp2k.dir/group_dist_types.F.o
+[ 59%] Building Fortran object src/CMakeFiles/cp2k.dir/common/cp_result_methods.F.o
+[ 59%] Building Fortran object src/CMakeFiles/cp2k.dir/domain_submatrix_types.F.o
+[ 59%] Building Fortran object src/CMakeFiles/cp2k.dir/pw/pw_grid_types.F.o
+[ 59%] Building Fortran object src/CMakeFiles/cp2k.dir/common/t_c_g0.F.o
+[ 59%] Building Fortran object src/CMakeFiles/cp2k.dir/pw/ps_wavelet_base.F.o
+[ 59%] Building Fortran object src/CMakeFiles/cp2k.dir/common/timings.F.o
+[ 59%] Building Fortran object src/CMakeFiles/cp2k.dir/dbt/tas/dbt_tas_types.F.o
+[ 59%] Building Fortran object src/CMakeFiles/cp2k.dir/dbm/dbm_tests.F.o
+[ 59%] Building Fortran object src/CMakeFiles/cp2k.dir/dbx/cp_dbcsr_api.F.o
+[ 59%] Building Fortran object src/CMakeFiles/cp2k.dir/common/timings_report.F.o
+[ 59%] Building Fortran object src/CMakeFiles/cp2k.dir/mscfg_types.F.o
+[ 59%] Building Fortran object src/CMakeFiles/cp2k.dir/transport_env_types.F.o
+[ 59%] Building Fortran object src/CMakeFiles/cp2k.dir/arnoldi/arnoldi_types.F.o
+[ 59%] Building Fortran object src/CMakeFiles/cp2k.dir/qs_fb_com_tasks_types.F.o
+[ 59%] Building Fortran object src/CMakeFiles/cp2k.dir/dbt/tas/dbt_tas_split.F.o
+[ 59%] Building Fortran object src/CMakeFiles/cp2k.dir/aobasis/ai_operators_r12.F.o
+[ 59%] Building Fortran object src/CMakeFiles/cp2k.dir/dbx/cp_dbcsr_contrib.F.o
+[ 59%] Building Fortran object src/CMakeFiles/cp2k.dir/dbt/tas/dbt_tas_base.F.o
+[ 59%] Building Fortran object src/CMakeFiles/cp2k.dir/arnoldi/arnoldi_vector.F.o
+[ 59%] Building Fortran object src/CMakeFiles/cp2k.dir/dbt/tas/dbt_tas_io.F.o
+[ 59%] Building Fortran object src/CMakeFiles/cp2k.dir/dbt/tas/dbt_tas_reshape_ops.F.o
+[ 59%] Building Fortran object src/CMakeFiles/cp2k.dir/pw/ps_wavelet_util.F.o
+[ 59%] Building Fortran object src/CMakeFiles/cp2k.dir/pw/ps_wavelet_kernel.F.o
+[ 59%] Building Fortran object src/CMakeFiles/cp2k.dir/arnoldi/arnoldi_data_methods.F.o
+[ 59%] Building Fortran object src/CMakeFiles/cp2k.dir/arnoldi/arnoldi_methods.F.o
+[ 59%] Building Fortran object src/CMakeFiles/cp2k.dir/dbt/tas/dbt_tas_mm.F.o
+[ 59%] Building Fortran object src/CMakeFiles/cp2k.dir/input/cp_parser_types.F.o
+[ 59%] Building Fortran object src/CMakeFiles/cp2k.dir/common/reference_manager.F.o
+[ 59%] Building Fortran object src/CMakeFiles/cp2k.dir/common/periodic_table.F.o
+[ 59%] Building Fortran object src/CMakeFiles/cp2k.dir/common/parallel_rng_types.F.o
+[ 59%] Building Fortran object src/CMakeFiles/cp2k.dir/kpsym.F.o
+[ 59%] Building Fortran object src/CMakeFiles/cp2k.dir/common/cp_log_handling.F.o
+[ 59%] Building Fortran object src/CMakeFiles/cp2k.dir/cp2k_info.F.o
+[ 59%] Building Fortran object src/CMakeFiles/cp2k.dir/common/cp_units.F.o
+[ 59%] Building Fortran object src/CMakeFiles/cp2k.dir/input/input_enumeration_types.F.o
+[ 59%] Building Fortran object src/CMakeFiles/cp2k.dir/input/cp_parser_inpp_methods.F.o
+[ 59%] Building Fortran object src/CMakeFiles/cp2k.dir/input/cp_parser_ilist_methods.F.o
+[ 59%] Building Fortran object src/CMakeFiles/cp2k.dir/common/cp_array_utils.F.o
+[ 59%] Building Fortran object src/CMakeFiles/cp2k.dir/libint_wrapper.F.o
+[ 59%] Building Fortran object src/CMakeFiles/cp2k.dir/minimax/minimax_exp.F.o
+[ 59%] Building Fortran object src/CMakeFiles/cp2k.dir/pw/fft_tools.F.o
+[ 59%] Building Fortran object src/CMakeFiles/cp2k.dir/domain_submatrix_methods.F.o
+[ 59%] Building Fortran object src/CMakeFiles/cp2k.dir/local_gemm_api.F.o
+[ 59%] Building Fortran object src/CMakeFiles/cp2k.dir/almo_scf_lbfgs_types.F.o
+[ 59%] Building Fortran object src/CMakeFiles/cp2k.dir/common/cp_error_handling.F.o
+[ 59%] Building Fortran object src/CMakeFiles/cp2k.dir/common/cg_test.F.o
+[ 59%] Building Fortran object src/CMakeFiles/cp2k.dir/hdf5_wrapper.F.o
+[ 59%] Building Fortran object src/CMakeFiles/cp2k.dir/splines_methods.F.o
+[ 59%] Building Fortran object src/CMakeFiles/cp2k.dir/ls_matrix_exp.F.o
+[ 59%] Building Fortran object src/CMakeFiles/cp2k.dir/header.F.o
+[ 59%] Building Fortran object src/CMakeFiles/cp2k.dir/arnoldi/arnoldi_api.F.o
+[ 59%] Building Fortran object src/CMakeFiles/cp2k.dir/eri_mme/eri_mme_gaussian.F.o
+[ 59%] Building Fortran object src/CMakeFiles/cp2k.dir/common/bibliography.F.o
+[ 59%] Building Fortran object src/CMakeFiles/cp2k.dir/csvr_system_utils.F.o
+[ 59%] Building Fortran object src/CMakeFiles/cp2k.dir/libint_2c_3c.F.o
+[ 59%] Building Fortran object src/CMakeFiles/cp2k.dir/dbt/dbt_types.F.o
+[ 59%] Building Fortran object src/CMakeFiles/cp2k.dir/dbt/tas/dbt_tas_test.F.o
+[ 59%] Building Fortran object src/CMakeFiles/cp2k.dir/eri_mme/eri_mme_lattice_summation.F.o
+[ 59%] Building Fortran object src/CMakeFiles/cp2k.dir/common/distribution_1d_types.F.o
+[ 59%] Building Fortran object src/CMakeFiles/cp2k.dir/fm/cp_blacs_env.F.o
+[ 59%] Building Fortran object src/CMakeFiles/cp2k.dir/input/cp_parser_methods.F.o
+[ 59%] Building Fortran object src/CMakeFiles/cp2k.dir/metadyn_tools/graph_methods.F.o
+[ 59%] Building Fortran object src/CMakeFiles/cp2k.dir/fm/cp_fm_struct.F.o
+[ 59%] Building Fortran object src/CMakeFiles/cp2k.dir/almo_scf_types.F.o
+[ 59%] Building Fortran object src/CMakeFiles/cp2k.dir/distribution_2d_types.F.o
+[ 59%] Building Fortran object src/CMakeFiles/cp2k.dir/global_types.F.o
+[ 59%] Building Fortran object src/CMakeFiles/cp2k.dir/ct_types.F.o
+[ 59%] Building Fortran object src/CMakeFiles/cp2k.dir/cp_external_control.F.o
+[ 59%] Building Fortran object src/CMakeFiles/cp2k.dir/statistical_methods.F.o
+[ 59%] Building Fortran object src/CMakeFiles/cp2k.dir/smearing_utils.F.o
+[ 59%] Building Fortran object src/CMakeFiles/cp2k.dir/pexsi_types.F.o
+[ 59%] Building Fortran object src/CMakeFiles/cp2k.dir/submatrix_dissection.F.o
+[ 59%] Building Fortran object src/CMakeFiles/cp2k.dir/input/input_val_types.F.o
+[ 59%] Building Fortran object src/CMakeFiles/cp2k.dir/subsys/cell_types.F.o
+[ 59%] Building Fortran object src/CMakeFiles/cp2k.dir/fm/cp_fm_types.F.o
+[ 60%] Building Fortran object src/CMakeFiles/cp2k.dir/atom_upf.F.o
+[ 60%] Building Fortran object src/CMakeFiles/cp2k.dir/swarm/swarm_message.F.o
+[ 60%] Building Fortran object src/CMakeFiles/cp2k.dir/almo_scf_diis_types.F.o
+[ 60%] Building Fortran object src/CMakeFiles/cp2k.dir/cryssym.F.o
+[ 61%] Building Fortran object src/CMakeFiles/cp2k.dir/subcell_types.F.o
+[ 61%] Building Fortran object src/CMakeFiles/cp2k.dir/fist_neighbor_list_types.F.o
+[ 61%] Building Fortran object src/CMakeFiles/cp2k.dir/tmc/tmc_types.F.o
+[ 61%] Building Fortran object src/CMakeFiles/cp2k.dir/motion/space_groups_types.F.o
+[ 61%] Building Fortran object src/CMakeFiles/cp2k.dir/tmc/tmc_analysis_types.F.o
+[ 61%] Building Fortran object src/CMakeFiles/cp2k.dir/input/cp_linked_list_input.F.o
+[ 61%] Building Fortran object src/CMakeFiles/cp2k.dir/input/input_keyword_types.F.o
+[ 61%] Building Fortran object src/CMakeFiles/cp2k.dir/input/input_section_types.F.o
+[ 61%] Building Fortran object src/CMakeFiles/cp2k.dir/fm/cp_fm_basic_linalg.F.o
+[ 61%] Building Fortran object src/CMakeFiles/cp2k.dir/preconditioner_types.F.o
+[ 61%] Building Fortran object src/CMakeFiles/cp2k.dir/fm/cp_linked_list_fm.F.o
+[ 61%] Building Fortran object src/CMakeFiles/cp2k.dir/fm/cp_fm_cusolver_api.F.o
+[ 61%] Building Fortran object src/CMakeFiles/cp2k.dir/et_coupling_types.F.o
+[ 61%] Building Fortran object src/CMakeFiles/cp2k.dir/fm/cp_cfm_types.F.o
+[ 61%] Building Fortran object src/CMakeFiles/cp2k.dir/fm/cp_fm_diag_utils.F.o
+[ 62%] Building Fortran object src/CMakeFiles/cp2k.dir/mp2_laplace.F.o
+[ 62%] Building Fortran object src/CMakeFiles/cp2k.dir/fm/cp_fm_pool_types.F.o
+[ 62%] Building Fortran object src/CMakeFiles/cp2k.dir/iterate_matrix.F.o
+[ 62%] Building Fortran object src/CMakeFiles/cp2k.dir/dbt/dbt_block.F.o
+[ 62%] Building Fortran object src/CMakeFiles/cp2k.dir/pw/pw_grid_info.F.o
+[ 62%] Building Fortran object src/CMakeFiles/cp2k.dir/eeq_input.F.o
+[ 62%] Building Fortran object src/CMakeFiles/cp2k.dir/subsys/external_potential_types.F.o
+[ 62%] Building Fortran object src/CMakeFiles/cp2k.dir/smeagol_control_types.F.o
+[ 62%] Building Fortran object src/CMakeFiles/cp2k.dir/atom_types.F.o
+[ 62%] Building Fortran object src/CMakeFiles/cp2k.dir/input/cp_output_handling.F.o
+[ 62%] Building Fortran object src/CMakeFiles/cp2k.dir/qs_cdft_opt_types.F.o
+[ 62%] Building Fortran object src/CMakeFiles/cp2k.dir/input_cp2k_kpoints.F.o
+[ 62%] Building Fortran object src/CMakeFiles/cp2k.dir/qs_density_mixing_types.F.o
+[ 62%] Building Fortran object src/CMakeFiles/cp2k.dir/aobasis/basis_set_types.F.o
+[ 62%] Building Fortran object src/CMakeFiles/cp2k.dir/input_cp2k_field.F.o
+[ 62%] Building Fortran object src/CMakeFiles/cp2k.dir/qs_fb_input.F.o
+[ 62%] Building Fortran object src/CMakeFiles/cp2k.dir/qs_mom_types.F.o
+[ 62%] Building Fortran object src/CMakeFiles/cp2k.dir/rel_control_types.F.o
+[ 62%] Building Fortran object src/CMakeFiles/cp2k.dir/metadynamics_types.F.o
+[ 62%] Building Fortran object src/CMakeFiles/cp2k.dir/fist_efield_types.F.o
+[ 62%] Building Fortran object src/CMakeFiles/cp2k.dir/extended_system_types.F.o
+[ 62%] Building Fortran object src/CMakeFiles/cp2k.dir/input_cp2k_external.F.o
+[ 62%] Building Fortran object src/CMakeFiles/cp2k.dir/qs_block_davidson_types.F.o
+[ 62%] Building Fortran object src/CMakeFiles/cp2k.dir/input/input_parsing.F.o
+[ 62%] Building Fortran object src/CMakeFiles/cp2k.dir/input_cp2k_exstate.F.o
+[ 63%] Building Fortran object src/CMakeFiles/cp2k.dir/input_cp2k_distribution.F.o
+[ 63%] Building Fortran object src/CMakeFiles/cp2k.dir/input_cp2k_atprop.F.o
+[ 62%] Building Fortran object src/CMakeFiles/cp2k.dir/xc/xc_libxc_wrap.F.o
+[ 63%] Building Fortran object src/CMakeFiles/cp2k.dir/input_cp2k_harris.F.o
+[ 63%] Building Fortran object src/CMakeFiles/cp2k.dir/iao_types.F.o
+[ 63%] Building Fortran object src/CMakeFiles/cp2k.dir/qmmm_gaussian_input.F.o
+[ 63%] Building Fortran object src/CMakeFiles/cp2k.dir/free_energy_types.F.o
+[ 63%] Building Fortran object src/CMakeFiles/cp2k.dir/input_optimize_basis.F.o
+[ 63%] Building Fortran object src/CMakeFiles/cp2k.dir/input_restart_rng.F.o
+[ 63%] Building Fortran object src/CMakeFiles/cp2k.dir/motion/gopt_param_types.F.o
+[ 63%] Building Fortran object src/CMakeFiles/cp2k.dir/motion/reftraj_types.F.o
+[ 63%] Building Fortran object src/CMakeFiles/cp2k.dir/motion/thermal_region_types.F.o
+[ 63%] Building Fortran object src/CMakeFiles/cp2k.dir/optimize_basis_utils.F.o
+[ 63%] Building Fortran object src/CMakeFiles/cp2k.dir/swarm/glbopt_history.F.o
+[ 63%] Building Fortran object src/CMakeFiles/cp2k.dir/swarm/swarm_mpi.F.o
+[ 63%] Building Fortran object src/CMakeFiles/cp2k.dir/tmc/tmc_move_handle.F.o
+[ 64%] Building Fortran object src/CMakeFiles/cp2k.dir/csvr_system_types.F.o
+[ 64%] Building Fortran object src/CMakeFiles/cp2k.dir/gle_system_types.F.o
+[ 64%] Building Fortran object src/CMakeFiles/cp2k.dir/pw/pw_grids.F.o
+[ 64%] Building Fortran object src/CMakeFiles/cp2k.dir/qs_dispersion_types.F.o
+[ 64%] Building Fortran object src/CMakeFiles/cp2k.dir/al_system_types.F.o
+[ 64%] Building Fortran object src/CMakeFiles/cp2k.dir/outer_scf_control_types.F.o
+[ 64%] Building Fortran object src/CMakeFiles/cp2k.dir/fm/cp_cfm_basic_linalg.F.o
+[ 64%] Building Fortran object src/CMakeFiles/cp2k.dir/qs_diis_types.F.o
+[ 64%] Building Fortran object src/CMakeFiles/cp2k.dir/negf_green_cache.F.o
+[ 64%] Building Fortran object src/CMakeFiles/cp2k.dir/qs_charge_mixing.F.o
+[ 64%] Building Fortran object src/CMakeFiles/cp2k.dir/input_cp2k_check.F.o
+[ 64%] Building Fortran object src/CMakeFiles/cp2k.dir/input_cp2k_read.F.o
+[ 64%] Building Fortran object src/CMakeFiles/cp2k.dir/swarm/glbopt_minhop.F.o
+[ 64%] Building Fortran object src/CMakeFiles/cp2k.dir/smeagol_emtoptions.F.o
+[ 64%] Building Fortran object src/CMakeFiles/cp2k.dir/motion/thermostat/thermostat_types.F.o
+[ 64%] Building Fortran object src/CMakeFiles/cp2k.dir/xas_control.F.o
+[ 64%] Building Fortran object src/CMakeFiles/cp2k.dir/qs_dftb_utils.F.o
+[ 64%] Building Fortran object src/CMakeFiles/cp2k.dir/pw_env/gaussian_gridlevels.F.o
+[ 64%] Building Fortran object src/CMakeFiles/cp2k.dir/xtb_types.F.o
+[ 64%] Building Fortran object src/CMakeFiles/cp2k.dir/linesearch.F.o
+[ 64%] Building Fortran object src/CMakeFiles/cp2k.dir/input_cp2k_scf.F.o
+[ 64%] Building Fortran object src/CMakeFiles/cp2k.dir/input_cp2k_hfx.F.o
+[ 64%] Building Fortran object src/CMakeFiles/cp2k.dir/fp_types.F.o
+[ 64%] Building Fortran object src/CMakeFiles/cp2k.dir/input_cp2k_voronoi.F.o
+[ 64%] Building Fortran object src/CMakeFiles/cp2k.dir/input_cp2k_almo.F.o
+[ 64%] Building Fortran object src/CMakeFiles/cp2k.dir/input/cp_output_handling_openpmd.F.o
+[ 64%] Building Fortran object src/CMakeFiles/cp2k.dir/input_cp2k_projection_rtp.F.o
+[ 64%] Building Fortran object src/CMakeFiles/cp2k.dir/input_cp2k_transport.F.o
+[ 64%] Building Fortran object src/CMakeFiles/cp2k.dir/input_cp2k_opt.F.o
+[ 64%] Building Fortran object src/CMakeFiles/cp2k.dir/input_cp2k_smeagol.F.o
+[ 64%] Building Fortran object src/CMakeFiles/cp2k.dir/greenx_interface.F.o
+[ 64%] Building Fortran object src/CMakeFiles/cp2k.dir/input_cp2k_pwdft.F.o
+[ 64%] Building Fortran object src/CMakeFiles/cp2k.dir/input_cp2k_eip.F.o
+[ 64%] Building Fortran object src/CMakeFiles/cp2k.dir/input_cp2k_embed.F.o
+[ 64%] Building Fortran object src/CMakeFiles/cp2k.dir/input_cp2k_mixed.F.o
+[ 65%] Building Fortran object src/CMakeFiles/cp2k.dir/input_cp2k_nnp.F.o
+[ 65%] Building Fortran object src/CMakeFiles/cp2k.dir/input_cp2k_resp.F.o
+[ 65%] Building Fortran object src/CMakeFiles/cp2k.dir/input_cp2k_free_energy.F.o
+[ 65%] Building Fortran object src/CMakeFiles/cp2k.dir/farming_methods.F.o
+[ 65%] Building Fortran object src/CMakeFiles/cp2k.dir/input_cp2k_constraints.F.o
+[ 65%] Building Fortran object src/CMakeFiles/cp2k.dir/input_cp2k_negf.F.o
+[ 65%] Building Fortran object src/CMakeFiles/cp2k.dir/input_optimize_input.F.o
+[ 66%] Building Fortran object src/CMakeFiles/cp2k.dir/motion/input_cp2k_vib.F.o
+[ 66%] Building Fortran object src/CMakeFiles/cp2k.dir/negf_io.F.o
+[ 66%] Building Fortran object src/CMakeFiles/cp2k.dir/swarm/glbopt_input.F.o
+[ 66%] Building Fortran object src/CMakeFiles/cp2k.dir/pao_types.F.o
+[ 66%] Building Fortran object src/CMakeFiles/cp2k.dir/dbt/dbt_io.F.o
+[ 66%] Building Fortran object src/CMakeFiles/cp2k.dir/dbt/dbt_reshape_ops.F.o
+[ 66%] Building Fortran object src/CMakeFiles/cp2k.dir/dbt/dbt_split.F.o
+[ 66%] Building Fortran object src/CMakeFiles/cp2k.dir/swarm/swarm_input.F.o
+[ 66%] Building Fortran object src/CMakeFiles/cp2k.dir/fm/cp_cfm_dlaf_api.F.o
+[ 66%] Building Fortran object src/CMakeFiles/cp2k.dir/dm_ls_scf_types.F.o
+[ 66%] Building Fortran object src/CMakeFiles/cp2k.dir/pao_input.F.o
+[ 66%] Building Fortran object src/CMakeFiles/cp2k.dir/pao_param_fock.F.o
+[ 67%] Building Fortran object src/CMakeFiles/cp2k.dir/pao_ml_neuralnet.F.o
+[ 67%] Building Fortran object src/CMakeFiles/cp2k.dir/pao_ml_gaussprocess.F.o
+[ 67%] Building Fortran object src/CMakeFiles/cp2k.dir/cp_dbcsr_operations.F.o
+[ 67%] Building Fortran object src/CMakeFiles/cp2k.dir/parallel_gemm_api.F.o
+[ 67%] Building Fortran object src/CMakeFiles/cp2k.dir/negf_integr_cc.F.o
+[ 67%] Building Fortran object src/CMakeFiles/cp2k.dir/fm/cp_fm_elpa.F.o
+[ 67%] Building Fortran object src/CMakeFiles/cp2k.dir/fm/cp_fm_dlaf_api.F.o
+[ 67%] Building Fortran object src/CMakeFiles/cp2k.dir/negf_integr_simpson.F.o
+[ 67%] Building Fortran object src/CMakeFiles/cp2k.dir/matrix_exp.F.o
+[ 67%] Building Fortran object src/CMakeFiles/cp2k.dir/negf_green_methods.F.o
+[ 67%] Building Fortran object src/CMakeFiles/cp2k.dir/fm/cp_fm_cholesky.F.o
+[ 67%] Building Fortran object src/CMakeFiles/cp2k.dir/pw/pw_types.F.o
+[ 67%] Building Fortran object src/CMakeFiles/cp2k.dir/dm_ls_scf_curvy.F.o
+[ 67%] Building Fortran object src/CMakeFiles/cp2k.dir/input_cp2k_ls.F.o
+[ 67%] Building Fortran object src/CMakeFiles/cp2k.dir/pao_optimizer.F.o
+[ 67%] Building Fortran object src/CMakeFiles/cp2k.dir/fm/cp_fm_diag.F.o
+[ 67%] Building Fortran object src/CMakeFiles/cp2k.dir/preconditioner_apply.F.o
+[ 67%] Building Fortran object src/CMakeFiles/cp2k.dir/fm/cp_cfm_cholesky.F.o
+[ 67%] Building Fortran object src/CMakeFiles/cp2k.dir/pw/pw_copy_all.F.o
+[ 67%] Building Fortran object src/CMakeFiles/cp2k.dir/pw/realspace_grid_cube.F.o
+[ 67%] Building Fortran object src/CMakeFiles/cp2k.dir/hirshfeld_types.F.o
+[ 67%] Building Fortran object src/CMakeFiles/cp2k.dir/qs_rho0_types.F.o
+[ 67%] Building Fortran object src/CMakeFiles/cp2k.dir/pw/pw_gpu.F.o
+[ 67%] Building Fortran object src/CMakeFiles/cp2k.dir/pw/dct.F.o
+[ 67%] Building Fortran object src/CMakeFiles/cp2k.dir/pw/realspace_grid_openpmd.F.o
+[ 67%] Building Fortran object src/CMakeFiles/cp2k.dir/xc/xc_b97_fxc.F.o
+[ 67%] Building Fortran object src/CMakeFiles/cp2k.dir/tip_scan_types.F.o
+[ 67%] Building Fortran object src/CMakeFiles/cp2k.dir/atom_optimization.F.o
+[ 67%] Building Fortran object src/CMakeFiles/cp2k.dir/qs_cdft_types.F.o
+[ 67%] Building Fortran object src/CMakeFiles/cp2k.dir/qs_ot_types.F.o
+[ 67%] Building Fortran object src/CMakeFiles/cp2k.dir/kpoint_transitional.F.o
+[ 67%] Building Fortran object src/CMakeFiles/cp2k.dir/qs_period_efield_types.F.o
+[ 67%] Building Fortran object src/CMakeFiles/cp2k.dir/qs_mo_types.F.o
+[ 67%] Building Fortran object src/CMakeFiles/cp2k.dir/tblite_types.F.o
+[ 67%] Building Fortran object src/CMakeFiles/cp2k.dir/preconditioner_solvers.F.o
+[ 67%] Building Fortran object src/CMakeFiles/cp2k.dir/cp_dbcsr_cholesky.F.o
+[ 67%] Building Fortran object src/CMakeFiles/cp2k.dir/soc_pseudopotential_utils.F.o
+[ 67%] Building Fortran object src/CMakeFiles/cp2k.dir/preconditioner_makes.F.o
+[ 67%] Building Fortran object src/CMakeFiles/cp2k.dir/fm/cp_cfm_diag.F.o
+[ 67%] Building Fortran object src/CMakeFiles/cp2k.dir/qs_condnum.F.o
+[ 67%] Building Fortran object src/CMakeFiles/cp2k.dir/rpa_sigma_functional.F.o
+[ 67%] Building Fortran object src/CMakeFiles/cp2k.dir/subsys/atomic_kind_types.F.o
+[ 67%] Building Fortran object src/CMakeFiles/cp2k.dir/almo_scf_methods.F.o
+[ 67%] Building Fortran object src/CMakeFiles/cp2k.dir/qs_matrix_pools.F.o
+[ 67%] Building Fortran object src/CMakeFiles/cp2k.dir/qs_density_matrices.F.o
+[ 68%] Building Fortran object src/CMakeFiles/cp2k.dir/qs_active_space_types.F.o
+[ 68%] Building Fortran object src/CMakeFiles/cp2k.dir/qs_scf_methods.F.o
+[ 68%] Building Fortran object src/CMakeFiles/cp2k.dir/cp_dbcsr_diag.F.o
+[ 68%] Building Fortran object src/CMakeFiles/cp2k.dir/subsys/particle_types.F.o
+[ 68%] Building Fortran object src/CMakeFiles/cp2k.dir/fist_nonbond_env_types.F.o
+[ 68%] Building Fortran object src/CMakeFiles/cp2k.dir/pair_potential.F.o
+[ 68%] Building Fortran object src/CMakeFiles/cp2k.dir/subsys/atomic_kind_list_types.F.o
+[ 69%] Building Fortran object src/CMakeFiles/cp2k.dir/qs_force_types.F.o
+[ 69%] Building Fortran object src/CMakeFiles/cp2k.dir/scf_control_types.F.o
+[ 69%] Building Fortran object src/CMakeFiles/cp2k.dir/ct_methods.F.o
+[ 69%] Building Fortran object src/CMakeFiles/cp2k.dir/fist_neighbor_lists.F.o
+[ 69%] Building Fortran object src/CMakeFiles/cp2k.dir/qs_loc_types.F.o
+[ 69%] Building Fortran object src/CMakeFiles/cp2k.dir/subsys/colvar_types.F.o
+[ 69%] Building Fortran object src/CMakeFiles/cp2k.dir/subsys/multipole_types.F.o
+[ 69%] Building Fortran object src/CMakeFiles/cp2k.dir/rmsd.F.o
+[ 69%] Building Fortran object src/CMakeFiles/cp2k.dir/subsys/particle_list_types.F.o
+[ 69%] Building Fortran object src/CMakeFiles/cp2k.dir/cp_symmetry.F.o
+[ 69%] Building Fortran object src/CMakeFiles/cp2k.dir/manybody_eam.F.o
+[ 69%] Building Fortran object src/CMakeFiles/cp2k.dir/ace_nlist.F.o
+[ 69%] Building Fortran object src/CMakeFiles/cp2k.dir/manybody_gal21.F.o
+[ 69%] Building Fortran object src/CMakeFiles/cp2k.dir/qs_active_space_utils.F.o
+[ 69%] Building Fortran object src/CMakeFiles/cp2k.dir/manybody_nequip.F.o
+[ 69%] Building Fortran object src/CMakeFiles/cp2k.dir/manybody_deepmd.F.o
+[ 69%] Building Fortran object src/CMakeFiles/cp2k.dir/manybody_gal.F.o
+[ 69%] Building Fortran object src/CMakeFiles/cp2k.dir/manybody_siepmann.F.o
+[ 69%] Building Fortran object src/CMakeFiles/cp2k.dir/manybody_tersoff.F.o
+[ 69%] Building Fortran object src/CMakeFiles/cp2k.dir/kpoint_types.F.o
+[ 69%] Building Fortran object src/CMakeFiles/cp2k.dir/dbt/dbt_methods.F.o
+[ 69%] Building Fortran object src/CMakeFiles/cp2k.dir/qs_localization_methods.F.o
+[ 69%] Building Fortran object src/CMakeFiles/cp2k.dir/cp_realspace_grid_cube.F.o
+[ 69%] Building Fortran object src/CMakeFiles/cp2k.dir/mixed_environment_utils.F.o
+[ 69%] Building Fortran object src/CMakeFiles/cp2k.dir/input_cp2k_restarts_util.F.o
+[ 69%] Building Fortran object src/CMakeFiles/cp2k.dir/cp_realspace_grid_openpmd.F.o
+[ 69%] Building Fortran object src/CMakeFiles/cp2k.dir/pw/pw_methods.F.o
+[ 69%] Building Fortran object src/CMakeFiles/cp2k.dir/manybody_ace.F.o
+[ 69%] Building Fortran object src/CMakeFiles/cp2k.dir/kpoint_k_r_trafo_simple.F.o
+[ 69%] Building Fortran object src/CMakeFiles/cp2k.dir/qs_harmonics_atom.F.o
+[ 69%] Building Fortran object src/CMakeFiles/cp2k.dir/atom_set_basis.F.o
+[ 69%] Building Fortran object src/CMakeFiles/cp2k.dir/atom_utils.F.o
+[ 69%] Building Fortran object src/CMakeFiles/cp2k.dir/aobasis/basis_set_container_types.F.o
+[ 69%] Building Fortran object src/CMakeFiles/cp2k.dir/generic_os_integrals.F.o
+[ 69%] Building Fortran object src/CMakeFiles/cp2k.dir/qs_o3c_types.F.o
+[ 69%] Building Fortran object src/CMakeFiles/cp2k.dir/gapw_1c_basis_set.F.o
+[ 69%] Building Fortran object src/CMakeFiles/cp2k.dir/aobasis/soft_basis_set.F.o
+[ 69%] Building Fortran object src/CMakeFiles/cp2k.dir/lri_optimize_ri_basis_types.F.o
+[ 69%] Building Fortran object src/CMakeFiles/cp2k.dir/aobasis/paw_basis_types.F.o
+[ 69%] Building Fortran object src/CMakeFiles/cp2k.dir/shg_int/generic_shg_integrals_init.F.o
+[ 69%] Building Fortran object src/CMakeFiles/cp2k.dir/aobasis/aux_basis_set.F.o
+[ 69%] Building Fortran object src/CMakeFiles/cp2k.dir/shg_int/generic_shg_integrals.F.o
+[ 69%] Building Fortran object src/CMakeFiles/cp2k.dir/manybody_potential.F.o
+[ 69%] Building Fortran object src/CMakeFiles/cp2k.dir/lri_environment_types.F.o
+[ 69%] Building Fortran object src/CMakeFiles/cp2k.dir/qs_o3c_methods.F.o
+[ 69%] Building Fortran object src/CMakeFiles/cp2k.dir/qs_cneo_types.F.o
+[ 69%] Building Fortran object src/CMakeFiles/cp2k.dir/qs_cneo_utils.F.o
+[ 69%] Building Fortran object src/CMakeFiles/cp2k.dir/qs_tddfpt2_soc_types.F.o
+[ 69%] Building Fortran object src/CMakeFiles/cp2k.dir/qs_local_rho_types.F.o
+[ 69%] Building Fortran object src/CMakeFiles/cp2k.dir/exstates_types.F.o
+[ 69%] Building Fortran object src/CMakeFiles/cp2k.dir/lri_compression.F.o
+[ 69%] Building Fortran object src/CMakeFiles/cp2k.dir/input_cp2k_colvar.F.o
+[ 69%] Building Fortran object src/CMakeFiles/cp2k.dir/subsys/molecule_kind_types.F.o
+[ 69%] Building Fortran object src/CMakeFiles/cp2k.dir/topology_types.F.o
+[ 69%] Building Fortran object src/CMakeFiles/cp2k.dir/atoms_input.F.o
+[ 69%] Building Fortran object src/CMakeFiles/cp2k.dir/topology_gromos.F.o
+[ 69%] Building Fortran object src/CMakeFiles/cp2k.dir/input_cp2k_binary_restarts.F.o
+[ 69%] Building Fortran object src/CMakeFiles/cp2k.dir/topology_multiple_unit_cell.F.o
+[ 70%] Building Fortran object src/CMakeFiles/cp2k.dir/topology_xyz.F.o
+[ 69%] Building Fortran object src/CMakeFiles/cp2k.dir/topology_cp2k.F.o
+[ 70%] Building Fortran object src/CMakeFiles/cp2k.dir/topology_input.F.o
+[ 70%] Building Fortran object src/CMakeFiles/cp2k.dir/topology_pdb.F.o
+[ 70%] Building Fortran object src/CMakeFiles/cp2k.dir/subsys/molecule_types.F.o
+[ 71%] Building Fortran object src/CMakeFiles/cp2k.dir/subsys/molecule_kind_list_types.F.o
+[ 71%] Building Fortran object src/CMakeFiles/cp2k.dir/lri_integrals.F.o
+[ 71%] Building Fortran object src/CMakeFiles/cp2k.dir/subsys/molecule_list_types.F.o
+[ 71%] Building Fortran object src/CMakeFiles/cp2k.dir/topology_connectivity_util.F.o
+[ 71%] Building Fortran object src/CMakeFiles/cp2k.dir/qs_loc_molecules.F.o
+[ 71%] Building Fortran object src/CMakeFiles/cp2k.dir/motion/thermostat/thermostat_mapping.F.o
+[ 71%] Building Fortran object src/CMakeFiles/cp2k.dir/fist_intra_force.F.o
+[ 71%] Building Fortran object src/CMakeFiles/cp2k.dir/subsys/cp_subsys_types.F.o
+[ 71%] Building Fortran object src/CMakeFiles/cp2k.dir/virial_methods.F.o
+[ 71%] Building Fortran object src/CMakeFiles/cp2k.dir/eip_environment_types.F.o
+[ 72%] Building Fortran object src/CMakeFiles/cp2k.dir/nnp_environment_types.F.o
+[ 72%] Building Fortran object src/CMakeFiles/cp2k.dir/embed_types.F.o
+[ 72%] Building Fortran object src/CMakeFiles/cp2k.dir/ipi_environment_types.F.o
+[ 72%] Building Fortran object src/CMakeFiles/cp2k.dir/negf_control_types.F.o
+[ 72%] Building Fortran object src/CMakeFiles/cp2k.dir/fp_methods.F.o
+[ 72%] Building Fortran object src/CMakeFiles/cp2k.dir/motion/dimer_types.F.o
+[ 72%] Building Fortran object src/CMakeFiles/cp2k.dir/eip_silicon.F.o
+[ 72%] Building Fortran object src/CMakeFiles/cp2k.dir/motion/dimer_utils.F.o
+[ 72%] Building Fortran object src/CMakeFiles/cp2k.dir/nnp_acsf.F.o
+[ 72%] Building Fortran object src/CMakeFiles/cp2k.dir/nnp_model.F.o
+[ 72%] Building Fortran object src/CMakeFiles/cp2k.dir/motion/helium_types.F.o
+[ 72%] Building Fortran object src/CMakeFiles/cp2k.dir/negf_subgroup_types.F.o
+[ 72%] Building Fortran object src/CMakeFiles/cp2k.dir/dbt/dbt_test.F.o
+[ 72%] Building Fortran object src/CMakeFiles/cp2k.dir/motion/thermostat/extended_system_mapping.F.o
+[ 72%] Building Fortran object src/CMakeFiles/cp2k.dir/motion/thermostat/al_system_mapping.F.o
+[ 72%] Building Fortran object src/CMakeFiles/cp2k.dir/motion/thermostat/csvr_system_mapping.F.o
+[ 72%] Building Fortran object src/CMakeFiles/cp2k.dir/motion/thermostat/al_system_init.F.o
+[ 72%] Building Fortran object src/CMakeFiles/cp2k.dir/motion/thermostat/csvr_system_init.F.o
+[ 72%] Building Fortran object src/CMakeFiles/cp2k.dir/atom_sgp.F.o
+[ 72%] Building Fortran object src/CMakeFiles/cp2k.dir/nnp_force.F.o
+[ 72%] Building Fortran object src/CMakeFiles/cp2k.dir/dbt/dbt_api.F.o
+[ 72%] Building Fortran object src/CMakeFiles/cp2k.dir/xas_tdp_types.F.o
+[ 72%] Building Fortran object src/CMakeFiles/cp2k.dir/qs_tensors_types.F.o
+[ 72%] Building Fortran object src/CMakeFiles/cp2k.dir/pw/realspace_grid_types.F.o
+[ 72%] Building Fortran object src/CMakeFiles/cp2k.dir/cp_control_types.F.o
+[ 72%] Building Fortran object src/CMakeFiles/cp2k.dir/rixs_types.F.o
+[ 72%] Building Fortran object src/CMakeFiles/cp2k.dir/post_scf_bandstructure_types.F.o
+[ 72%] Building Fortran object src/CMakeFiles/cp2k.dir/rpa_gw_ic.F.o
+[ 72%] Building Fortran object src/CMakeFiles/cp2k.dir/admm_dm_types.F.o
+[ 72%] Building Fortran object src/CMakeFiles/cp2k.dir/xtb_parameters.F.o
+[ 72%] Building Fortran object src/CMakeFiles/cp2k.dir/paw_proj_set_types.F.o
+[ 72%] Building Fortran object src/CMakeFiles/cp2k.dir/s_square_methods.F.o
+[ 72%] Building Fortran object src/CMakeFiles/cp2k.dir/rt_propagation_types.F.o
+[ 72%] Building Fortran object src/CMakeFiles/cp2k.dir/maxwell_solver_interface.F.o
+[ 72%] Building Fortran object src/CMakeFiles/cp2k.dir/emd/rt_make_propagators.F.o
+[ 72%] Building Fortran object src/CMakeFiles/cp2k.dir/pw/cube_utils.F.o
+[ 72%] Building Fortran object src/CMakeFiles/cp2k.dir/cp_realspace_grid_init.F.o
+[ 72%] Building Fortran object src/CMakeFiles/cp2k.dir/pme_tools.F.o
+[ 72%] Building Fortran object src/CMakeFiles/cp2k.dir/pw/cp_linked_list_pw.F.o
+[ 72%] Building Fortran object src/CMakeFiles/cp2k.dir/pw/dgs.F.o
+[ 72%] Building Fortran object src/CMakeFiles/cp2k.dir/grid/grid_api.F.o
+[ 72%] Building Fortran object src/CMakeFiles/cp2k.dir/input_cp2k_rsgrid.F.o
+[ 72%] Building Fortran object src/CMakeFiles/cp2k.dir/gw_communication.F.o
+[ 72%] Building Fortran object src/CMakeFiles/cp2k.dir/mm_collocate_potential.F.o
+[ 72%] Building Fortran object src/CMakeFiles/cp2k.dir/pw/pw_pool_types.F.o
+[ 72%] Building Fortran object src/CMakeFiles/cp2k.dir/task_list_types.F.o
+[ 72%] Building Fortran object src/CMakeFiles/cp2k.dir/kg_environment_types.F.o
+[ 72%] Building Fortran object src/CMakeFiles/cp2k.dir/pw/dielectric_types.F.o
+[ 72%] Building Fortran object src/CMakeFiles/cp2k.dir/pw/pw_spline_utils.F.o
+[ 72%] Building Fortran object src/CMakeFiles/cp2k.dir/pw/dirichlet_bc_types.F.o
+[ 73%] Building Fortran object src/CMakeFiles/cp2k.dir/xc/xc_derivative_types.F.o
+[ 72%] Building Fortran object src/CMakeFiles/cp2k.dir/pw/mt_util.F.o
+[ 73%] Building Fortran object src/CMakeFiles/cp2k.dir/qs_rho_types.F.o
+[ 73%] Building Fortran object src/CMakeFiles/cp2k.dir/qs_dispersion_nonloc.F.o
+[ 73%] Building Fortran object src/CMakeFiles/cp2k.dir/pw/rs_methods.F.o
+[ 73%] Building Fortran object src/CMakeFiles/cp2k.dir/qs_linres_nmr_epr_common_utils.F.o
+[ 73%] Building Fortran object src/CMakeFiles/cp2k.dir/pw/ps_implicit_types.F.o
+[ 73%] Building Fortran object src/CMakeFiles/cp2k.dir/xc/cp_linked_list_xc_deriv.F.o
+[ 73%] Building Fortran object src/CMakeFiles/cp2k.dir/kg_vertex_coloring_methods.F.o
+[ 73%] Building Fortran object src/CMakeFiles/cp2k.dir/qs_wf_history_types.F.o
+[ 73%] Building Fortran object src/CMakeFiles/cp2k.dir/pw/pw_poisson_types.F.o
+[ 73%] Building Fortran object src/CMakeFiles/cp2k.dir/xc/xc_derivative_set_types.F.o
+[ 74%] Building Fortran object src/CMakeFiles/cp2k.dir/pw_env/pw_env_types.F.o
+[ 74%] Building Fortran object src/CMakeFiles/cp2k.dir/pw_poisson_read_input.F.o
+[ 74%] Building Fortran object src/CMakeFiles/cp2k.dir/pw/dg_rho0_types.F.o
+[ 74%] Building Fortran object src/CMakeFiles/cp2k.dir/pw/ps_wavelet_methods.F.o
+[ 74%] Building Fortran object src/CMakeFiles/cp2k.dir/pair_potential_coulomb.F.o
+[ 74%] Building Fortran object src/CMakeFiles/cp2k.dir/pw/dg_types.F.o
+[ 74%] Building Fortran object src/CMakeFiles/cp2k.dir/semi_empirical_types.F.o
+[ 74%] Building Fortran object src/CMakeFiles/cp2k.dir/qs_ks_qmmm_types.F.o
+[ 74%] Building Fortran object src/CMakeFiles/cp2k.dir/qmmm_gaussian_init.F.o
+[ 74%] Building Fortran object src/CMakeFiles/cp2k.dir/pw/dielectric_methods.F.o
+[ 74%] Building Fortran object src/CMakeFiles/cp2k.dir/pw/dirichlet_bc_methods.F.o
+[ 74%] Building Fortran object src/CMakeFiles/cp2k.dir/semi_empirical_par_utils.F.o
+[ 74%] Building Fortran object src/CMakeFiles/cp2k.dir/semi_empirical_int3_utils.F.o
+[ 74%] Building Fortran object src/CMakeFiles/cp2k.dir/semi_empirical_int_gks.F.o
+[ 74%] Building Fortran object src/CMakeFiles/cp2k.dir/semi_empirical_int_utils.F.o
+[ 74%] Building Fortran object src/CMakeFiles/cp2k.dir/semi_empirical_mpole_methods.F.o
+[ 74%] Building Fortran object src/CMakeFiles/cp2k.dir/semi_empirical_parameters.F.o
+[ 74%] Building Fortran object src/CMakeFiles/cp2k.dir/pw/ps_implicit_methods.F.o
+[ 74%] Building Fortran object src/CMakeFiles/cp2k.dir/cp_ddapc_methods.F.o
+[ 74%] Building Fortran object src/CMakeFiles/cp2k.dir/xc/xc_util.F.o
+[ 74%] Building Fortran object src/CMakeFiles/cp2k.dir/pw_env/cp_spline_utils.F.o
+[ 74%] Building Fortran object src/CMakeFiles/cp2k.dir/input_cp2k_poisson.F.o
+[ 74%] Building Fortran object src/CMakeFiles/cp2k.dir/pw_env/rs_pw_interface.F.o
+[ 74%] Building Fortran object src/CMakeFiles/cp2k.dir/xc/xc_rho_set_types.F.o
+[ 74%] Building Fortran object src/CMakeFiles/cp2k.dir/semi_empirical_int_num.F.o
+[ 74%] Building Fortran object src/CMakeFiles/cp2k.dir/ewald_environment_types.F.o
+[ 74%] Building Fortran object src/CMakeFiles/cp2k.dir/input_cp2k_mm.F.o
+[ 74%] Building Fortran object src/CMakeFiles/cp2k.dir/fist_nonbond_force.F.o
+[ 74%] Building Fortran object src/CMakeFiles/cp2k.dir/qs_kpp1_env_types.F.o
+[ 74%] Building Fortran object src/CMakeFiles/cp2k.dir/xc/xc_cs1.F.o
+[ 74%] Building Fortran object src/CMakeFiles/cp2k.dir/xc/xc_b97.F.o
+[ 74%] Building Fortran object src/CMakeFiles/cp2k.dir/xc/xc_exchange_gga.F.o
+[ 74%] Building Fortran object src/CMakeFiles/cp2k.dir/xc/xc_ke_gga.F.o
+[ 74%] Building Fortran object src/CMakeFiles/cp2k.dir/xc/xc_lyp.F.o
+[ 74%] Building Fortran object src/CMakeFiles/cp2k.dir/xc/xc_hcth.F.o
+[ 74%] Building Fortran object src/CMakeFiles/cp2k.dir/xc/xc_thomas_fermi.F.o
+[ 74%] Building Fortran object src/CMakeFiles/cp2k.dir/xc/xc_pade.F.o
+[ 74%] Building Fortran object src/CMakeFiles/cp2k.dir/xc/xc_perdew_zunger.F.o
+[ 75%] Building Fortran object src/CMakeFiles/cp2k.dir/xc/xc_tfw.F.o
+[ 75%] Building Fortran object src/CMakeFiles/cp2k.dir/xc/xc_xbecke_roussel.F.o
+[ 74%] Building Fortran object src/CMakeFiles/cp2k.dir/xc/xc_lyp_adiabatic.F.o
+[ 75%] Building Fortran object src/CMakeFiles/cp2k.dir/xc/xc_xalpha.F.o
+[ 75%] Building Fortran object src/CMakeFiles/cp2k.dir/xc/xc_vwn.F.o
+[ 74%] Building Fortran object src/CMakeFiles/cp2k.dir/xc/xc_pbe.F.o
+[ 75%] Building Fortran object src/CMakeFiles/cp2k.dir/xc/xc_xbeef.F.o
+[ 75%] Building Fortran object src/CMakeFiles/cp2k.dir/xc/xc_xbecke88.F.o
+[ 74%] Building Fortran object src/CMakeFiles/cp2k.dir/xc/xc_optx.F.o
+[ 74%] Building Fortran object src/CMakeFiles/cp2k.dir/xc/xc_libxc.F.o
+[ 74%] Building Fortran object src/CMakeFiles/cp2k.dir/xc/xc_tpss.F.o
+[ 74%] Building Fortran object src/CMakeFiles/cp2k.dir/xc/xc_perdew_wang.F.o
+[ 75%] Building Fortran object src/CMakeFiles/cp2k.dir/xc/xc_xbecke88_lr_adiabatic.F.o
+[ 75%] Building Fortran object src/CMakeFiles/cp2k.dir/xc/xc_xlda_hole_t_c_lr.F.o
+[ 75%] Building Fortran object src/CMakeFiles/cp2k.dir/xc/xc_xbecke88_long_range.F.o
+[ 75%] Building Fortran object src/CMakeFiles/cp2k.dir/xc/xc_xpbe_hole_t_c_lr.F.o
+[ 75%] Building Fortran object src/CMakeFiles/cp2k.dir/xc/xc_xwpbe.F.o
+[ 75%] Building Fortran object src/CMakeFiles/cp2k.dir/semi_empirical_int_debug.F.o
+[ 75%] Building Fortran object src/CMakeFiles/cp2k.dir/semi_empirical_int_ana.F.o
+[ 75%] Building Fortran object src/CMakeFiles/cp2k.dir/qs_p_env_types.F.o
+[ 75%] Building Fortran object src/CMakeFiles/cp2k.dir/xc/xc_perdew86.F.o
+[ 75%] Building Fortran object src/CMakeFiles/cp2k.dir/input_cp2k_subsys.F.o
+[ 75%] Building Fortran object src/CMakeFiles/cp2k.dir/input_cp2k_tb.F.o
+[ 75%] Building Fortran object src/CMakeFiles/cp2k.dir/input_cp2k_se.F.o
+[ 75%] Building Fortran object src/CMakeFiles/cp2k.dir/tmc/input_cp2k_tmc.F.o
+[ 75%] Building Fortran object src/CMakeFiles/cp2k.dir/xc/xc_fxc_kernel.F.o
+[ 75%] Building Fortran object src/CMakeFiles/cp2k.dir/xc/xc_xbr_pbe_lda_hole_t_c_lr.F.o
+[ 75%] Building Fortran object src/CMakeFiles/cp2k.dir/input_cp2k_qs.F.o
+[ 75%] Building Fortran object src/CMakeFiles/cp2k.dir/semi_empirical_utils.F.o
+[ 75%] Building Fortran object src/CMakeFiles/cp2k.dir/cell_methods.F.o
+[ 75%] Building Fortran object src/CMakeFiles/cp2k.dir/shg_integrals_test.F.o
+[ 75%] Building Fortran object src/CMakeFiles/cp2k.dir/input_cp2k_motion_print.F.o
+[ 75%] Building Fortran object src/CMakeFiles/cp2k.dir/input_cp2k_thermostats.F.o
+[ 75%] Building Fortran object src/CMakeFiles/cp2k.dir/input_cp2k_loc.F.o
+[ 75%] Building Fortran object src/CMakeFiles/cp2k.dir/qs_kind_types.F.o
+[ 75%] Building Fortran object src/CMakeFiles/cp2k.dir/input_cp2k_neb.F.o
