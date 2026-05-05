@@ -36,7 +36,7 @@ case "$TARGET_BRANCH" in
   master|*)
       CP2K_EXE="$BIN_ROOT/master/cp2k.psmp"
       INSTALL_LIB="$BIN_ROOT/master/lib"
-      LABEL="upstream-master"
+      LABEL="tag-version-2026.1"
       PROJECT_ROOT="/home/raid/crm98/cp2k-upstream-master"
       OUTDIR_PARENT="cp2k_master"
       ;;
