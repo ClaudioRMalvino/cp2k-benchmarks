@@ -6,7 +6,7 @@
 #SBATCH --nodelist=phy-cerberus4
 #SBATCH --ntasks=36
 #SBATCH --mem-per-cpu=2G
-#SBATCH --time=01:00:00
+#SBATCH --time=00:50:00
 #SBATCH --output=/home/raid/crm98/cp2k-benchmarks/logs/NNP_Benchmarking_%j.out
 #SBATCH --mail-type=ALL
 
@@ -30,7 +30,7 @@ mkdir -p "$BIN_ROOT/feature-nnp-native-spline/lib"
 CP2K_REPO=/home/raid/crm98/cp2k
 
 # ---------------------------------------------------------------------------
-# 1) Master — built from the dedicated upstream clone into 'cp2k-buildtree'.
+# Master — built from the dedicated upstream clone into 'cp2k-buildtree'.
 #    No collision risk with the feature builds (different scratch tree).
 # ---------------------------------------------------------------------------
 cd /home/raid/crm98/cp2k-benchmarks/cp2k_master/
@@ -48,11 +48,10 @@ cp /local/data/public/crm98/original_cp2k/tools/toolchain/install/setup \
    "$BIN_ROOT/setup"
 
 # ---------------------------------------------------------------------------
-# 2) Feature branch: nnp-verlet-cells.  rebuild_cp2k.sh rsyncs
+#  Feature branch: nnp-verlet-cells.  rebuild_cp2k.sh rsyncs
 #    /home/raid/crm98/cp2k -> /local/data/public/crm98/original_cp2k, so
 #    'feature' and 'native-spline' share the same scratch source AND the
-#    same install/{bin,lib}.  We MUST snapshot bin+lib into $BIN_ROOT before
-#    moving on to the next branch.
+#    same install/{bin,lib}.
 # ---------------------------------------------------------------------------
 git -C "$CP2K_REPO" stash
 git -C "$CP2K_REPO" checkout feature/nnp-verlet-cells
@@ -64,8 +63,7 @@ cp -P "$FEATURE_INSTALL/lib"/libcp2k.so*    "$BIN_ROOT/feature-nnp-verlet-cells/
 git -C "$CP2K_REPO" stash pop
 
 # ---------------------------------------------------------------------------
-# 3) Feature branch: nnp-native-spline.  Overwrites $FEATURE_INSTALL — that's
-#    fine because verlet-cells is already snapshotted in $BIN_ROOT above.
+#  Feature branch: nnp-native-spline. 
 # ---------------------------------------------------------------------------
 git -C "$CP2K_REPO" stash
 git -C "$CP2K_REPO" checkout feature/nnp-native-spline
@@ -76,7 +74,7 @@ cp -P "$FEATURE_INSTALL/lib"/libcp2k.so*    "$BIN_ROOT/feature-nnp-native-spline
 git -C "$CP2K_REPO" stash pop
 
 # ---------------------------------------------------------------------------
-# Sanity check: confirm the three cp2k.psmp binaries and their libcp2k.so
+# Confirm the three cp2k.psmp binaries and their libcp2k.so
 # are genuinely distinct.  Matching hashes would mean a rebuild was skipped
 # or the wrong source tree was used.
 # ---------------------------------------------------------------------------
@@ -96,7 +94,7 @@ ldd "$BIN_ROOT/feature-nnp-verlet-cells/cp2k.psmp" | grep libcp2k
 echo ""
 
 # ---------------------------------------------------------------------------
-# Benchmarks.  The run scripts read from $BIN_ROOT/<branch>/{cp2k.psmp,lib},
+# Benchmarks. The run scripts read from $BIN_ROOT/<branch>/{cp2k.psmp,lib},
 # so the home-repo's currently-checked-out branch is irrelevant from here on.
 # ---------------------------------------------------------------------------
 cd /home/raid/crm98/cp2k-benchmarks/scripts/
@@ -116,12 +114,6 @@ echo "=== CORE SCALING ==="
 # ---------------------------------------------------------------------------
 # Copy CSV results from node-local scratch to home so they are accessible
 # from the login node (cerberus1) for plotting.
-#
-# Only the .csv files travel to /home — the per-run cp2k.out logs, input
-# copies, and NNP symlinks stay on scratch.  A previous unfiltered `rsync -a`
-# pulled the whole tree (hundreds of MB of cp2k.out per branch) and blew out
-# the home quota, leaving the CSVs partially or never copied.  Directory
-# structure is preserved so plot_scaling.py's glob patterns still resolve.
 # ---------------------------------------------------------------------------
 SCRATCH_RESULTS=/local/data/public/crm98/cp2k-benchmarks/results
 HOME_RESULTS=/home/raid/crm98/cp2k-benchmarks/results

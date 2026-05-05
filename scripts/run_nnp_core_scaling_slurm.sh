@@ -3,9 +3,10 @@ set -euo pipefail
 
 # Per-branch binary cache populated by benchmark_slurm.sh.  Each branch has
 # its own cp2k.psmp + lib/, so LD_LIBRARY_PATH cannot accidentally pick up
-# another branch's libcp2k.so.  Lives on scratch (/local/data/public) — too
-# big for /home (libcp2k.so.* alone is hundreds of MB per branch).
+# another branch's libcp2k.so.
 BIN_ROOT=/local/data/public/crm98/cp2k_binaries/phy-cerberus
+
+BENCHMARK_ROOT=/home/raid/crm98/cp2k-benchmarks
 
 set +u
 # --- Load the Toolchain Environment ---
@@ -23,7 +24,6 @@ case "$TARGET_BRANCH" in
       INSTALL_LIB="$BIN_ROOT/feature-nnp-verlet-cells/lib"
       LABEL="feature-nnp-verlet-cells"
       PROJECT_ROOT="/home/raid/crm98/cp2k"
-      BENCHMARK_ROOT="/home/raid/crm98/cp2k-benchmarks/cp2k_optimized/NNP"
       OUTDIR_PARENT="cp2k_feature_verlet_cells"
       ;;
   feature-nnp-native-spline)
@@ -31,7 +31,6 @@ case "$TARGET_BRANCH" in
       INSTALL_LIB="$BIN_ROOT/feature-nnp-native-spline/lib"
       LABEL="feature-nnp-native-spline"
       PROJECT_ROOT="/home/raid/crm98/cp2k"
-      BENCHMARK_ROOT="/home/raid/crm98/cp2k-benchmarks/cp2k_optimized/NNP"
       OUTDIR_PARENT="cp2k_feature_native_spline"
       ;;
   master|*)
@@ -39,7 +38,6 @@ case "$TARGET_BRANCH" in
       INSTALL_LIB="$BIN_ROOT/master/lib"
       LABEL="upstream-master"
       PROJECT_ROOT="/home/raid/crm98/cp2k-upstream-master"
-      BENCHMARK_ROOT="/home/raid/crm98/cp2k-benchmarks/cp2k_master/NNP"
       OUTDIR_PARENT="cp2k_master"
       ;;
 esac

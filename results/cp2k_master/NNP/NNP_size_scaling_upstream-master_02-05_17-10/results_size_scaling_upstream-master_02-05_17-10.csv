@@ -1,0 +1,11 @@
+# branch:    upstream-master
+# exe:       /home/raid/crm98/cp2k_binaries/phy-cerberus/cp2k_master.psmp
+# MPI ranks: 36
+# steps:     100
+# n_molecules,walltime_s
+64,1.050
+256,2.785
+512,5.524
+1024,12.638
+2048,40.770
+4096,239.223

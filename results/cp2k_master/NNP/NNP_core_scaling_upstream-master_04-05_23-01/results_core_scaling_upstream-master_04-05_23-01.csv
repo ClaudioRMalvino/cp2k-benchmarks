@@ -1,0 +1,11 @@
+# branch:      upstream-master
+# exe:         /local/data/public/crm98/cp2k_binaries/phy-cerberus/master/cp2k.psmp
+# N_molecules: 64
+# steps:       100
+# mpi_ranks,omp_threads,total_cores,walltime_s,speedup
+1,1,1,12.329,1.00
+2,1,2,7.050,1.75
+4,1,4,3.916,3.15
+8,1,8,2.187,5.64
+16,1,16,1.333,9.25
+32,1,32,1.014,12.16
