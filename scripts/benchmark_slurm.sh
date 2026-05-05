@@ -26,6 +26,7 @@ BIN_ROOT=/local/data/public/crm98/cp2k_binaries/phy-cerberus
 mkdir -p "$BIN_ROOT/master/lib"
 mkdir -p "$BIN_ROOT/feature-nnp-verlet-cells/lib"
 mkdir -p "$BIN_ROOT/feature-nnp-native-spline/lib"
+mkdir -p "$BIN_ROOT/feature-nnp-native-spline/omp"
 
 CP2K_REPO=/home/raid/crm98/cp2k
 
@@ -74,6 +75,17 @@ cp -P "$FEATURE_INSTALL/lib"/libcp2k.so*    "$BIN_ROOT/feature-nnp-native-spline
 git -C "$CP2K_REPO" stash pop
 
 # ---------------------------------------------------------------------------
+#  Feature branch: nnp-native-spline-omp. 
+# ---------------------------------------------------------------------------
+git -C "$CP2K_REPO" stash
+git -C "$CP2K_REPO" checkout feature/nnp-native-spline-omp
+cd /home/raid/crm98/cp2k-benchmarks/cp2k_optimized/
+CP2K_FORCE_CONFIGURE=1 ./rebuild_cp2k.sh
+cp     "$FEATURE_INSTALL/bin/cp2k.psmp"     "$BIN_ROOT/feature-nnp-native-spline-omp/cp2k.psmp"
+cp -P "$FEATURE_INSTALL/lib"/libcp2k.so*    "$BIN_ROOT/feature-nnp-native-spline-omp/lib/"
+git -C "$CP2K_REPO" stash pop
+
+# ---------------------------------------------------------------------------
 # Confirm the three cp2k.psmp binaries and their libcp2k.so
 # are genuinely distinct.  Matching hashes would mean a rebuild was skipped
 # or the wrong source tree was used.
@@ -82,11 +94,13 @@ echo "=== BINARY VERIFICATION ==="
 echo "-- cp2k.psmp md5sums --"
 md5sum "$BIN_ROOT/master/cp2k.psmp" \
        "$BIN_ROOT/feature-nnp-verlet-cells/cp2k.psmp" \
-       "$BIN_ROOT/feature-nnp-native-spline/cp2k.psmp"
+       "$BIN_ROOT/feature-nnp-native-spline/cp2k.psmp" \
+       "$BIN_ROOT/feature-nnp-native-spline-omp/cp2k.psmp"
 echo "-- libcp2k.so md5sums --"
 md5sum "$BIN_ROOT/master/lib"/libcp2k.so \
        "$BIN_ROOT/feature-nnp-verlet-cells/lib"/libcp2k.so \
-       "$BIN_ROOT/feature-nnp-native-spline/lib"/libcp2k.so
+       "$BIN_ROOT/feature-nnp-native-spline/lib"/libcp2k.so \
+       "$BIN_ROOT/feature-nnp-native-spline-omp/lib"/libcp2k.so
 echo "-- LD_LIBRARY_PATH sanity (ldd on verlet-cells binary) --"
 source "$BIN_ROOT/setup"
 export LD_LIBRARY_PATH="$BIN_ROOT/feature-nnp-verlet-cells/lib:${LD_LIBRARY_PATH:-}"
@@ -109,8 +123,7 @@ echo "=== CORE SCALING ==="
 ./run_nnp_core_scaling_slurm.sh master
 ./run_nnp_core_scaling_slurm.sh feature-nnp-verlet-cells
 ./run_nnp_core_scaling_slurm.sh feature-nnp-native-spline
-
-
+./run_nnp_core_scaling_slurm.sh feature-nnp-native-spline-omp
 # ---------------------------------------------------------------------------
 # Copy CSV results from node-local scratch to home so they are accessible
 # from the login node (cerberus1) for plotting.

@@ -34,6 +34,13 @@ case "$TARGET_BRANCH" in
       PROJECT_ROOT="/home/raid/crm98/cp2k"
       OUTDIR_PARENT="cp2k_feature_native_spline"
       ;;
+  feature-nnp-native-spline-omp)
+      CP2K_EXE="$BIN_ROOT/feature-nnp-native-spline-omp/cp2k.psmp"
+      INSTALL_LIB="$BIN_ROOT/feature-nnp-native-spline-omp/lib"
+      LABEL="feature-nnp-native-spline-omp"
+      PROJECT_ROOT="/home/raid/crm98/cp2k"
+      OUTDIR_PARENT="cp2k_feature_native_spline_omp"
+      ;;
   master|*)
       CP2K_EXE="$BIN_ROOT/master/cp2k.psmp"
       INSTALL_LIB="$BIN_ROOT/master/lib"
@@ -52,8 +59,14 @@ BASE_INP="${BENCHMARK_ROOT}/H2O-64_NNP_MD.inp"
 NNP_DATA="${PROJECT_ROOT}/data/NNP"
 
 # --- Variables ---
-MPI_RANKS=36
-export OMP_NUM_THREADS=1
+if [[ "$TARGET_BRANCH" == "feature-nnp-native-spline-omp" ]]; then
+  MPI_RANKS=16
+  export OMP_NUM_THREADS=2
+else
+  MPI_RANKS=36
+  export OMP_NUM_THREADS=1
+fi
+
 STEPS=100
 
 mkdir -p "$OUTDIR"

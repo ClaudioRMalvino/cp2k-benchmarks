@@ -33,6 +33,13 @@ case "$TARGET_BRANCH" in
       PROJECT_ROOT="/home/raid/crm98/cp2k"
       OUTDIR_PARENT="cp2k_feature_native_spline"
       ;;
+  feature-nnp-native-spline-omp)
+      CP2K_EXE="$BIN_ROOT/feature-nnp-native-spline-omp/cp2k.psmp"
+      INSTALL_LIB="$BIN_ROOT/feature-nnp-native-spline-omp/lib"
+      LABEL="feature-nnp-native-spline-omp"
+      PROJECT_ROOT="/home/raid/crm98/cp2k"
+      OUTDIR_PARENT="cp2k_feature_native_spline_omp"
+      ;;
   master|*)
       CP2K_EXE="$BIN_ROOT/master/cp2k.psmp"
       INSTALL_LIB="$BIN_ROOT/master/lib"
@@ -52,8 +59,6 @@ NNP_DATA="${PROJECT_ROOT}/data/NNP"
 
 # --- Variables ---
 N_MOLECULES=${N_MOLECULES:-64}
-MPI_LIST=${MPI_LIST:-"1 2 4 8 16 32"}
-OMP_LIST=${OMP_LIST:-"1"}
 STEPS=${STEPS:-100}
 
 mkdir -p "$OUTDIR"
@@ -74,7 +79,13 @@ echo "------------------------------------------------------------------------"
 
 BASELINE_TIME=""
 BASELINE_CORES=""
-
+if [[TARGET_BRANCH == "feature-nnp-native-spline-omp" ]]; then
+  MPI_LIST=${MPI_LIST:-"1 2 4 8 16"}
+  OMP_LIST=${OMP_LIST:-"2"}
+else
+  MPI_LIST=${MPI_LIST:-"1 2 4 8 16 32"}
+  OMP_LIST=${OMP_LIST:-"1"}
+fi
 for omp in $OMP_LIST; do
   export OMP_NUM_THREADS=$omp
   for mpi in $MPI_LIST; do
