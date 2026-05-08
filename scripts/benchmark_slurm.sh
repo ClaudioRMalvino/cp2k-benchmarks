@@ -6,7 +6,7 @@
 #SBATCH --nodelist=phy-cerberus4
 #SBATCH --ntasks=36
 #SBATCH --mem-per-cpu=2G
-#SBATCH --time=00:50:00
+#SBATCH --time=01:30:00
 #SBATCH --output=/home/raid/crm98/cp2k-benchmarks/logs/NNP_Benchmarking_%j.out
 #SBATCH --mail-type=ALL
 
@@ -26,7 +26,7 @@ BIN_ROOT=/local/data/public/crm98/cp2k_binaries/phy-cerberus
 mkdir -p "$BIN_ROOT/master/lib"
 mkdir -p "$BIN_ROOT/feature-nnp-verlet-cells/lib"
 mkdir -p "$BIN_ROOT/feature-nnp-native-spline/lib"
-mkdir -p "$BIN_ROOT/feature-nnp-native-spline/omp"
+mkdir -p "$BIN_ROOT/feature-nnp-native-spline-omp/lib"
 
 CP2K_REPO=/home/raid/crm98/cp2k
 
@@ -35,7 +35,7 @@ CP2K_REPO=/home/raid/crm98/cp2k
 #    No collision risk with the feature builds (different scratch tree).
 # ---------------------------------------------------------------------------
 cd /home/raid/crm98/cp2k-benchmarks/cp2k_master/
-./build_cp2k.sh
+./build_cp2k.sh -j 32
 MASTER_INSTALL=/local/data/public/crm98/cp2k-buildtree/install
 cp     "$MASTER_INSTALL/bin/cp2k.psmp"     "$BIN_ROOT/master/cp2k.psmp"
 # Copy only the runtime shared library + its versioned symlinks.  -P preserves
@@ -117,6 +117,7 @@ echo "=== SIZE SCALING ==="
 ./run_nnp_size_scaling_slurm.sh master
 ./run_nnp_size_scaling_slurm.sh feature-nnp-verlet-cells
 ./run_nnp_size_scaling_slurm.sh feature-nnp-native-spline
+./run_nnp_size_scaling_slurm.sh feature-nnp-native-spline-omp
 
 echo ""
 echo "=== CORE SCALING ==="

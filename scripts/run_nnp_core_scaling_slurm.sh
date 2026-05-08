@@ -79,7 +79,7 @@ echo "------------------------------------------------------------------------"
 
 BASELINE_TIME=""
 BASELINE_CORES=""
-if [[TARGET_BRANCH == "feature-nnp-native-spline-omp" ]]; then
+if [[ "$TARGET_BRANCH" == "feature-nnp-native-spline-omp" ]]; then
   MPI_LIST=${MPI_LIST:-"1 2 4 8 16"}
   OMP_LIST=${OMP_LIST:-"2"}
 else

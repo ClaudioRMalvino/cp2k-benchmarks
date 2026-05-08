@@ -60,7 +60,7 @@ NNP_DATA="${PROJECT_ROOT}/data/NNP"
 
 # --- Variables ---
 if [[ "$TARGET_BRANCH" == "feature-nnp-native-spline-omp" ]]; then
-  MPI_RANKS=16
+  MPI_RANKS=18
   export OMP_NUM_THREADS=2
 else
   MPI_RANKS=36
