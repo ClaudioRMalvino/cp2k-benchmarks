@@ -9,7 +9,9 @@ module load python/3.11.0-icl 2>/dev/null
 
 export PATH=/usr/local/software/spack/spack-views/._rocky8-icelake-20220710/vdcqmdfi2lxsqy6qm3npptgktlrkt37k/intel-oneapi-mpi-2021.6.0/intel-2021.6.0/guxuvcpmykplbrr2e3af2yd7njqhau5e/mpi/2021.6.0/bin:$PATH
 
-source ~/cp2k_master/tools/toolchain/install/setup
+if [ -f ~/cp2k_master/tools/toolchain/install/setup ]; then
+    source ~/cp2k_master/tools/toolchain/install/setup
+fi
 
 export CC=mpiicc
 export CXX=mpiicpc
