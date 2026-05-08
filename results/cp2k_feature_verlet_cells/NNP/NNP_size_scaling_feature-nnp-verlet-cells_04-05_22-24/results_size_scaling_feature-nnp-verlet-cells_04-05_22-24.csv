@@ -1,0 +1,12 @@
+# branch:    feature-nnp-verlet-cells
+# exe:       /local/data/public/crm98/cp2k_binaries/phy-cerberus/feature-nnp-verlet-cells/cp2k.psmp
+# MPI ranks: 36
+# OMP threads: 1
+# steps:     100
+# n_molecules,walltime_s
+64,0.780
+256,1.811
+512,3.208
+1024,5.743
+2048,11.714
+4096,23.854

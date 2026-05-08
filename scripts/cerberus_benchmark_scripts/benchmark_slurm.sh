@@ -34,8 +34,8 @@ CP2K_REPO=/home/raid/crm98/cp2k
 # Master — built from the dedicated upstream clone into 'cp2k-buildtree'.
 #    No collision risk with the feature builds (different scratch tree).
 # ---------------------------------------------------------------------------
-cd /home/raid/crm98/cp2k-benchmarks/cp2k_master/
-./build_cp2k.sh -j 32
+cd /home/raid/crm98/cp2k-benchmarks/cp2k_master/cerberus_build_scripts/
+./cp2k_cerberus_master_build.sh -j 32
 MASTER_INSTALL=/local/data/public/crm98/cp2k-buildtree/install
 cp     "$MASTER_INSTALL/bin/cp2k.psmp"     "$BIN_ROOT/master/cp2k.psmp"
 # Copy only the runtime shared library + its versioned symlinks.  -P preserves
@@ -56,8 +56,8 @@ cp /local/data/public/crm98/original_cp2k/tools/toolchain/install/setup \
 # ---------------------------------------------------------------------------
 git -C "$CP2K_REPO" stash
 git -C "$CP2K_REPO" checkout feature/nnp-verlet-cells
-cd /home/raid/crm98/cp2k-benchmarks/cp2k_optimized/
-CP2K_FORCE_CONFIGURE=1 ./rebuild_cp2k.sh
+cd /home/raid/crm98/cp2k-benchmarks/cp2k_optimized/cerberus_build_scripts/
+CP2K_FORCE_CONFIGURE=1 ./cp2k_cerberus_opt_rebuild.sh
 FEATURE_INSTALL=/local/data/public/crm98/original_cp2k/install
 cp     "$FEATURE_INSTALL/bin/cp2k.psmp"     "$BIN_ROOT/feature-nnp-verlet-cells/cp2k.psmp"
 cp -P "$FEATURE_INSTALL/lib"/libcp2k.so*    "$BIN_ROOT/feature-nnp-verlet-cells/lib/"
@@ -68,8 +68,8 @@ git -C "$CP2K_REPO" stash pop
 # ---------------------------------------------------------------------------
 git -C "$CP2K_REPO" stash
 git -C "$CP2K_REPO" checkout feature/nnp-native-spline
-cd /home/raid/crm98/cp2k-benchmarks/cp2k_optimized/
-CP2K_FORCE_CONFIGURE=1 ./rebuild_cp2k.sh
+cd /home/raid/crm98/cp2k-benchmarks/cp2k_optimized/cerberus_build_scripts/
+CP2K_FORCE_CONFIGURE=1 ./cp2k_cerberus_opt_rebuild.sh
 cp     "$FEATURE_INSTALL/bin/cp2k.psmp"     "$BIN_ROOT/feature-nnp-native-spline/cp2k.psmp"
 cp -P "$FEATURE_INSTALL/lib"/libcp2k.so*    "$BIN_ROOT/feature-nnp-native-spline/lib/"
 git -C "$CP2K_REPO" stash pop
@@ -79,8 +79,8 @@ git -C "$CP2K_REPO" stash pop
 # ---------------------------------------------------------------------------
 git -C "$CP2K_REPO" stash
 git -C "$CP2K_REPO" checkout feature/nnp-native-spline-omp
-cd /home/raid/crm98/cp2k-benchmarks/cp2k_optimized/
-CP2K_FORCE_CONFIGURE=1 ./rebuild_cp2k.sh
+cd /home/raid/crm98/cp2k-benchmarks/cp2k_optimized/cerberus_build_scripts/
+CP2K_FORCE_CONFIGURE=1 ./cp2k_cerberus_opt_rebuild.sh
 cp     "$FEATURE_INSTALL/bin/cp2k.psmp"     "$BIN_ROOT/feature-nnp-native-spline-omp/cp2k.psmp"
 cp -P "$FEATURE_INSTALL/lib"/libcp2k.so*    "$BIN_ROOT/feature-nnp-native-spline-omp/lib/"
 git -C "$CP2K_REPO" stash pop

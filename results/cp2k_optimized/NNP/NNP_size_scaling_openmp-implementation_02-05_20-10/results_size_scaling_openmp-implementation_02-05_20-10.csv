@@ -1,0 +1,12 @@
+# branch:    openmp-implementation
+# exe:       /home/raid/crm98/cp2k_binaries/phy-cerberus/cp2k_feature_verlet_cells.psmp
+# MPI ranks: 18
+# OMP threads: 2
+# steps:     100
+# n_molecules,walltime_s
+64,2.388
+256,6.707
+512,11.867
+1024,24.617
+2048,53.265
+4096,110.119

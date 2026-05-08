@@ -1,0 +1,11 @@
+# branch:      native-spline
+# exe:         /home/raid/crm98/cp2k_binaries/phy-cerberus/cp2k_feature_verlet_cells.psmp
+# N_molecules: 64
+# steps:       100
+# mpi_ranks,omp_threads,total_cores,walltime_s,speedup
+1,1,1,9.946,1.00
+2,1,2,5.786,1.72
+4,1,4,3.238,3.07
+8,1,8,1.918,5.19
+16,1,16,1.130,8.80
+32,1,32,0.964,10.32

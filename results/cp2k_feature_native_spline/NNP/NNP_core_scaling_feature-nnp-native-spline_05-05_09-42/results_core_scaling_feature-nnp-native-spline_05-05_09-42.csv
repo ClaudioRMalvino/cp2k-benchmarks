@@ -1,0 +1,11 @@
+# branch:      feature-nnp-native-spline
+# exe:         /local/data/public/crm98/cp2k_binaries/phy-cerberus/feature-nnp-native-spline/cp2k.psmp
+# N_molecules: 64
+# steps:       100
+# mpi_ranks,omp_threads,total_cores,walltime_s,speedup
+1,1,1,8.298,1.00
+2,1,2,4.731,1.75
+4,1,4,2.715,3.06
+8,1,8,1.559,5.32
+16,1,16,1.061,7.82
+32,1,32,0.851,9.75
