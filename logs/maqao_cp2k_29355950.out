@@ -1,0 +1,243 @@
+Currently Loaded Modulefiles:
+ 1) rhel8/slurm                                                
+ 2) singularity/current                                        
+ 3) rhel8/global                                               
+ 4) cuda/11.4                                                  
+ 5) vgl/2.5.1/64                                               
+ 6) intel-oneapi-compilers/2022.1.0/gcc/b6zld2mz               
+ 7) ucx/1.15.0                                                 
+ 8) intel-oneapi-mpi/2021.6.0/intel/guxuvcpm                   
+ 9) rhel8/default-icl                                          
+10) intel-oneapi-tbb/2021.6.0/intel/2kqmspts                   
+11) intel-oneapi-mkl/2022.1.0/intel/intel-oneapi-mpi/qqwrrcxw  
+12) gcc/11                                                     
+13) python/3.11.0-icl                                          
+==> Building profiling dataset (2000 MD steps) in /home/crm98/cp2k-benchmarks/scripts/maqao_scripts/dataset
+    dataset ready: NNP run.inp 
+
+==================================================================
+=== MAQAO ONE View : master
+==================================================================
+	*************************************************
+	*                                               *
+	*          ONE-View report generation           *
+	*                                               *
+	*************************************************
+
+[MAQAO] Info: Experiment configuration summary is available adding -dbg=1 in command line
+[MAQAO] Info: Experiment directory created: /rds/user/crm98/hpc-work/cp2k-benchmarks/maqao/xp_master
+[MAQAO] Info: 
+[MAQAO] Info: START THE APPLICATION PROFILING
+[MAQAO] Info: -> RUNNING THE PROFILER FOR RUN ( run_0 ) ...
+
+* [MAQAO] Warning: Kernel-space measurements not allowed (disabled) on node cpu-q-154. Try:
+1) sudo sysctl -w kernel.perf_event_paranoid=1
+To persist across reboots:
+ sudo sh -c 'echo kernel.perf_event_paranoid=1 >> /etc/sysctl.d/local.conf'
+2) [Linux 5.8 or later] sudo setcap cap_perfmon=ep `which maqao`
+3) or rerun after adding engine=no-perf into lprof-params (time only)
+To silent this warning, add -exclude-kernel into lprof-params
+
+* [MAQAO] Warning: (host cpu-q-154, process 1513183) Excluded 1 thread(s) above maximum-threads-per-process/tpp=1. Rerun with --allow-extra-threads to include them (expect application slowdown if many of them).
+
+* [MAQAO] Warning: (host cpu-q-154, process 1513180) Excluded 1 thread(s) above maximum-threads-per-process/tpp=1. Rerun with --allow-extra-threads to include them (expect application slowdown if many of them).
+
+* [MAQAO] Warning: (host cpu-q-154, process 1513184) Excluded 1 thread(s) above maximum-threads-per-process/tpp=1. Rerun with --allow-extra-threads to include them (expect application slowdown if many of them).
+
+* [MAQAO] Warning: (host cpu-q-154, process 1513182) Excluded 1 thread(s) above maximum-threads-per-process/tpp=1. Rerun with --allow-extra-threads to include them (expect application slowdown if many of them).
+
+* [MAQAO] Warning: (host cpu-q-154, process 1513192) Excluded 1 thread(s) above maximum-threads-per-process/tpp=1. Rerun with --allow-extra-threads to include them (expect application slowdown if many of them).
+
+* [MAQAO] Warning: (host cpu-q-154, process 1513186) Excluded 1 thread(s) above maximum-threads-per-process/tpp=1. Rerun with --allow-extra-threads to include them (expect application slowdown if many of them).
+
+* [MAQAO] Warning: (host cpu-q-154, process 1513190) Excluded 1 thread(s) above maximum-threads-per-process/tpp=1. Rerun with --allow-extra-threads to include them (expect application slowdown if many of them).
+
+* [MAQAO] Warning: (host cpu-q-154, process 1513195) Excluded 1 thread(s) above maximum-threads-per-process/tpp=1. Rerun with --allow-extra-threads to include them (expect application slowdown if many of them).
+
+* [MAQAO] Warning: (host cpu-q-154, process 1513185) Excluded 1 thread(s) above maximum-threads-per-process/tpp=1. Rerun with --allow-extra-threads to include them (expect application slowdown if many of them).
+
+* [MAQAO] Warning: (host cpu-q-154, process 1513187) Excluded 1 thread(s) above maximum-threads-per-process/tpp=1. Rerun with --allow-extra-threads to include them (expect application slowdown if many of them).
+
+* [MAQAO] Warning: (host cpu-q-154, process 1513193) Excluded 1 thread(s) above maximum-threads-per-process/tpp=1. Rerun with --allow-extra-threads to include them (expect application slowdown if many of them).
+
+* [MAQAO] Warning: (host cpu-q-154, process 1513191) Excluded 1 thread(s) above maximum-threads-per-process/tpp=1. Rerun with --allow-extra-threads to include them (expect application slowdown if many of them).
+
+* [MAQAO] Warning: (host cpu-q-154, process 1513194) Excluded 1 thread(s) above maximum-threads-per-process/tpp=1. Rerun with --allow-extra-threads to include them (expect application slowdown if many of them).
+
+* [MAQAO] Warning: (host cpu-q-154, process 1513189) Excluded 1 thread(s) above maximum-threads-per-process/tpp=1. Rerun with --allow-extra-threads to include them (expect application slowdown if many of them).
+
+* [MAQAO] Warning: (host cpu-q-154, process 1513181) Excluded 1 thread(s) above maximum-threads-per-process/tpp=1. Rerun with --allow-extra-threads to include them (expect application slowdown if many of them).
+
+* [MAQAO] Warning: (host cpu-q-154, process 1513188) Excluded 1 thread(s) above maximum-threads-per-process/tpp=1. Rerun with --allow-extra-threads to include them (expect application slowdown if many of them).
+[MAQAO] Info: -> FORMAT PROFILER RESULTS
+[MAQAO] Info: STOP THE APPLICATION PROFILING
+[MAQAO] Info: 
+[MAQAO] Info: START FUNCTIONS AND LOOPS ANALYSIS ...
+[MAQAO] Info: -> OPEN THE MAIN APPLICATION BINARY ...
+[MAQAO] Info: ---> ALL LOOPS HAVE BEEN ANALYZED
+[MAQAO] Info: ---> ALL FUNCTIONS HAVE BEEN ANALYZED
+[MAQAO] Info: STOP FUNCTIONS AND LOOPS ANALYSIS ...
+[MAQAO] Info: 
+[MAQAO] Info: START THE REPORT GENERATION
+[MAQAO] Info: -> ONE-VIEW EXPERIMENT DIRECTORY: /rds/user/crm98/hpc-work/cp2k-benchmarks/maqao/xp_master
+[MAQAO] Info: In order to reduce disk usage, only 3 / 16 thread profiles will be generated
+      To generate all files, add option --reduce-threads-files=off
+[MAQAO] Info: -> HTML REPORT GENERATED        : /rds/user/crm98/hpc-work/cp2k-benchmarks/maqao/xp_master/RESULTS/cp2k.psmp_one_html/
+[MAQAO] Info: -> HTML INDEX FILE              : /rds/user/crm98/hpc-work/cp2k-benchmarks/maqao/xp_master/RESULTS/cp2k.psmp_one_html/index.html
+[MAQAO] Info: STOP THE REPORT GENERATION
+[MAQAO] Info: 
+[MAQAO] Info: If your application produces files, they can be found in directory "/rds/user/crm98/hpc-work/cp2k-benchmarks/maqao/xp_master/dataset"
+[MAQAO] Info: 
+--- master : report written to /rds/user/crm98/hpc-work/cp2k-benchmarks/maqao/xp_master/RESULTS
+
+==================================================================
+=== MAQAO ONE View : feature-nnp-native-spline
+==================================================================
+	*************************************************
+	*                                               *
+	*          ONE-View report generation           *
+	*                                               *
+	*************************************************
+
+[MAQAO] Info: Experiment configuration summary is available adding -dbg=1 in command line
+[MAQAO] Info: Experiment directory created: /rds/user/crm98/hpc-work/cp2k-benchmarks/maqao/xp_feature-nnp-native-spline
+[MAQAO] Info: 
+[MAQAO] Info: START THE APPLICATION PROFILING
+[MAQAO] Info: -> RUNNING THE PROFILER FOR RUN ( run_0 ) ...
+
+* [MAQAO] Warning: Kernel-space measurements not allowed (disabled) on node cpu-q-154. Try:
+1) sudo sysctl -w kernel.perf_event_paranoid=1
+To persist across reboots:
+ sudo sh -c 'echo kernel.perf_event_paranoid=1 >> /etc/sysctl.d/local.conf'
+2) [Linux 5.8 or later] sudo setcap cap_perfmon=ep `which maqao`
+3) or rerun after adding engine=no-perf into lprof-params (time only)
+To silent this warning, add -exclude-kernel into lprof-params
+
+* [MAQAO] Warning: (host cpu-q-154, process 1516195) Excluded 1 thread(s) above maximum-threads-per-process/tpp=1. Rerun with --allow-extra-threads to include them (expect application slowdown if many of them).
+
+* [MAQAO] Warning: (host cpu-q-154, process 1516202) Excluded 1 thread(s) above maximum-threads-per-process/tpp=1. Rerun with --allow-extra-threads to include them (expect application slowdown if many of them).
+
+* [MAQAO] Warning: (host cpu-q-154, process 1516201) Excluded 1 thread(s) above maximum-threads-per-process/tpp=1. Rerun with --allow-extra-threads to include them (expect application slowdown if many of them).
+
+* [MAQAO] Warning: (host cpu-q-154, process 1516189) Excluded 1 thread(s) above maximum-threads-per-process/tpp=1. Rerun with --allow-extra-threads to include them (expect application slowdown if many of them).
+
+* [MAQAO] Warning: (host cpu-q-154, process 1516199) Excluded 1 thread(s) above maximum-threads-per-process/tpp=1. Rerun with --allow-extra-threads to include them (expect application slowdown if many of them).
+
+* [MAQAO] Warning: (host cpu-q-154, process 1516191) Excluded 1 thread(s) above maximum-threads-per-process/tpp=1. Rerun with --allow-extra-threads to include them (expect application slowdown if many of them).
+
+* [MAQAO] Warning: (host cpu-q-154, process 1516197) Excluded 1 thread(s) above maximum-threads-per-process/tpp=1. Rerun with --allow-extra-threads to include them (expect application slowdown if many of them).
+
+* [MAQAO] Warning: (host cpu-q-154, process 1516198) Excluded 1 thread(s) above maximum-threads-per-process/tpp=1. Rerun with --allow-extra-threads to include them (expect application slowdown if many of them).
+
+* [MAQAO] Warning: (host cpu-q-154, process 1516194) Excluded 1 thread(s) above maximum-threads-per-process/tpp=1. Rerun with --allow-extra-threads to include them (expect application slowdown if many of them).
+
+* [MAQAO] Warning: (host cpu-q-154, process 1516193) Excluded 1 thread(s) above maximum-threads-per-process/tpp=1. Rerun with --allow-extra-threads to include them (expect application slowdown if many of them).
+
+* [MAQAO] Warning: (host cpu-q-154, process 1516204) Excluded 1 thread(s) above maximum-threads-per-process/tpp=1. Rerun with --allow-extra-threads to include them (expect application slowdown if many of them).
+
+* [MAQAO] Warning: (host cpu-q-154, process 1516196) Excluded 1 thread(s) above maximum-threads-per-process/tpp=1. Rerun with --allow-extra-threads to include them (expect application slowdown if many of them).
+
+* [MAQAO] Warning: (host cpu-q-154, process 1516190) Excluded 1 thread(s) above maximum-threads-per-process/tpp=1. Rerun with --allow-extra-threads to include them (expect application slowdown if many of them).
+
+* [MAQAO] Warning: (host cpu-q-154, process 1516200) Excluded 1 thread(s) above maximum-threads-per-process/tpp=1. Rerun with --allow-extra-threads to include them (expect application slowdown if many of them).
+
+* [MAQAO] Warning: (host cpu-q-154, process 1516192) Excluded 1 thread(s) above maximum-threads-per-process/tpp=1. Rerun with --allow-extra-threads to include them (expect application slowdown if many of them).
+
+* [MAQAO] Warning: (host cpu-q-154, process 1516203) Excluded 1 thread(s) above maximum-threads-per-process/tpp=1. Rerun with --allow-extra-threads to include them (expect application slowdown if many of them).
+[MAQAO] Info: -> FORMAT PROFILER RESULTS
+[MAQAO] Info: STOP THE APPLICATION PROFILING
+[MAQAO] Info: 
+[MAQAO] Info: START FUNCTIONS AND LOOPS ANALYSIS ...
+[MAQAO] Info: -> OPEN THE MAIN APPLICATION BINARY ...
+[MAQAO] Info: ---> ALL LOOPS HAVE BEEN ANALYZED
+[MAQAO] Info: ---> ALL FUNCTIONS HAVE BEEN ANALYZED
+[MAQAO] Info: STOP FUNCTIONS AND LOOPS ANALYSIS ...
+[MAQAO] Info: 
+[MAQAO] Info: START THE REPORT GENERATION
+[MAQAO] Info: -> ONE-VIEW EXPERIMENT DIRECTORY: /rds/user/crm98/hpc-work/cp2k-benchmarks/maqao/xp_feature-nnp-native-spline
+[MAQAO] Info: In order to reduce disk usage, only 4 / 16 thread profiles will be generated
+      To generate all files, add option --reduce-threads-files=off
+[MAQAO] Info: -> HTML REPORT GENERATED        : /rds/user/crm98/hpc-work/cp2k-benchmarks/maqao/xp_feature-nnp-native-spline/RESULTS/cp2k.psmp_one_html/
+[MAQAO] Info: -> HTML INDEX FILE              : /rds/user/crm98/hpc-work/cp2k-benchmarks/maqao/xp_feature-nnp-native-spline/RESULTS/cp2k.psmp_one_html/index.html
+[MAQAO] Info: STOP THE REPORT GENERATION
+[MAQAO] Info: 
+[MAQAO] Info: If your application produces files, they can be found in directory "/rds/user/crm98/hpc-work/cp2k-benchmarks/maqao/xp_feature-nnp-native-spline/dataset"
+[MAQAO] Info: 
+--- feature-nnp-native-spline : report written to /rds/user/crm98/hpc-work/cp2k-benchmarks/maqao/xp_feature-nnp-native-spline/RESULTS
+
+==================================================================
+=== MAQAO ONE View : feature-nnp-native-spline-omp
+==================================================================
+	*************************************************
+	*                                               *
+	*          ONE-View report generation           *
+	*                                               *
+	*************************************************
+
+[MAQAO] Info: Experiment configuration summary is available adding -dbg=1 in command line
+[MAQAO] Info: Experiment directory created: /rds/user/crm98/hpc-work/cp2k-benchmarks/maqao/xp_feature-nnp-native-spline-omp
+[MAQAO] Info: 
+[MAQAO] Info: START THE APPLICATION PROFILING
+[MAQAO] Info: -> RUNNING THE PROFILER FOR RUN ( run_0 ) ...
+
+* [MAQAO] Warning: Kernel-space measurements not allowed (disabled) on node cpu-q-154. Try:
+1) sudo sysctl -w kernel.perf_event_paranoid=1
+To persist across reboots:
+ sudo sh -c 'echo kernel.perf_event_paranoid=1 >> /etc/sysctl.d/local.conf'
+2) [Linux 5.8 or later] sudo setcap cap_perfmon=ep `which maqao`
+3) or rerun after adding engine=no-perf into lprof-params (time only)
+To silent this warning, add -exclude-kernel into lprof-params
+
+* [MAQAO] Warning: (host cpu-q-154, process 1519090) Excluded 1 thread(s) above maximum-threads-per-process/tpp=2. Rerun with --allow-extra-threads to include them (expect application slowdown if many of them).
+
+* [MAQAO] Warning: (host cpu-q-154, process 1519093) Excluded 1 thread(s) above maximum-threads-per-process/tpp=2. Rerun with --allow-extra-threads to include them (expect application slowdown if many of them).
+
+* [MAQAO] Warning: (host cpu-q-154, process 1519094) Excluded 1 thread(s) above maximum-threads-per-process/tpp=2. Rerun with --allow-extra-threads to include them (expect application slowdown if many of them).
+
+* [MAQAO] Warning: (host cpu-q-154, process 1519095) Excluded 1 thread(s) above maximum-threads-per-process/tpp=2. Rerun with --allow-extra-threads to include them (expect application slowdown if many of them).
+
+* [MAQAO] Warning: (host cpu-q-154, process 1519092) Excluded 1 thread(s) above maximum-threads-per-process/tpp=2. Rerun with --allow-extra-threads to include them (expect application slowdown if many of them).
+
+* [MAQAO] Warning: (host cpu-q-154, process 1519096) Excluded 1 thread(s) above maximum-threads-per-process/tpp=2. Rerun with --allow-extra-threads to include them (expect application slowdown if many of them).
+
+* [MAQAO] Warning: (host cpu-q-154, process 1519091) Excluded 1 thread(s) above maximum-threads-per-process/tpp=2. Rerun with --allow-extra-threads to include them (expect application slowdown if many of them).
+
+* [MAQAO] Warning: (host cpu-q-154, process 1519089) Excluded 1 thread(s) above maximum-threads-per-process/tpp=2. Rerun with --allow-extra-threads to include them (expect application slowdown if many of them).
+[MAQAO] Info: -> FORMAT PROFILER RESULTS
+[MAQAO] Info: STOP THE APPLICATION PROFILING
+[MAQAO] Info: 
+[MAQAO] Info: START FUNCTIONS AND LOOPS ANALYSIS ...
+[MAQAO] Info: -> OPEN THE MAIN APPLICATION BINARY ...
+[MAQAO] Info: ---> ALL LOOPS HAVE BEEN ANALYZED
+[MAQAO] Info: ---> ALL FUNCTIONS HAVE BEEN ANALYZED
+[MAQAO] Info: STOP FUNCTIONS AND LOOPS ANALYSIS ...
+[MAQAO] Info: 
+[MAQAO] Info: START THE REPORT GENERATION
+[MAQAO] Info: -> ONE-VIEW EXPERIMENT DIRECTORY: /rds/user/crm98/hpc-work/cp2k-benchmarks/maqao/xp_feature-nnp-native-spline-omp
+[MAQAO] Info: In order to reduce disk usage, only 3 / 8 thread profiles will be generated
+      To generate all files, add option --reduce-threads-files=off
+[MAQAO] Info: -> HTML REPORT GENERATED        : /rds/user/crm98/hpc-work/cp2k-benchmarks/maqao/xp_feature-nnp-native-spline-omp/RESULTS/cp2k.psmp_one_html/
+[MAQAO] Info: -> HTML INDEX FILE              : /rds/user/crm98/hpc-work/cp2k-benchmarks/maqao/xp_feature-nnp-native-spline-omp/RESULTS/cp2k.psmp_one_html/index.html
+[MAQAO] Info: STOP THE REPORT GENERATION
+[MAQAO] Info: 
+[MAQAO] Info: If your application produces files, they can be found in directory "/rds/user/crm98/hpc-work/cp2k-benchmarks/maqao/xp_feature-nnp-native-spline-omp/dataset"
+[MAQAO] Info: 
+--- feature-nnp-native-spline-omp : report written to /rds/user/crm98/hpc-work/cp2k-benchmarks/maqao/xp_feature-nnp-native-spline-omp/RESULTS
+
+==================================================================
+=== MAQAO ONE View compare : master  vs  feature-nnp-native-spline
+==================================================================
+[MAQAO] Info: -> HTML REPORT GENERATED        : /rds/user/crm98/hpc-work/cp2k-benchmarks/maqao/xp_compare/RESULTS/xp_compare/
+[MAQAO] Info: -> HTML INDEX FILE              : /rds/user/crm98/hpc-work/cp2k-benchmarks/maqao/xp_compare/RESULTS/xp_compare/index.html
+--- compare report written to /rds/user/crm98/hpc-work/cp2k-benchmarks/maqao/xp_compare/RESULTS
+
+==> Syncing HTML reports to /home/crm98/cp2k-benchmarks/results/maqao
+    /home/crm98/cp2k-benchmarks/results/maqao/xp_master/index.html
+    /home/crm98/cp2k-benchmarks/results/maqao/xp_feature-nnp-native-spline/index.html
+    /home/crm98/cp2k-benchmarks/results/maqao/xp_feature-nnp-native-spline-omp/index.html
+    /home/crm98/cp2k-benchmarks/results/maqao/xp_compare/index.html
+
+Done. View the reports in a browser, e.g.:
+  firefox /home/crm98/cp2k-benchmarks/results/maqao/xp_compare/index.html      # baseline vs optimised
+  firefox /home/crm98/cp2k-benchmarks/results/maqao/xp_master/index.html       # baseline hotspots + CQA
+Raw experiment directories remain on /rds/user/crm98/hpc-work/cp2k-benchmarks/maqao

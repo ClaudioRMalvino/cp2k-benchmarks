@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html translate="no" lang="en-US"><head><title>OV - threads redirect</title>
+<meta charset="utf-8" />
+</head>
+<body onload="__redirect ()">
+<div id="err_div"></div>
+<script>
+function __redirect (){
+  const redirect_table = [
+    {cpu-q-154_1513190_1513190: "cpu-q-154_1513181_1513181", cpu-q-154_1513192_1513192: "cpu-q-154_1513181_1513181", cpu-q-154_1513191_1513191: "cpu-q-154_1513191_1513191", cpu-q-154_1513188_1513188: "cpu-q-154_1513181_1513181", cpu-q-154_1513183_1513183: "cpu-q-154_1513181_1513181", cpu-q-154_1513184_1513184: "cpu-q-154_1513191_1513191", cpu-q-154_1513195_1513195: "cpu-q-154_1513181_1513181", cpu-q-154_1513189_1513189: "cpu-q-154_1513181_1513181", cpu-q-154_1513181_1513181: "cpu-q-154_1513181_1513181", cpu-q-154_1513187_1513187: "cpu-q-154_1513181_1513181", cpu-q-154_1513182_1513182: "cpu-q-154_1513181_1513181", cpu-q-154_1513193_1513193: "cpu-q-154_1513193_1513193", cpu-q-154_1513194_1513194: "cpu-q-154_1513181_1513181", cpu-q-154_1513180_1513180: "cpu-q-154_1513193_1513193", cpu-q-154_1513186_1513186: "cpu-q-154_1513181_1513181", cpu-q-154_1513185_1513185: "cpu-q-154_1513193_1513193", },
+];
+  const queryString = window.location.search;
+  const params = new URLSearchParams(queryString);
+  let thread = params.get("thread");
+  if (thread) {
+    let elems = thread.split ("_");
+    let run_id = elems[0];
+    let key    = elems[1];
+    for (let i = 2; i < elems.length; i++) {
+      key += "_" + elems[i];
+    }
+    window.location.replace("/rds/user/crm98/hpc-work/cp2k-benchmarks/maqao/xp_master/RESULTS/cp2k.psmp_one_html/topo/run_"+run_id+"_"+redirect_table[run_id][key]+".html?origin="+key);
+  }
+  else {
+    let d = document.getElementById ("err_div");
+    if (d) {
+      d.innerHTML = "Missing parameter <i>thread</i>";
+    }
+  }
+}
+</script>
+</body>
+</html>

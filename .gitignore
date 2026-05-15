@@ -5,6 +5,9 @@
 *.ener
 *.data
 
+# Ignore tar files
+*.tar
+
 # Ignore compiled binaries (just in case)
 *.psmp
 *.exe

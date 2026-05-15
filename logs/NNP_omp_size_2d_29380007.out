@@ -1,0 +1,41 @@
+Loading rhel8/default-icl
+  Loading requirement: rhel8/slurm singularity/current rhel8/global cuda/11.4
+    vgl/2.5.1/64 intel-oneapi-compilers/2022.1.0/gcc/b6zld2mz ucx/1.15.0
+    intel-oneapi-mpi/2021.6.0/intel/guxuvcpm
+Loading intel-oneapi-mkl/2022.1.0/intel/intel-oneapi-mpi/qqwrrcxw
+  Loading requirement: intel-oneapi-tbb/2021.6.0/intel/2kqmspts
+Currently Loaded Modulefiles:
+ 1) rhel8/slurm                                                
+ 2) singularity/current                                        
+ 3) rhel8/global                                               
+ 4) cuda/11.4                                                  
+ 5) vgl/2.5.1/64                                               
+ 6) intel-oneapi-compilers/2022.1.0/gcc/b6zld2mz               
+ 7) ucx/1.15.0                                                 
+ 8) intel-oneapi-mpi/2021.6.0/intel/guxuvcpm                   
+ 9) rhel8/default-icl                                          
+10) intel-oneapi-tbb/2021.6.0/intel/2kqmspts                   
+11) intel-oneapi-mkl/2022.1.0/intel/intel-oneapi-mpi/qqwrrcxw  
+12) gcc/11                                                     
+13) python/3.11.0-icl                                          
+0ea1855e21d4768d8f98722645c43cf0  /rds/user/crm98/hpc-work/cp2k_binaries/csd3/feature-nnp-native-spline-omp/cp2k.psmp
+
+=== OMP 2D size sweep (omp x N) ===
+Currently Loaded Modulefiles:
+ 1) rhel8/slurm                                                
+ 2) singularity/current                                        
+ 3) rhel8/global                                               
+ 4) cuda/11.4                                                  
+ 5) vgl/2.5.1/64                                               
+ 6) intel-oneapi-compilers/2022.1.0/gcc/b6zld2mz               
+ 7) ucx/1.15.0                                                 
+ 8) intel-oneapi-mpi/2021.6.0/intel/guxuvcpm                   
+ 9) rhel8/default-icl                                          
+10) intel-oneapi-tbb/2021.6.0/intel/2kqmspts                   
+11) intel-oneapi-mkl/2022.1.0/intel/intel-oneapi-mpi/qqwrrcxw  
+12) gcc/11                                                     
+13) python/3.11.0-icl                                          
+OMP size scaling — feature-nnp-native-spline-omp  (1 MPI rank(s), OMP in: 1 2 4 8, 5 reps)
+-----------------------------------------------------------------------
+OMP=1   N=64     : reps=5   t/step=0.213410+/-0.001483 s  wall=4.329600+/-0.030237 s
+slurmstepd: error: *** JOB 29380007 ON cpu-q-224 CANCELLED AT 2026-05-15T13:12:25 ***

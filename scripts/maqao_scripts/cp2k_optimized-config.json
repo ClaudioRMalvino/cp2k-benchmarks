@@ -1,0 +1,33 @@
+{
+  "config": {
+    "#": "==================================================================",
+    "#": " MAQAO ONE View config -- cp2k_optimized, feature/nnp-native-spline",
+    "#": "==================================================================",
+    "#": "Optimised PURE-MPI fork: cell-list neighbour search, persistent",
+    "#": "scratch buffers, CP2K-native Hermite splines, cache-conscious",
+    "#": "gradient arrays, precomputed ACSF scaling factors.",
+    "#": "Workload / parallelism identical to the master config so the",
+    "#": "--compare-reports run isolates the optimisations (16 MPI x 1 OMP).",
+
+    "experiment_name": "cp2k-optimized-native-spline-NNP-H2O64",
+    "comments": "cp2k_optimized feature/nnp-native-spline -- optimised pure-MPI NNP path. Compared against upstream master.",
+
+    "executable": "/rds/user/crm98/hpc-work/cp2k_binaries/csd3/feature-nnp-native-spline/cp2k.psmp",
+    "keep_executable_location": true,
+
+    "run_command": "<executable> -i run.inp",
+    "mpi_command": "srun -n <number_processes> --hint=nomultithread",
+    "number_processes": 16,
+    "number_nodes": 1,
+
+    "dataset": "/home/crm98/cp2k-benchmarks/scripts/maqao_scripts/dataset",
+    "dataset_handler": "link",
+    "run_directory": "<dataset>",
+
+    "envv_OMP_NUM_THREADS": "1",
+
+    "filter": { "type": "number", "value": 15 },
+    "optimizer_loop_count": 15,
+    "maximal_path_number": 4
+  }
+}

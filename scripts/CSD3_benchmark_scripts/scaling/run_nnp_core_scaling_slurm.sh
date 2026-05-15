@@ -1,0 +1,243 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# CSD3 / Peta4-IceLake strong (core) scaling sweep — reproduction of the
+# cerberus run_nnp_core_scaling_slurm.sh.  Fixes the system size and sweeps
+# total cores, reporting speedup and parallel efficiency relative to the
+# first successful point.
+#
+# Each core-count point is measured N_REPS+1 times: the first run is a
+# discarded warm-up, the remaining N_REPS are timed.  Two CSVs are written:
+#   results_core_scaling_<label>_<ts>_raw.csv  every individual repeat
+#   results_core_scaling_<label>_<ts>.csv      mean / std / min per core count
+# Speedup is computed from the mean *time per MD step* (the qs_mol_dyn_low
+# timer), not total wall-time, so a roughly constant start-up cost does not
+# masquerade as lost parallel efficiency at high core counts.
+#
+# Differences from cerberus: srun launcher, intel-oneapi-mkl module load,
+# /rds scratch paths, sweep extended to a full Peta4-IceLake node (76 cores),
+# and per-step trajectory/energy/force printing stripped from the input.
+#
+# Strong scaling means a *fixed* problem size.  N_MOLECULES defaults to 1024
+# (= 3072 atoms): a typical bulk-water NNP-MD production cell, large enough
+# that master's O(N^2) neighbour search is the visible bottleneck (master is
+# ~2.6x slower than feature/nnp-native-spline at this size on 76 cores).
+# The cerberus value of 64 H2O = 192 atoms saturates a full node well before
+# 76 cores and hides the algorithmic difference behind communication noise.
+# Override with N_MOLECULES=64 (cerberus reproduction) or 2048/4096 (longer).
+
+# Cores per Peta4-IceLake node — change here if your allocation differs.
+CORES_PER_NODE=76
+
+BIN_ROOT=/rds/user/$USER/hpc-work/cp2k_binaries/csd3
+BENCHMARK_ROOT=/home/crm98/cp2k-benchmarks
+
+# Self-sufficient module environment (idempotent if the driver already loaded
+# them) so this script also works when invoked standalone.  Strict mode is
+# relaxed across the sourcing: cp2k_CSD3_env.sh pulls in the toolchain 'setup',
+# which references unbound vars (CP_DFLAGS) that would otherwise trip `set -u`.
+. /etc/profile.d/modules.sh
+set +u
+source /home/crm98/cp2k-benchmarks/scripts/CSD3_benchmark_scripts/cp2k_CSD3_env.sh
+source "$BIN_ROOT/setup"
+set -u
+
+TARGET_BRANCH=${1:-master}
+TIMESTAMP=$(date +%d-%m_%H-%M)
+
+case "$TARGET_BRANCH" in
+  feature-nnp-native-spline)
+      CP2K_EXE="$BIN_ROOT/feature-nnp-native-spline/cp2k.psmp"
+      INSTALL_LIB="$BIN_ROOT/feature-nnp-native-spline/lib"
+      LABEL="feature-nnp-native-spline"
+      PROJECT_ROOT="/home/crm98/cp2k_optimized"
+      OUTDIR_PARENT="cp2k_feature_native_spline"
+      OMP_THREADS=1
+      ;;
+  feature-nnp-native-spline-omp)
+      CP2K_EXE="$BIN_ROOT/feature-nnp-native-spline-omp/cp2k.psmp"
+      INSTALL_LIB="$BIN_ROOT/feature-nnp-native-spline-omp/lib"
+      LABEL="feature-nnp-native-spline-omp"
+      PROJECT_ROOT="/home/crm98/cp2k_optimized"
+      OUTDIR_PARENT="cp2k_feature_native_spline_omp"
+      OMP_THREADS=2
+      ;;
+  master|*)
+      CP2K_EXE="$BIN_ROOT/master/cp2k.psmp"
+      INSTALL_LIB="$BIN_ROOT/master/lib"
+      LABEL="upstream-master"
+      PROJECT_ROOT="/home/crm98/cp2k_master"
+      OUTDIR_PARENT="cp2k_master"
+      OMP_THREADS=1
+      ;;
+esac
+
+N_MOLECULES=${N_MOLECULES:-1024}
+STEPS=${STEPS:-100}
+# Number of TIMED repeats per core count (a warm-up run is always done first
+# and discarded).  Override with e.g. N_REPS=3 for a quicker sweep.
+N_REPS=${N_REPS:-5}
+
+OUTDIR="/rds/user/$USER/hpc-work/cp2k-benchmarks/results/${OUTDIR_PARENT}/NNP/NNP_core_scaling_${LABEL}_${TIMESTAMP}"
+mkdir -p "$OUTDIR"
+
+export LD_LIBRARY_PATH="$INSTALL_LIB:${LD_LIBRARY_PATH:-}"
+
+BASE_INP="${BENCHMARK_ROOT}/H2O-64_NNP_MD.inp"
+NNP_DATA="${PROJECT_ROOT}/data/NNP"
+
+CSV_FILE="${OUTDIR}/results_core_scaling_${LABEL}_${TIMESTAMP}.csv"
+RAW_CSV="${OUTDIR}/results_core_scaling_${LABEL}_${TIMESTAMP}_raw.csv"
+for f in "$CSV_FILE" "$RAW_CSV"; do
+cat <<EOF >"$f"
+# branch:      $LABEL
+# exe:         $CP2K_EXE
+# N_molecules: $N_MOLECULES
+# steps:       $STEPS
+# reps:        $N_REPS timed (+1 discarded warm-up) per core count
+EOF
+done
+echo "# mpi_ranks,omp_threads,total_cores,rep,time_per_step_s,walltime_s" >>"$RAW_CSV"
+echo "# mpi_ranks,omp_threads,total_cores,n_reps,time_per_step_mean_s,time_per_step_std_s,time_per_step_min_s,walltime_mean_s,walltime_std_s,walltime_min_s,speedup,parallel_efficiency" >>"$CSV_FILE"
+
+# --- helpers ----------------------------------------------------------------
+# stats <num>... -> "mean sample_std min n"  (n=0 and NAs if no valid input)
+stats() {
+   printf '%s\n' "$@" | awk '
+      /^[0-9.eE+-]+$/ { x[++n]=$1; s+=$1; if (n==1 || $1<mn) mn=$1 }
+      END { if (n==0) { print "NA NA NA 0"; exit }
+            m=s/n; v=0; for (i=1;i<=n;i++) v+=(x[i]-m)^2
+            sd=(n>1)?sqrt(v/(n-1)):0
+            printf "%.6f %.6f %.6f %d\n", m, sd, mn, n }'
+}
+
+# bench_point <rundir> <mpi> <omp> : run a warm-up + N_REPS timed reps of
+# run.inp in <rundir>, append per-rep rows to $RAW_CSV (prefixed with the
+# caller-set $RAW_PREFIX), and echo:
+#   "tps_mean tps_std tps_min wt_mean wt_std wt_min n_ok"
+bench_point() {
+   local rundir=$1 mpi=$2 omp=$3
+   local r out wt md tps tps_list="" wt_list=""
+   export OMP_NUM_THREADS=$omp
+   for r in $(seq 0 "$N_REPS"); do                      # r=0 is the warm-up
+      out="$rundir/cp2k_rep${r}.out"
+      ( cd "$rundir" && srun --ntasks="$mpi" --cpus-per-task="$omp" --hint=nomultithread \
+           "$CP2K_EXE" -i run.inp >"$out" 2>&1 ) || true
+      if ! grep -q "PROGRAM ENDED" "$out" 2>/dev/null; then
+         [[ $r -gt 0 ]] && echo "${RAW_PREFIX},${r},FAILED,FAILED" >>"$RAW_CSV"
+         continue
+      fi
+      wt=$(grep -E "^ CP2K +[0-9]" "$out" 2>/dev/null | awk '{print $NF}' | tail -1 || true)
+      md=$(awk '/^ qs_mol_dyn_low/ {print $(NF-1)}' "$out" 2>/dev/null | tail -1 || true)
+      tps=$(awk -v t="${md:-0}" -v s="$STEPS" 'BEGIN{ if (s>0) printf "%.6f", t/s; else print "NA" }')
+      [[ $r -eq 0 ]] && continue                        # discard the warm-up
+      tps_list+="$tps "
+      wt_list+="$wt "
+      echo "${RAW_PREFIX},${r},${tps},${wt}" >>"$RAW_CSV"
+   done
+   local tm tsd tmin tn wm wsd wmin wn
+   read -r tm tsd tmin tn <<<"$(stats $tps_list)" || true
+   read -r wm wsd wmin wn <<<"$(stats $wt_list)"  || true
+   echo "$tm $tsd $tmin $wm $wsd $wmin $tn"
+}
+
+# System size -> MULTIPLE_UNIT_CELL multipliers (each cell = 64 H2O).
+declare -A MULT
+MULT[64]="1 1 1"
+MULT[256]="2 2 1"
+MULT[512]="2 2 2"
+MULT[1024]="4 2 2"
+MULT[2048]="4 4 2"
+MULT[4096]="4 4 4"
+mx=$(echo "${MULT[$N_MOLECULES]}" | awk '{print $1}')
+my=$(echo "${MULT[$N_MOLECULES]}" | awk '{print $2}')
+mz=$(echo "${MULT[$N_MOLECULES]}" | awk '{print $3}')
+
+# Total-core counts to sweep — single Peta4-IceLake node.  Powers of two up
+# to 64, then the full node (76).  OMP branch uses OMP=2 so its minimum is
+# 2 cores; pure-MPI branches start at 1.  Override by exporting CORE_LIST.
+CORE_LIST="${CORE_LIST:-2 4 8 16 32 64 ${CORES_PER_NODE}}"
+if [[ "$OMP_THREADS" -eq 1 && "$CORE_LIST" != *" 1 "* && "$CORE_LIST" != "1 "* ]]; then
+   CORE_LIST="1 $CORE_LIST"
+fi
+
+echo "Starting NNP strong scaling (N=$N_MOLECULES H2O) on branch: $LABEL  ($N_REPS reps)"
+echo "------------------------------------------------------------------------"
+
+BASELINE_TPS=""
+BASELINE_CORES=""
+
+for total_cores in $CORE_LIST; do
+   mpi=$(( total_cores / OMP_THREADS ))
+   [[ $mpi -lt 1 ]] && continue
+   [[ $((mpi * OMP_THREADS)) -ne $total_cores ]] && continue   # non-divisible, skip
+
+   rundir="${OUTDIR}/cores_${total_cores}"
+   mkdir -p "$rundir"
+
+   export current_size=$N_MOLECULES mx my mz \
+          target_file="${rundir}/run.inp" base_inp=$BASE_INP STEPS
+python3 - <<'PYEOF'
+import os, re
+
+base = os.environ['base_inp']
+target = os.environ['target_file']
+size = os.environ['current_size']
+mx, my, mz = os.environ['mx'], os.environ['my'], os.environ['mz']
+steps = os.environ['STEPS']
+
+with open(base, "r") as f:
+    txt = f.read()
+
+txt = re.sub(r'STEPS\s+\d+', f'STEPS {steps}', txt, count=1)
+# Performance benchmark: switch OFF all per-step file I/O so the timing
+# reflects compute, not disk.  Deleting a print-key section does NOT disable
+# it -- &TRAJECTORY / &RESTART_HISTORY are low-print-level keys that revert to
+# their (on) defaults at PRINT_LEVEL LOW -- so set the section parameter to
+# OFF explicitly (also covers &RESTART, which is on by default at any level).
+txt = re.sub(r'&TRAJECTORY\b[\s\S]*?&END TRAJECTORY',
+             '&TRAJECTORY OFF\n    &END TRAJECTORY\n'
+             '    &RESTART OFF\n    &END RESTART\n'
+             '    &RESTART_HISTORY OFF\n    &END RESTART_HISTORY', txt, count=1)
+txt = re.sub(r'&ENERGIES\b', '&ENERGIES OFF', txt, count=1)
+txt = re.sub(r'&FORCES\b', '&FORCES OFF', txt, count=1)
+
+if size != "64":
+    txt = re.sub(r'(&CELL\s*\n)', rf'\g<1>      MULTIPLE_UNIT_CELL {mx} {my} {mz}\n', txt, flags=re.IGNORECASE)
+    if "&TOPOLOGY" in txt:
+        txt = re.sub(r'(&TOPOLOGY\s*\n)', rf'\g<1>      MULTIPLE_UNIT_CELL {mx} {my} {mz}\n', txt, flags=re.IGNORECASE)
+    else:
+        txt = re.sub(r'(&SUBSYS\s*\n)', rf'\g<1>    &TOPOLOGY\n      MULTIPLE_UNIT_CELL {mx} {my} {mz}\n    &END TOPOLOGY\n', txt, flags=re.IGNORECASE)
+
+with open(target, "w") as f:
+    f.write(txt)
+PYEOF
+
+   ln -sfn "$NNP_DATA" "${rundir}/NNP"
+
+   RAW_PREFIX="$mpi,$OMP_THREADS,$total_cores"
+   read -r TM TS TMIN WM WS WMIN NOK \
+        <<<"$(bench_point "$rundir" "$mpi" "$OMP_THREADS")" || true
+
+   if [[ "${NOK:-0}" == "0" ]]; then
+      printf "%-4s MPI x %-2s OMP = %-3s cores : *** ALL %d REPS FAILED ***\n" \
+         "$mpi" "$OMP_THREADS" "$total_cores" "$N_REPS"
+      echo "$mpi,$OMP_THREADS,$total_cores,0,NA,NA,NA,NA,NA,NA,NA,NA" >>"$CSV_FILE"
+      continue
+   fi
+
+   if [[ -z "$BASELINE_TPS" ]]; then
+      BASELINE_TPS=$TM
+      BASELINE_CORES=$total_cores
+   fi
+   speedup=$(awk -v b="$BASELINE_TPS" -v t="$TM" 'BEGIN{ printf "%.3f", b/t }')
+   eff=$(awk -v sp="$speedup" -v c="$total_cores" -v bc="$BASELINE_CORES" \
+            'BEGIN{ printf "%.1f", 100*sp/(c/bc) }')
+
+   printf "%-4s MPI x %-2s OMP = %-3s cores : reps=%-2s  t/step=%s+/-%s s  speedup=%sx  eff=%s%%\n" \
+      "$mpi" "$OMP_THREADS" "$total_cores" "$NOK" "$TM" "$TS" "$speedup" "$eff"
+   echo "$mpi,$OMP_THREADS,$total_cores,$NOK,$TM,$TS,$TMIN,$WM,$WS,$WMIN,$speedup,$eff" >>"$CSV_FILE"
+done
+
+echo "Wrote $CSV_FILE"
+echo "      $RAW_CSV"

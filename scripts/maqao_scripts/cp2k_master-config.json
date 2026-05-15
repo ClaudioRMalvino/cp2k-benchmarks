@@ -1,0 +1,38 @@
+{
+  "config": {
+    "#": "==================================================================",
+    "#": " MAQAO ONE View config -- UPSTREAM CP2K MASTER (profiling baseline)",
+    "#": "==================================================================",
+    "#": "Workload : METHOD NNP, 64-H2O bulk-water MD (see ./dataset/run.inp)",
+    "#": "Parallel : 16 MPI ranks x 1 OpenMP thread, one Peta4 Ice Lake node",
+    "#": "Driven by: run_maqao_profile_slurm.sh   (all paths absolute, CSD3)",
+    "#": "JSON note: the key \"#\" is treated as a comment by MAQAO's parser.",
+
+    "experiment_name": "cp2k-master-NNP-H2O64",
+    "comments": "Upstream CP2K master, pure-MPI NNP code path. Baseline for the feature/nnp-native-spline comparison report.",
+
+    "#": "Binary already carries -g debug info -> MAQAO maps hot loops back to",
+    "#": "nnp_acsf.F / nnp_force.F source line numbers.",
+    "executable": "/rds/user/crm98/hpc-work/cp2k_binaries/csd3/master/cp2k.psmp",
+    "keep_executable_location": true,
+
+    "run_command": "<executable> -i run.inp",
+    "mpi_command": "srun -n <number_processes> --hint=nomultithread",
+    "number_processes": 16,
+    "number_nodes": 1,
+
+    "#": "Shared, self-contained dataset (run.inp + NNP committee data); built",
+    "#": "by the SLURM driver before MAQAO is invoked. Linked into the xp dir.",
+    "dataset": "/home/crm98/cp2k-benchmarks/scripts/maqao_scripts/dataset",
+    "dataset_handler": "link",
+    "run_directory": "<dataset>",
+
+    "envv_OMP_NUM_THREADS": "1",
+
+    "#": "Statically analyse the 15 hottest loops -- enough to cover the whole",
+    "#": "ACSF / energy-force kernel set (nnp_calc_rad/ang, nnp_scale_acsf...).",
+    "filter": { "type": "number", "value": 15 },
+    "optimizer_loop_count": 15,
+    "maximal_path_number": 4
+  }
+}

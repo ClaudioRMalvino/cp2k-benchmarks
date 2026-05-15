@@ -1,0 +1,1666 @@
+<!DOCTYPE html>
+<html translate="no" lang="en-US"><head><title>OV - Compare Index</title>
+<meta charset="utf-8" />
+<meta name="google" content="notranslate" />
+<link rel="stylesheet" type="text/css" media="screen" href="css/ui.jqgrid.css" />
+<link rel="stylesheet" type="text/css" href="css/themes/redmond_custom/jquery-ui.css" />
+<link rel="stylesheet" type="text/css" href="css/themes/redmond_custom/jquery.jqplot.min.css" />
+<link rel="stylesheet" type="text/css" href="css/MAQAO_theme.css" />
+<link rel="stylesheet" type="text/css" href="css/maqao_modal.css" />
+<link rel="stylesheet" type="text/css" href="css/global.css" />
+<link rel="stylesheet" type="text/css" href="css/maqao_menu.css" />
+<script src="js/jquery-1.9.0.min.js" ></script>
+<script src="js/jquery-ui-1.10.3.custom.min.js" ></script>
+<script src="js/grid.locale-en.js" ></script>
+<script src="js/jquery.jqGrid.min.js" ></script>
+<script src="js/d3.min.js" ></script>
+<script class="include" src="js/jquery.jqplot.min.js"></script>
+<script class="include" src="js/jqplot.pieRenderer.min.js"></script>
+<script class="include" src="js/jqplot.barRenderer.min.js"></script>
+<script class="include" src="js/jqplot.categoryAxisRenderer.min.js"></script>
+<script class="include" src="js/jqplot.pointLabels.min.js"></script>
+<script class="include" src="js/jqplot.cursor.min.js"></script>
+<script class="include" src="js/jqplot.canvasTextRenderer.min.js"></script>
+<script class="include" src="js/jqplot.canvasAxisTickRenderer.min.js"></script>
+<script class="include" src="js/jqplot.canvasAxisLabelRenderer.min.js"></script>
+<script class="include" src="js/jqplot.enhancedLegendRenderer.min.js"></script>
+<script class="include" src="js/jqplot.highlighter.min.js"></script>
+<script class="include" src="js/jqplot.logAxisRenderer.min.js"></script>
+<script class="include" src="js/maqao_menu.js"></script>
+<script>
+$( function() {
+  $( document ).tooltip({
+    content: function() {
+      if (this.classList.contains ("tooltip-maqao")
+      ||  this.classList.contains ("tooltip-maqao-button")) {
+        return tooltips_texts[$(this).attr('tooltip_id')];
+      }
+    },
+    position: {
+      my: "center bottom-20",
+        at: "center top",
+        using: function( position, feedback ) {
+          $( this ).css( position );
+          $( "<div>" )
+            .addClass( "arrow-tt" )
+            .addClass( feedback.vertical )
+            .addClass( feedback.horizontal )
+            .appendTo( this );
+        }
+      }
+  });
+} );
+
+// Code from https://www.htmlgoodies.com/beyond/javascript/article.php/3724571/Using-Multiple-JavaScript-Onload-Functions.htm
+function addLoadEvent(func) {
+  var oldonload = window.onload;
+  if (typeof window.onload != 'function') {
+    window.onload = func;
+  } else {
+    window.onload = function() {
+      if (oldonload) {
+        oldonload();
+      }
+      func();
+    }
+  }
+}
+function loadCSS(filename){ 
+  var file = document.createElement("link");
+  file.setAttribute("rel", "stylesheet");
+  file.setAttribute("type", "text/css");
+  file.setAttribute("href", filename);
+  document.head.appendChild(file);
+}
+addLoadEvent(function(){
+  var theme = localStorage.getItem("__MAQAO_OV_theme__");
+  if (theme) {
+    loadCSS("css/"+theme+".css");
+  }
+  else {
+    localStorage.setItem("__MAQAO_OV_theme__", "MAQAO_theme");
+    loadCSS("css/MAQAO_theme.css");
+  }
+});
+</script>
+</head><body>
+<div id="page_title"><img alt="MAQAO" id="maqao_logo" src="images/MAQAO_small_logo.png"/><ul id="maqao_menu"><li ><a class="_current_page _first_menu_level" href="index.html">Global</a><ul><li ><a  href="config.html">Configurations</a></li></ul></li><li ><a  href="summary.html">Summary</a></li><li ><a  href="functions.html">Functions</a></li><li ><a  href="loops.html">Loops</a></li></ul>
+<span><img alt="options" id="menu_options_icon" src="images/gear_20.png" onclick="__open_options ()"/></span>
+</div>
+<script>
+function __change_theme () {
+  var new_theme = document.getElementById("select_theme").value;
+  localStorage.setItem("__MAQAO_OV_theme__", new_theme);
+    loadCSS("css/"+new_theme+".css");
+}
+function __open_options () {
+  var elem = document.getElementById ("options_configuration");
+  if (elem.dataset.open == "false") {
+    elem.dataset.open = "true";
+    elem.style.display = "block";
+  }
+  else {
+    elem.dataset.open = "false";
+    elem.style.display = "none";
+  }
+}
+</script>
+<div id="anchor_file_start"></div>
+<div id="maqao_content">
+<div>
+  <div id="spacer_page_title" ></div>
+  <div id="options_configuration" data-open="false" style="display:none;">
+    <h3 id="options_configuration_header">Report Configuration</h3>
+    <span style="margin-left:10px;"><label for="select_theme">Theme: </label>    <select name="theme" id="select_theme" onchange="__change_theme ()">  <option value="MAQAO_theme">MAQAO_theme</option>  <option value="darkgrey">darkgrey</option>  <option value="cyan">cyan</option></select></span>    <span style="margin-left:10px;"><label for="select_chart_theme">Chart Theme: </label>    <select name="theme" id="select_chart_theme" onchange="__change_chart_theme ()">  <option value="Default_Chart_Theme">Default_Chart_Theme</option>  <option value="grey">grey</option></select></span></div>
+</div>
+<script>
+  let theme = localStorage.getItem("__MAQAO_OV_theme__");
+  if (theme) {
+    document.getElementById("select_theme").value = theme;
+  }
+  theme = localStorage.getItem("__MAQAO_OV_chart_theme__");
+  if (theme) {
+    document.getElementById("select_chart_theme").value = theme;
+  }
+document.getElementById("spacer_page_title").style.height = (document.getElementById("page_title").clientHeight + 25)+"px";
+var obj = document.getElementById("page_title");
+if (obj) {
+  var elems = document.getElementsByClassName ("_first_menu_level")
+  if (obj.clientHeight < 90) {
+    for (var i = 0; i < elems.length; i++) {
+      elems.item(i).style.borderBottomLeftRadius = "";
+      elems.item(i).style.borderBottomRightRadius = "";
+    }
+  }
+  else {
+    for (var i = 0; i < elems.length; i++) {
+      elems.item(i).style.borderBottomLeftRadius = "10px";
+      elems.item(i).style.borderBottomRightRadius = "10px";
+    }
+  }
+}
+</script>
+<p id="help_main">Help is available by moving the cursor above any <img src="images/help_icon_20.png" style="vertical-align: middle;background-color:var(--fixed_box_header_background);"></img> symbol or by checking <a href="https://maqao.exascale-computing.eu/documentation.html">MAQAO website</a>.</p>
+<div id="reports_description_box"><div class="_accordion_box collapsed" ><h3 id="_accordion_header_1" class="_header collapsed" onclick="_click_accordion_header(this)" ><span class="_accordion_box_button">&#x25B6;</span>Compared Reports</h3><div id="_accordion_content_1" class="_content collapsed"><ul>
+  <li><a href="detailed/run_1/index.html">r0: /rds/user/crm98/hpc-work/cp2k-benchmarks/maqao/xp_master</a></li>
+  <li><a href="detailed/run_2/index.html">r1: /rds/user/crm98/hpc-work/cp2k-benchmarks/maqao/xp_feature-nnp-native-spline</a></li>
+</ul>
+</div></div></div><div style="width: 100%; display: table;"><div style="display: table-row"><div id="_tab_global_metrics_box" class="_fixed_box" style="display:table-cell;width:50%;"><h3 class="_header">Global Metrics<span class="tooltip-maqao-button help-maqao" title="" tooltip_id="0"></span></h3><div class="_content"><table id="_tab_global_metrics">
+<tr><th colspan="2" style="width:40%;">Metric</th><th style="width:30%;"><span class="tooltip-maqao" title="" tooltip_id="1" >r0</span></th><th style="width:30%;"><span class="tooltip-maqao" title="" tooltip_id="2" >r1</span></th></tr><tr class="_tr_odd"><td colspan="2" class="_td_shift_20"><span class="tooltip-maqao" title="" tooltip_id="3">Total Time (s)</span></td><td style="background-color:var(--score_color_);">31.74</td><td style="background-color:var(--score_color_);">28.21</td></tr>
+<tr><td colspan="2" class="_td_shift_20"><span class="tooltip-maqao" title="" tooltip_id="4">Max (Thread Active Time) (s)</span></td><td style="background-color:var(--score_color_good);"><span class="tooltip-maqao" title="" tooltip_id="5" >30.47</span></td><td style="background-color:var(--score_color_good);"><span class="tooltip-maqao" title="" tooltip_id="6" >27.26</span></td></tr>
+<tr class="_tr_odd"><td colspan="2" class="_td_shift_20"><span class="tooltip-maqao" title="" tooltip_id="7">Average Active Time (s)</span></td><td style="background-color:var(--score_color_);">30.31</td><td style="background-color:var(--score_color_);">27.09</td></tr>
+<tr><td colspan="2" class="_td_shift_20"><span class="tooltip-maqao" title="" tooltip_id="8">Activity Ratio (%)</span></td><td style="background-color:var(--score_color_);">95.6</td><td style="background-color:var(--score_color_);">96.3</td></tr>
+<tr class="border_left_hover _tr_odd" style="cursor: pointer;" onclick="set_chart(-1, 6);"><td colspan="2" class="_td_shift_20"><span class="tooltip-maqao" title="" tooltip_id="9">Average number of active threads</span></td><td style="background-color:var(--score_color_);">15.280</td><td style="background-color:var(--score_color_);">15.363</td></tr>
+<tr><td colspan="2" class="_td_shift_20"><span class="tooltip-maqao" title="" tooltip_id="10">Affinity Stability (%)</span></td><td style="background-color:var(--score_color_);">99.7</td><td style="background-color:var(--score_color_);">99.7</td></tr>
+<tr class="border_left_hover _tr_odd" style="cursor: pointer;" onclick="set_chart(-1, 0);"><td colspan="2" class="_td_shift_20"><span class="tooltip-maqao" title="" tooltip_id="11">Time in analyzed loops (%)</span></td><td style="background-color:var(--score_color_);">43.8</td><td style="background-color:var(--score_color_);">41.1</td></tr>
+<tr class="border_left_hover " style="cursor: pointer;" onclick="set_chart(-1, 2);"><td colspan="2" class="_td_shift_20"><span class="tooltip-maqao" title="" tooltip_id="12">Time in analyzed innermost loops (%)</span></td><td style="background-color:var(--score_color_);">10.0</td><td style="background-color:var(--score_color_);">13.0</td></tr>
+<tr class="border_left_hover _tr_odd" style="cursor: pointer;" onclick="set_chart(-1, 4);"><td colspan="2" class="_td_shift_20"><span class="tooltip-maqao" title="" tooltip_id="13">Time in user code (%)</span></td><td style="background-color:var(--score_color_);">50.8</td><td style="background-color:var(--score_color_);">55.0</td></tr>
+<tr class="border_left_hover " style="cursor: pointer;" onclick="set_chart(-1, 5);"><td colspan="2" class="_td_shift_20"><span class="tooltip-maqao" title="" tooltip_id="14">Compilation Options Score (%)</span></td><td style="background-color:var(--score_color_medium);">16.7</td><td style="background-color:var(--score_color_medium);">16.7</td></tr>
+<tr class="_tr_odd"><td colspan="2" class="_td_shift_20"><span class="tooltip-maqao" title="" tooltip_id="15">Array Access Efficiency (%)</span></td><td style="background-color:var(--score_color_acceptable);">52.9</td><td style="background-color:var(--score_color_acceptable);">52.5</td></tr>
+<tr><td colspan="4" style="height: 15px;"></td></tr>
+<tbody><tr><td colspan="2" style="background-color: var(--fixed_box_header_background);color: var(--fixed_box_header_font);padding-left: 20px;">Potential Speedups</td><td colspan="2" style="background-color: var(--fixed_box_header_background);color: var(--fixed_box_header_font);"><span class="tooltip-maqao" title="" tooltip_id="16"><img style="float:right;margin-right:20px;" src="images/help_icon_20.png"></span></td></tr></tbody>
+<tr class="border_left_hover " style="cursor: pointer;" onclick="set_chart(-1, 1);"><td colspan="2" class="_td_shift_20"><span class="tooltip-maqao" title="" tooltip_id="17">Perfect Flow Complexity</span></td><td style="background-color:var(--score_color_good);">1.01</td><td style="background-color:var(--score_color_good);">1.07</td></tr>
+<tr class="_tr_odd"><td colspan="2" class="_td_shift_20"><span class="tooltip-maqao" title="" tooltip_id="18">Perfect OpenMP/MPI/Pthread/TBB</span></td><td style="background-color:var(--score_color_acceptable);">1.29</td><td style="background-color:var(--score_color_acceptable);">1.32</td></tr>
+<tr><td colspan="2" class="_td_shift_20"><span class="tooltip-maqao" title="" tooltip_id="19">Perfect OpenMP/MPI/Pthread/TBB + Perfect Load Distribution</span></td><td style="background-color:var(--score_color_acceptable);">1.55</td><td style="background-color:var(--score_color_acceptable);">1.60</td></tr>
+<tbody  class="border_left_hover _tr_odd" style="cursor: pointer;" onclick="set_chart(0);"><tr><td rowspan="2" class="_td_shift_20"><span class="tooltip-maqao" title="" tooltip_id="20">No Scalar Integer</span></td><td class="_td_shift_20"><span class="tooltip-maqao" title="" tooltip_id="21">Potential Speedup</span></td><td style="background-color:var(--score_color_acceptable);">1.21</td><td style="background-color:var(--score_color_acceptable);">1.14</td></tr><tr><td class="_td_shift_20"><span class="tooltip-maqao" title="" tooltip_id="22">Nb Loops to get 80%</span></td><td style="background-color:var(--score_color_);">6</td><td style="background-color:var(--score_color_);">5</td></tr></tbody><tbody  class="border_left_hover " style="cursor: pointer;" onclick="set_chart(1);"><tr><td rowspan="2" class="_td_shift_20"><span class="tooltip-maqao" title="" tooltip_id="23">FP Vectorised</span></td><td class="_td_shift_20"><span class="tooltip-maqao" title="" tooltip_id="24">Potential Speedup</span></td><td style="background-color:var(--score_color_acceptable);">1.20</td><td style="background-color:var(--score_color_acceptable);">1.18</td></tr><tr><td class="_td_shift_20"><span class="tooltip-maqao" title="" tooltip_id="25">Nb Loops to get 80%</span></td><td style="background-color:var(--score_color_);">5</td><td style="background-color:var(--score_color_);">4</td></tr></tbody><tbody  class="border_left_hover _tr_odd" style="cursor: pointer;" onclick="set_chart(2);"><tr><td rowspan="2" class="_td_shift_20"><span class="tooltip-maqao" title="" tooltip_id="26">Fully Vectorised</span></td><td class="_td_shift_20"><span class="tooltip-maqao" title="" tooltip_id="27">Potential Speedup</span></td><td style="background-color:var(--score_color_acceptable);">1.50</td><td style="background-color:var(--score_color_acceptable);">1.45</td></tr><tr><td class="_td_shift_20"><span class="tooltip-maqao" title="" tooltip_id="28">Nb Loops to get 80%</span></td><td style="background-color:var(--score_color_);">6</td><td style="background-color:var(--score_color_);">5</td></tr></tbody><tbody  class="border_left_hover " style="cursor: pointer;" onclick="set_chart(3);"><tr><td rowspan="2" class="_td_shift_20"><span class="tooltip-maqao" title="" tooltip_id="29">Only FP Arithmetic</span></td><td class="_td_shift_20"><span class="tooltip-maqao" title="" tooltip_id="30">Potential Speedup</span></td><td style="background-color:var(--score_color_acceptable);">1.26</td><td style="background-color:var(--score_color_acceptable);">1.16</td></tr><tr><td class="_td_shift_20"><span class="tooltip-maqao" title="" tooltip_id="31">Nb Loops to get 80%</span></td><td style="background-color:var(--score_color_);">6</td><td style="background-color:var(--score_color_);">6</td></tr></tbody></table></div></div>
+<div id="error_charts" style="width:100%;display:none;"></div><div id="chart_0_fixed" class="_fixed_box _OV_chart_RP" style="width:100%;"><h3 class="_header">Cumulated Speedup If No Scalar Integer<span class="tooltip-maqao-button extract-maqao rightpanelextract" title="" tooltip_id="32" onclick="extract_panel ('chart_0_fixed');"></span>
+</h3><div class="_content">
+<div style="margin-top: 10px; margin-bottom: 10px; background-color: var(--chart_background); overflow-x:auto; overflow-y:hidden; "><div id="chart_cat_0" style="height:500px;margin-top:20px;" ></div>
+</div>
+<script class="code" >
+  function __generate_chart_0(){
+    document.getElementById('chart_cat_0').innerHTML = '';
+  var plot0_data = [[1.0558,1.0956,1.1216,1.1405,1.1597,1.176,1.1869,1.1925,1.1968,1.201,1.2038,1.2064,1.2072,1.2075,1.2076,1.2077,1.2078,1.2079,1.208,1.208,1.208,1.208,1.208,1.208,1.208,1.208,1.208,1.208,1.208,1.208,1.208,1.208,1.208,1.208,1.208,1.208,1.208,1.208,1.208,1.208,],[1.0411,1.0718,1.0898,1.1044,1.1136,1.1228,1.126,1.129,1.1316,1.1337,1.1343,1.1348,1.1352,1.1356,1.1357,1.1359,1.136,1.136,1.1361,1.1362,1.1362,1.1362,1.1362,1.1362,1.1362,1.1362,1.1362,1.1362,1.1362,1.1362,1.1362,1.1362,1.1362,1.1362,1.1362,1.1362,1.1362,1.1362,1.1362,1.1362,],];
+  var plot0_ticks = ['1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16','17','18','19','20','21','22','23','24','25','26','27','28','29','30','31','32','33','34','35','36','37','38','39','40',];
+  var plot0 = jQuery.jqplot ('chart_cat_0', plot0_data, {
+    seriesColors:['#333399','#cc00cc',],
+    seriesDefaults: {
+      renderer: jQuery.jqplot.BarRenderer,
+      rendererOptions: {},
+      pointLabels: {show: true      },
+    },
+    axes: {
+      xaxis: {
+        renderer: $.jqplot.CategoryAxisRenderer,ticks: plot0_ticks,label: 'Number of Loops',labelRenderer: $.jqplot.CanvasAxisLabelRenderer,tickRenderer: $.jqplot.CanvasAxisTickRenderer,tickOptions: {angle: -30, fontSize: '10pt'}},
+      yaxis: {label: 'Coverage (%)',labelRenderer: $.jqplot.CanvasAxisLabelRenderer,autoscale:true,min:1,tickOptions:{formatString:'%.2f'},},
+      y2axis: {autoscale:true,min:0,}
+    },
+    highlighter: {tooltipContentEditor: function (str, seriesIndex, pointIndex) {return plot0_ticks[pointIndex]+' - '+plot0_data[seriesIndex][pointIndex];},show: true,showTooltip: true,sizeAdjust: 10,formatString: '%s',tooltipLocation: 'n',useAxesFormatters: false,},
+    legend: {renderer: $.jqplot.EnhancedLegendRenderer, show: true,location: 's',placement: 'outsideGrid',rendererOptions: {numberRows: '1',},},
+    series: [{label:'r0', renderer: $.jqplot.LineRenderer, yaxis:'yaxis', },{label:'r1', renderer: $.jqplot.LineRenderer, yaxis:'yaxis', },],
+  });
+  }
+</script></div></div>
+<div id="chart_1_fixed" class="_fixed_box _OV_chart_RP" style="width:100%;"><h3 class="_header">Cumulated Speedup If FP Vectorized<span class="tooltip-maqao-button extract-maqao rightpanelextract" title="" tooltip_id="33" onclick="extract_panel ('chart_1_fixed');"></span>
+</h3><div class="_content">
+<div style="margin-top: 10px; margin-bottom: 10px; background-color: var(--chart_background); overflow-x:auto; overflow-y:hidden; "><div id="chart_cat_1" style="height:500px;margin-top:20px;" ></div>
+</div>
+<script class="code" >
+  function __generate_chart_1(){
+    document.getElementById('chart_cat_1').innerHTML = '';
+  var plot1_data = [[1.0651,1.1001,1.1367,1.1547,1.1719,1.1849,1.1919,1.1956,1.1988,1.2014,1.2027,1.2029,1.2031,1.2032,1.2032,1.2032,1.2032,1.2032,1.2032,1.2032,1.2032,1.2032,1.2032,1.2032,1.2032,1.2032,1.2032,1.2032,1.2032,1.2032,1.2032,1.2032,1.2032,1.2032,1.2032,1.2032,1.2032,1.2032,1.2032,],[1.1019,1.122,1.1382,1.1484,1.156,1.1634,1.1681,1.172,1.1747,1.1773,1.1789,1.1795,1.1799,1.1803,1.1806,1.181,1.1812,1.1814,1.1815,1.1816,1.1817,1.1817,1.1818,1.1818,1.1818,1.1818,1.1818,1.1818,1.1818,1.1818,1.1818,1.1818,1.1818,1.1818,1.1818,1.1818,1.1818,1.1818,1.1818,1.1818,],];
+  var plot1_ticks = ['1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16','17','18','19','20','21','22','23','24','25','26','27','28','29','30','31','32','33','34','35','36','37','38','39','40',];
+  var plot1 = jQuery.jqplot ('chart_cat_1', plot1_data, {
+    seriesColors:['#333399','#cc00cc',],
+    seriesDefaults: {
+      renderer: jQuery.jqplot.BarRenderer,
+      rendererOptions: {},
+      pointLabels: {show: true      },
+    },
+    axes: {
+      xaxis: {
+        renderer: $.jqplot.CategoryAxisRenderer,ticks: plot1_ticks,label: 'Number of Loops',labelRenderer: $.jqplot.CanvasAxisLabelRenderer,tickRenderer: $.jqplot.CanvasAxisTickRenderer,tickOptions: {angle: -30, fontSize: '10pt'}},
+      yaxis: {label: 'Coverage (%)',labelRenderer: $.jqplot.CanvasAxisLabelRenderer,autoscale:true,min:1,tickOptions:{formatString:'%.2f'},},
+      y2axis: {autoscale:true,min:0,}
+    },
+    highlighter: {tooltipContentEditor: function (str, seriesIndex, pointIndex) {return plot1_ticks[pointIndex]+' - '+plot1_data[seriesIndex][pointIndex];},show: true,showTooltip: true,sizeAdjust: 10,formatString: '%s',tooltipLocation: 'n',useAxesFormatters: false,},
+    legend: {renderer: $.jqplot.EnhancedLegendRenderer, show: true,location: 's',placement: 'outsideGrid',rendererOptions: {numberRows: '1',},},
+    series: [{label:'r0', renderer: $.jqplot.LineRenderer, yaxis:'yaxis', },{label:'r1', renderer: $.jqplot.LineRenderer, yaxis:'yaxis', },],
+  });
+  }
+</script></div></div>
+<div id="chart_2_fixed" class="_fixed_box _OV_chart_RP" style="width:100%;"><h3 class="_header">Cumulated Speedup If Fully Vectorized<span class="tooltip-maqao-button extract-maqao rightpanelextract" title="" tooltip_id="34" onclick="extract_panel ('chart_2_fixed');"></span>
+</h3><div class="_content">
+<div style="margin-top: 10px; margin-bottom: 10px; background-color: var(--chart_background); overflow-x:auto; overflow-y:hidden; "><div id="chart_cat_2" style="height:500px;margin-top:20px;" ></div>
+</div>
+<script class="code" >
+  function __generate_chart_2(){
+    document.getElementById('chart_cat_2').innerHTML = '';
+  var plot2_data = [[1.1379,1.2158,1.2971,1.3357,1.3753,1.407,1.4335,1.4441,1.4524,1.4606,1.4687,1.476,1.4795,1.4829,1.4862,1.4878,1.4888,1.4895,1.4903,1.491,1.4915,1.4921,1.4926,1.493,1.4934,1.4937,1.494,1.4943,1.4946,1.4949,1.4952,1.4954,1.4957,1.4959,1.4961,1.4963,1.4963,1.4963,1.4963,],[1.2187,1.2738,1.3202,1.3505,1.3757,1.3938,1.4037,1.4116,1.4194,1.4261,1.4309,1.4342,1.4355,1.4368,1.4379,1.4387,1.4395,1.4403,1.4411,1.4418,1.4425,1.4431,1.4437,1.4443,1.4448,1.4453,1.4458,1.4463,1.4467,1.4472,1.4475,1.4478,1.448,1.4483,1.4485,1.4487,1.449,1.4492,1.4494,1.4496,],];
+  var plot2_ticks = ['1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16','17','18','19','20','21','22','23','24','25','26','27','28','29','30','31','32','33','34','35','36','37','38','39','40',];
+  var plot2 = jQuery.jqplot ('chart_cat_2', plot2_data, {
+    seriesColors:['#333399','#cc00cc',],
+    seriesDefaults: {
+      renderer: jQuery.jqplot.BarRenderer,
+      rendererOptions: {},
+      pointLabels: {show: true      },
+    },
+    axes: {
+      xaxis: {
+        renderer: $.jqplot.CategoryAxisRenderer,ticks: plot2_ticks,label: 'Number of Loops',labelRenderer: $.jqplot.CanvasAxisLabelRenderer,tickRenderer: $.jqplot.CanvasAxisTickRenderer,tickOptions: {angle: -30, fontSize: '10pt'}},
+      yaxis: {label: 'Coverage (%)',labelRenderer: $.jqplot.CanvasAxisLabelRenderer,autoscale:true,min:1,tickOptions:{formatString:'%.2f'},},
+      y2axis: {autoscale:true,min:0,}
+    },
+    highlighter: {tooltipContentEditor: function (str, seriesIndex, pointIndex) {return plot2_ticks[pointIndex]+' - '+plot2_data[seriesIndex][pointIndex];},show: true,showTooltip: true,sizeAdjust: 10,formatString: '%s',tooltipLocation: 'n',useAxesFormatters: false,},
+    legend: {renderer: $.jqplot.EnhancedLegendRenderer, show: true,location: 's',placement: 'outsideGrid',rendererOptions: {numberRows: '1',},},
+    series: [{label:'r0', renderer: $.jqplot.LineRenderer, yaxis:'yaxis', },{label:'r1', renderer: $.jqplot.LineRenderer, yaxis:'yaxis', },],
+  });
+  }
+</script></div></div>
+<div id="chart_3_fixed" class="_fixed_box _OV_chart_RP" style="width:100%;"><h3 class="_header">Cumulated Speedup If Only FP Arithmetic<span class="tooltip-maqao-button extract-maqao rightpanelextract" title="" tooltip_id="35" onclick="extract_panel ('chart_3_fixed');"></span>
+</h3><div class="_content">
+<div style="margin-top: 10px; margin-bottom: 10px; background-color: var(--chart_background); overflow-x:auto; overflow-y:hidden; "><div id="chart_cat_3" style="height:500px;margin-top:20px;" ></div>
+</div>
+<script class="code" >
+  function __generate_chart_3(){
+    document.getElementById('chart_cat_3').innerHTML = '';
+  var plot3_data = [[1.0496,1.0725,1.092,1.1082,1.1208,1.1267,1.1314,1.1357,1.1393,1.1428,1.1446,1.1456,1.1464,1.1471,1.1476,1.148,1.1483,1.1486,1.1489,1.1491,1.1493,1.1495,1.1497,1.1499,1.1501,1.1502,1.1504,1.1505,1.1506,1.1507,1.1508,1.1509,1.151,1.1511,1.1511,1.1512,1.1512,1.1512,1.1512,1.1512,],[1.0441,1.0647,1.0804,1.0909,1.1001,1.1039,1.1074,1.1107,1.1132,1.1153,1.1162,1.1168,1.1175,1.118,1.1184,1.1189,1.1193,1.1196,1.1199,1.1202,1.1204,1.1207,1.1208,1.121,1.1212,1.1213,1.1214,1.1215,1.1216,1.1218,1.1219,1.122,1.1221,1.1221,1.1222,1.1223,1.1224,1.1224,1.1224,1.1224,],];
+  var plot3_ticks = ['1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16','17','18','19','20','21','22','23','24','25','26','27','28','29','30','31','32','33','34','35','36','37','38','39','40',];
+  var plot3 = jQuery.jqplot ('chart_cat_3', plot3_data, {
+    seriesColors:['#333399','#cc00cc',],
+    seriesDefaults: {
+      renderer: jQuery.jqplot.BarRenderer,
+      rendererOptions: {},
+      pointLabels: {show: true      },
+    },
+    axes: {
+      xaxis: {
+        renderer: $.jqplot.CategoryAxisRenderer,ticks: plot3_ticks,label: 'Number of Loops',labelRenderer: $.jqplot.CanvasAxisLabelRenderer,tickRenderer: $.jqplot.CanvasAxisTickRenderer,tickOptions: {angle: -30, fontSize: '10pt'}},
+      yaxis: {label: 'Coverage (%)',labelRenderer: $.jqplot.CanvasAxisLabelRenderer,autoscale:true,min:1,tickOptions:{formatString:'%.2f'},},
+      y2axis: {autoscale:true,min:0,}
+    },
+    highlighter: {tooltipContentEditor: function (str, seriesIndex, pointIndex) {return plot3_ticks[pointIndex]+' - '+plot3_data[seriesIndex][pointIndex];},show: true,showTooltip: true,sizeAdjust: 10,formatString: '%s',tooltipLocation: 'n',useAxesFormatters: false,},
+    legend: {renderer: $.jqplot.EnhancedLegendRenderer, show: true,location: 's',placement: 'outsideGrid',rendererOptions: {numberRows: '1',},},
+    series: [{label:'r0', renderer: $.jqplot.LineRenderer, yaxis:'yaxis', },{label:'r1', renderer: $.jqplot.LineRenderer, yaxis:'yaxis', },],
+  });
+  }
+</script></div></div>
+<div  id="loop_profile_charts" class="_fixed_box" style="width:100%;"><h3 class="_header">Loop Based Profiles<span class="tooltip-maqao-button extract-maqao rightpanelextract" title="" tooltip_id="36" onclick="extract_panel ('loop_profile_charts');"></span>
+</h3><div id="loop_profile_charts_content" class="_content _OV_chart_RP" style="overflow-y:auto;height:520px;max-height:520px;">
+<div class="_fixed_box" ><h3 class="_header">Innermost / Single Loops</h3>
+<div class="_content"><div style="margin-top: 10px; margin-bottom: 10px; background-color: var(--chart_background); overflow-x:auto; overflow-y:hidden; "><div id="chart_cat_4" style="height:460px;margin-top:20px;" ></div>
+</div>
+<script class="code" >
+  function __generate_chart_4(){
+    document.getElementById('chart_cat_4').innerHTML = '';
+  var plot4_data = [[0,0,5.51,1.87,0,1.57,0.56,0.52,],[0,0,5.51,7.38,7.38,8.95,9.51,10.03,],[0,4.06,2.03,3.45,1.55,0.9,0.17,0.89,],[0,4.06,6.09,9.53,11.09,11.98,12.15,13.04,],];
+  var plot4_ticks = ['> 8%','4% to 8%','2% to 4%','1% to 2%','0.5% to 1%','0.25% to 0.5%','0.125% to 0.25%','< 0.125%',];
+  var plot4 = jQuery.jqplot ('chart_cat_4', plot4_data, {
+    seriesColors:['#333399','#7979d2','#cc00cc','#ff4dff',],
+    seriesDefaults: {
+      renderer: jQuery.jqplot.BarRenderer,
+      rendererOptions: {},
+      pointLabels: {show: true      },
+    },
+    axes: {
+      xaxis: {
+        renderer: $.jqplot.CategoryAxisRenderer,ticks: plot4_ticks,label: 'Coverage Ranges',labelRenderer: $.jqplot.CanvasAxisLabelRenderer,},
+      yaxis: {label: 'Coverage (%)',labelRenderer: $.jqplot.CanvasAxisLabelRenderer,autoscale:true,min:0,tickOptions:{formatString:'%.2f'},},
+      y2axis: {label: 'Cumulated Coverage (%)',labelRenderer: $.jqplot.CanvasAxisLabelRenderer,autoscale:true,min:0,}
+    },
+    highlighter: {tooltipContentEditor: function (str, seriesIndex, pointIndex) {return plot4_ticks[pointIndex]+' - '+plot4_data[seriesIndex][pointIndex];},show: true,showTooltip: true,sizeAdjust: 10,formatString: '%s',tooltipLocation: 'n',useAxesFormatters: false,},
+    legend: {renderer: $.jqplot.EnhancedLegendRenderer, show: true,location: 's',placement: 'outsideGrid',rendererOptions: {numberRows: '1',},},
+    series: [{label:'r0', yaxis:'yaxis', },{label:'cumul. cov. r0', renderer: $.jqplot.LineRenderer, yaxis:'yaxis', },{label:'r1', yaxis:'yaxis', },{label:'cumul. cov. r1', renderer: $.jqplot.LineRenderer, yaxis:'yaxis', },],
+  });
+  }
+</script></div></div><div class="_fixed_box" ><h3 class="_header">Inbetween Loops</h3>
+<div class="_content"><div style="margin-top: 10px; margin-bottom: 10px; background-color: var(--chart_background); overflow-x:auto; overflow-y:hidden; "><div id="chart_cat_5" style="height:460px;margin-top:20px;" ></div>
+</div>
+<script class="code" >
+  function __generate_chart_5(){
+    document.getElementById('chart_cat_5').innerHTML = '';
+  var plot5_data = [[0,11.97,5.11,1.58,0.57,0.41,0,0.24,],[0,11.97,17.08,18.66,19.23,19.64,19.64,19.88,],[0,0,3.25,2.65,0,0.63,0,0.34,],[0,0,3.25,5.89,5.89,6.52,6.52,6.86,],];
+  var plot5_ticks = ['> 8%','4% to 8%','2% to 4%','1% to 2%','0.5% to 1%','0.25% to 0.5%','0.125% to 0.25%','< 0.125%',];
+  var plot5 = jQuery.jqplot ('chart_cat_5', plot5_data, {
+    seriesColors:['#333399','#7979d2','#cc00cc','#ff4dff',],
+    seriesDefaults: {
+      renderer: jQuery.jqplot.BarRenderer,
+      rendererOptions: {},
+      pointLabels: {show: true      },
+    },
+    axes: {
+      xaxis: {
+        renderer: $.jqplot.CategoryAxisRenderer,ticks: plot5_ticks,label: 'Coverage Ranges',labelRenderer: $.jqplot.CanvasAxisLabelRenderer,},
+      yaxis: {label: 'Coverage (%)',labelRenderer: $.jqplot.CanvasAxisLabelRenderer,autoscale:true,min:0,tickOptions:{formatString:'%.2f'},},
+      y2axis: {label: 'Cumulated Coverage (%)',labelRenderer: $.jqplot.CanvasAxisLabelRenderer,autoscale:true,min:0,}
+    },
+    highlighter: {tooltipContentEditor: function (str, seriesIndex, pointIndex) {return plot5_ticks[pointIndex]+' - '+plot5_data[seriesIndex][pointIndex];},show: true,showTooltip: true,sizeAdjust: 10,formatString: '%s',tooltipLocation: 'n',useAxesFormatters: false,},
+    legend: {renderer: $.jqplot.EnhancedLegendRenderer, show: true,location: 's',placement: 'outsideGrid',rendererOptions: {numberRows: '1',},},
+    series: [{label:'r0', yaxis:'yaxis', },{label:'cumul. cov. r0', renderer: $.jqplot.LineRenderer, yaxis:'yaxis', },{label:'r1', yaxis:'yaxis', },{label:'cumul. cov. r1', renderer: $.jqplot.LineRenderer, yaxis:'yaxis', },],
+  });
+  }
+</script></div></div><div class="_fixed_box" ><h3 class="_header">Outermost Loops</h3>
+<div class="_content"><div style="margin-top: 10px; margin-bottom: 10px; background-color: var(--chart_background); overflow-x:auto; overflow-y:hidden; "><div id="chart_cat_6" style="height:460px;margin-top:20px;" ></div>
+</div>
+<script class="code" >
+  function __generate_chart_6(){
+    document.getElementById('chart_cat_6').innerHTML = '';
+  var plot6_data = [[13.75,0,0,0,0,0,0,0.1,],[13.75,13.75,13.75,13.75,13.75,13.75,13.75,13.86,],[21.11,0,0,0,0,0,0,0.13,],[21.11,21.11,21.11,21.11,21.11,21.11,21.11,21.24,],];
+  var plot6_ticks = ['> 8%','4% to 8%','2% to 4%','1% to 2%','0.5% to 1%','0.25% to 0.5%','0.125% to 0.25%','< 0.125%',];
+  var plot6 = jQuery.jqplot ('chart_cat_6', plot6_data, {
+    seriesColors:['#333399','#7979d2','#cc00cc','#ff4dff',],
+    seriesDefaults: {
+      renderer: jQuery.jqplot.BarRenderer,
+      rendererOptions: {},
+      pointLabels: {show: true      },
+    },
+    axes: {
+      xaxis: {
+        renderer: $.jqplot.CategoryAxisRenderer,ticks: plot6_ticks,label: 'Coverage Ranges',labelRenderer: $.jqplot.CanvasAxisLabelRenderer,},
+      yaxis: {label: 'Coverage (%)',labelRenderer: $.jqplot.CanvasAxisLabelRenderer,autoscale:true,min:0,tickOptions:{formatString:'%.2f'},},
+      y2axis: {label: 'Cumulated Coverage (%)',labelRenderer: $.jqplot.CanvasAxisLabelRenderer,autoscale:true,min:0,}
+    },
+    highlighter: {tooltipContentEditor: function (str, seriesIndex, pointIndex) {return plot6_ticks[pointIndex]+' - '+plot6_data[seriesIndex][pointIndex];},show: true,showTooltip: true,sizeAdjust: 10,formatString: '%s',tooltipLocation: 'n',useAxesFormatters: false,},
+    legend: {renderer: $.jqplot.EnhancedLegendRenderer, show: true,location: 's',placement: 'outsideGrid',rendererOptions: {numberRows: '1',},},
+    series: [{label:'r0', yaxis:'yaxis', },{label:'cumul. cov. r0', renderer: $.jqplot.LineRenderer, yaxis:'yaxis', },{label:'r1', yaxis:'yaxis', },{label:'cumul. cov. r1', renderer: $.jqplot.LineRenderer, yaxis:'yaxis', },],
+  });
+  }
+</script></div></div><div class="_fixed_box" ><h3 class="_header">Cumulated Coverage With All Loops</h3>
+<div class="_content"><div style="margin-top: 10px; margin-bottom: 10px; background-color: var(--chart_background); overflow-x:auto; overflow-y:hidden; "><div id="chart_cat_7" style="height:460px;margin-top:20px;" ></div>
+</div>
+<script class="code" >
+  function __generate_chart_7(){
+    document.getElementById('chart_cat_7').innerHTML = '';
+  var plot7_data = [[13.75,25.72,36.35,39.8,40.37,42.35,42.91,43.77,],[21.11,25.16,30.44,36.53,38.08,39.61,39.78,41.15,],];
+  var plot7_ticks = ['> 8%','4% to 8%','2% to 4%','1% to 2%','0.5% to 1%','0.25% to 0.5%','0.125% to 0.25%','< 0.125%',];
+  var plot7 = jQuery.jqplot ('chart_cat_7', plot7_data, {
+    seriesColors:['#333399','#cc00cc',],
+    seriesDefaults: {
+      renderer: jQuery.jqplot.BarRenderer,
+      rendererOptions: {},
+      pointLabels: {show: true      },
+    },
+    axes: {
+      xaxis: {
+        renderer: $.jqplot.CategoryAxisRenderer,ticks: plot7_ticks,label: 'Coverage Ranges',labelRenderer: $.jqplot.CanvasAxisLabelRenderer,},
+      yaxis: {label: 'Cumulated Coverage (%)',labelRenderer: $.jqplot.CanvasAxisLabelRenderer,autoscale:true,min:0,tickOptions:{formatString:'%.2f'},},
+      y2axis: {autoscale:true,min:0,}
+    },
+    highlighter: {tooltipContentEditor: function (str, seriesIndex, pointIndex) {return plot7_ticks[pointIndex]+' - '+plot7_data[seriesIndex][pointIndex];},show: true,showTooltip: true,sizeAdjust: 10,formatString: '%s',tooltipLocation: 'n',useAxesFormatters: false,},
+    legend: {renderer: $.jqplot.EnhancedLegendRenderer, show: true,location: 's',placement: 'outsideGrid',rendererOptions: {numberRows: '1',},},
+    series: [{label:'r0', renderer: $.jqplot.LineRenderer, yaxis:'yaxis', },{label:'r1', renderer: $.jqplot.LineRenderer, yaxis:'yaxis', },],
+  });
+  }
+</script></div></div></div></div>
+<div  id="inner_loop_profile_charts" class="_fixed_box" style="width:100%;"><h3 class="_header">Innermost Loop Based Profiles<span class="tooltip-maqao-button extract-maqao rightpanelextract" title="" tooltip_id="37" onclick="extract_panel ('inner_loop_profile_charts');"></span>
+</h3><div id="loop_profile_charts_content" class="_content _OV_chart_RP" style="overflow-y:auto;height:520px;max-height:520px;">
+<div class="_fixed_box" ><h3 class="_header">Coverage</h3>
+<div class="_content"><div style="margin-top: 10px; margin-bottom: 10px; background-color: var(--chart_background); overflow-x:auto; overflow-y:hidden; "><div id="chart_cat_8" style="height:460px;margin-top:20px;" ></div>
+</div>
+<script class="code" >
+  function __generate_chart_8(){
+    document.getElementById('chart_cat_8').innerHTML = '';
+  var plot8_data = [[0,0,5.51,1.87,0,1.57,0.56,0.52,],[0,0,5.51,7.38,7.38,8.95,9.51,10.03,],[0,4.06,2.03,3.45,1.55,0.9,0.17,0.89,],[0,4.06,6.09,9.53,11.09,11.98,12.15,13.04,],];
+  var plot8_ticks = ['> 8%','4% to 8%','2% to 4%','1% to 2%','0.5% to 1%','0.25% to 0.5%','0.125% to 0.25%','< 0.125%',];
+  var plot8 = jQuery.jqplot ('chart_cat_8', plot8_data, {
+    seriesColors:['#333399','#7979d2','#cc00cc','#ff4dff',],
+    seriesDefaults: {
+      renderer: jQuery.jqplot.BarRenderer,
+      rendererOptions: {},
+      pointLabels: {show: true      },
+    },
+    axes: {
+      xaxis: {
+        renderer: $.jqplot.CategoryAxisRenderer,ticks: plot8_ticks,label: 'Coverage Ranges',labelRenderer: $.jqplot.CanvasAxisLabelRenderer,},
+      yaxis: {label: 'Coverage (%)',labelRenderer: $.jqplot.CanvasAxisLabelRenderer,autoscale:true,min:0,tickOptions:{formatString:'%.2f'},},
+      y2axis: {label: 'Cumulated Coverage (%)',labelRenderer: $.jqplot.CanvasAxisLabelRenderer,autoscale:true,min:0,}
+    },
+    highlighter: {tooltipContentEditor: function (str, seriesIndex, pointIndex) {return plot8_ticks[pointIndex]+' - '+plot8_data[seriesIndex][pointIndex];},show: true,showTooltip: true,sizeAdjust: 10,formatString: '%s',tooltipLocation: 'n',useAxesFormatters: false,},
+    legend: {renderer: $.jqplot.EnhancedLegendRenderer, show: true,location: 's',placement: 'outsideGrid',rendererOptions: {numberRows: '1',},},
+    series: [{label:'r0', yaxis:'yaxis', },{label:'cumul. cov. r0', renderer: $.jqplot.LineRenderer, yaxis:'yaxis', },{label:'r1', yaxis:'yaxis', },{label:'cumul. cov. r1', renderer: $.jqplot.LineRenderer, yaxis:'yaxis', },],
+  });
+  }
+</script></div></div><div class="_fixed_box" ><h3 class="_header">Count</h3>
+<div class="_content"><div style="margin-top: 10px; margin-bottom: 10px; background-color: var(--chart_background); overflow-x:auto; overflow-y:hidden; "><div id="chart_cat_9" style="height:460px;margin-top:20px;" ></div>
+</div>
+<script class="code" >
+  function __generate_chart_9(){
+    document.getElementById('chart_cat_9').innerHTML = '';
+  var plot9_data = [[1,2,4,2,1,5,3,122,],[1,1,2,4,2,4,1,146,],];
+  var plot9_ticks = ['> 8%','4% to 8%','2% to 4%','1% to 2%','0.5% to 1%','0.25% to 0.5%','0.125% to 0.25%','< 0.125%',];
+  var plot9 = jQuery.jqplot ('chart_cat_9', plot9_data, {
+    seriesColors:['#333399','#cc00cc',],
+    seriesDefaults: {
+      renderer: jQuery.jqplot.BarRenderer,
+      rendererOptions: {},
+      pointLabels: {show: true      },
+    },
+    axes: {
+      xaxis: {
+        renderer: $.jqplot.CategoryAxisRenderer,ticks: plot9_ticks,label: 'Coverage Ranges',labelRenderer: $.jqplot.CanvasAxisLabelRenderer,},
+      yaxis: {label: 'Count',labelRenderer: $.jqplot.CanvasAxisLabelRenderer,autoscale:true,min:0,},
+      y2axis: {autoscale:true,min:0,}
+    },
+    highlighter: {tooltipContentEditor: function (str, seriesIndex, pointIndex) {return plot9_ticks[pointIndex]+' - '+plot9_data[seriesIndex][pointIndex];},show: true,showTooltip: true,sizeAdjust: 10,formatString: '%s',tooltipLocation: 'n',useAxesFormatters: false,},
+    legend: {renderer: $.jqplot.EnhancedLegendRenderer, show: true,location: 's',placement: 'outsideGrid',rendererOptions: {numberRows: '1',},},
+    series: [{label:'r0', yaxis:'yaxis', },{label:'r1', yaxis:'yaxis', },],
+  });
+  }
+</script></div></div></div></div>
+<div  id="application_categorization_charts" class="_fixed_box" style="width:100%;"><h3 class="_header">Application Categorization<span class="tooltip-maqao-button extract-maqao rightpanelextract" title="" tooltip_id="38" onclick="extract_panel ('application_categorization_charts');"></span>
+</h3><div id="application_categorization_charts_content" class="_content _OV_chart_RP" style="overflow-y:auto;height:520px;max-height:520px;">
+<div class="_fixed_box" style="margin-bottom:0px;" ><h3 class="_header">Time</h3>
+<div class="_content"><div style="margin-top: 10px; margin-bottom: 10px; background-color: var(--chart_background); overflow-x:auto; overflow-y:hidden; "><div id="chart_cat_10" style="height:460px;margin-top:20px;" ></div>
+</div>
+<script class="code" >
+  function __generate_chart_10(){
+    document.getElementById('chart_cat_10').innerHTML = '';
+  var plot10_data = [[0,0,],[0.01,0.01,],[10.62,9.96,],[15.49,15,],[0.13,0.11,],[0.01,0.02,],[0.27,0.22,],[0.04,0.03,],[0.08,0.12,],[3.83,1.79,],];
+  var plot10_ticks = ['r0','r1',];
+  var plot10 = jQuery.jqplot ('chart_cat_10', plot10_data, {
+    seriesColors:['#953579','#958c12','#EAA228','#4bb2c5','#c5b47f','#4b5de4','#ff5800','#839557','#d8b83f','#579575',],
+    stackSeries: true,
+    seriesDefaults: {
+      renderer: jQuery.jqplot.BarRenderer,
+      rendererOptions: {},
+      pointLabels: {show: false      },
+    },
+    axes: {
+      xaxis: {
+        renderer: $.jqplot.CategoryAxisRenderer,ticks: plot10_ticks,label: 'Reports',labelRenderer: $.jqplot.CanvasAxisLabelRenderer,},
+      yaxis: {label: 'Time (s)',labelRenderer: $.jqplot.CanvasAxisLabelRenderer,autoscale:true,min:0,tickOptions:{formatString:'%.2f'},},
+      y2axis: {autoscale:true,min:0,}
+    },
+    highlighter: {tooltipContentEditor: function (str, seriesIndex, pointIndex) {return plot10_ticks[pointIndex]+' - '+plot10_data[seriesIndex][pointIndex];},show: true,showTooltip: true,sizeAdjust: 10,formatString: '%s',tooltipLocation: 'n',useAxesFormatters: false,},
+    legend: {renderer: $.jqplot.EnhancedLegendRenderer, show: true,location: 's',placement: 'outsideGrid',rendererOptions: {numberRows: '1',},},
+    series: [{label:'IO', yaxis:'yaxis', },{label:'Pthread', yaxis:'yaxis', },{label:'MPI', yaxis:'yaxis', },{label:'Binary', yaxis:'yaxis', },{label:'OMP', yaxis:'yaxis', },{label:'String', yaxis:'yaxis', },{label:'Others', yaxis:'yaxis', },{label:'System', yaxis:'yaxis', },{label:'Memory', yaxis:'yaxis', },{label:'Math', yaxis:'yaxis', },],
+  });
+  var txts = ["39","40",];
+  var div_chart = document.getElementById ("chart_cat_10");
+  if (div_chart == null) {
+    return ;
+  }
+  var div_axis  = div_chart.getElementsByClassName ("jqplot-xaxis");
+  if (div_axis.length == 0
+  ||  div_axis[0].children.length == 0) {
+    return ;
+  }
+  for (var i = 1; i < div_axis[0].children.length; i++) {
+    var div_label = div_axis[0].children[i];
+    if (txts[i - 1] != "") {
+      div_label.setAttribute ("title", "");
+      div_label.setAttribute ("tooltip_id", txts[i - 1]);
+      div_label.classList.add ("tooltip-maqao");
+      div_label.style["z-index"] = 999;
+    }
+  }
+  txts = null;
+  }
+</script></div></div><div class="_fixed_box" style="margin-bottom:0px;" ><h3 class="_header">Coverage</h3>
+<div class="_content"><div style="margin-top: 10px; margin-bottom: 10px; background-color: var(--chart_background); overflow-x:auto; overflow-y:hidden; "><div id="chart_cat_11" style="height:460px;margin-top:20px;" ></div>
+</div>
+<script class="code" >
+  function __generate_chart_11(){
+    document.getElementById('chart_cat_11').innerHTML = '';
+  var plot11_data = [[0.01,0.01,],[0.03,0.03,],[34.84,36.54,],[50.83,55.01,],[0.43,0.41,],[0.03,0.06,],[0.88,0.82,],[0.12,0.12,],[0.26,0.42,],[12.57,6.57,],];
+  var plot11_ticks = ['r0','r1',];
+  var plot11 = jQuery.jqplot ('chart_cat_11', plot11_data, {
+    seriesColors:['#953579','#958c12','#EAA228','#4bb2c5','#c5b47f','#4b5de4','#ff5800','#839557','#d8b83f','#579575',],
+    stackSeries: true,
+    seriesDefaults: {
+      renderer: jQuery.jqplot.BarRenderer,
+      rendererOptions: {},
+      pointLabels: {show: false      },
+    },
+    axes: {
+      xaxis: {
+        renderer: $.jqplot.CategoryAxisRenderer,ticks: plot11_ticks,label: 'Reports',labelRenderer: $.jqplot.CanvasAxisLabelRenderer,},
+      yaxis: {label: 'Coverage (%)',labelRenderer: $.jqplot.CanvasAxisLabelRenderer,autoscale:true,min:0,tickOptions:{formatString:'%.2f'},max:100,},
+      y2axis: {autoscale:true,min:0,}
+    },
+    highlighter: {tooltipContentEditor: function (str, seriesIndex, pointIndex) {return plot11_ticks[pointIndex]+' - '+plot11_data[seriesIndex][pointIndex];},show: true,showTooltip: true,sizeAdjust: 10,formatString: '%s',tooltipLocation: 'n',useAxesFormatters: false,},
+    legend: {renderer: $.jqplot.EnhancedLegendRenderer, show: true,location: 's',placement: 'outsideGrid',rendererOptions: {numberRows: '1',},},
+    series: [{label:'IO', yaxis:'yaxis', },{label:'Pthread', yaxis:'yaxis', },{label:'MPI', yaxis:'yaxis', },{label:'Binary', yaxis:'yaxis', },{label:'OMP', yaxis:'yaxis', },{label:'String', yaxis:'yaxis', },{label:'Others', yaxis:'yaxis', },{label:'System', yaxis:'yaxis', },{label:'Memory', yaxis:'yaxis', },{label:'Math', yaxis:'yaxis', },],
+  });
+  var txts = ["41","42",];
+  var div_chart = document.getElementById ("chart_cat_11");
+  if (div_chart == null) {
+    return ;
+  }
+  var div_axis  = div_chart.getElementsByClassName ("jqplot-xaxis");
+  if (div_axis.length == 0
+  ||  div_axis[0].children.length == 0) {
+    return ;
+  }
+  for (var i = 1; i < div_axis[0].children.length; i++) {
+    var div_label = div_axis[0].children[i];
+    if (txts[i - 1] != "") {
+      div_label.setAttribute ("title", "");
+      div_label.setAttribute ("tooltip_id", txts[i - 1]);
+      div_label.classList.add ("tooltip-maqao");
+      div_label.style["z-index"] = 999;
+    }
+  }
+  txts = null;
+  }
+</script></div></div></div></div>
+<div  id="compilation_options_panel" class="_fixed_box" style="width:100%;"><h3 class="_header">Compilation Options<span class="tooltip-maqao-button extract-maqao rightpanelextract" title="" tooltip_id="43" onclick="extract_panel ('compilation_options_panel');"></span>
+</h3><div id="compilation_options_panel_content" class="_content _OV_chart_RP" style="overflow-y:auto;height:520px;max-height:520px;">
+<table style="width:100%;"><tr><td><select style="text-align: center;" id="compilation_options_selector" onchange="onchange_comp_opts (this)"><option value="1">r0</option><option value="2">r1</option></select></td></tr></table>
+<div id="compilation_options_run_1">
+<div class="_div_table" ><div style="overflow:auto;">
+<table id="_tree_table_2" class="_tree_table"><tr><th class="_freezed_row  _left  tooltip-maqao" title="" tooltip_id="44"><span></span>Source Object</th><th class="_freezed_row  tooltip-maqao"><span></span>Issue</th></tr>
+<tr class=" _outer_row"  id="_tr_2_1" ><td id="_tr_2_1-1"  data-_i="1" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span onclick="_click_tree(this)" style="margin-right:5px;margin-left:0px;cursor:pointer;" >&#x25BC;</span>cp2k.psmp<span onclick="_click_expand(this)" class="span_expand">&#8211;</span></td><td id="_tr_2_1-2"  data-_i="1" data-_j="2"  style="word-break:break-all;" ></td></tr>
+<tr class="_tr_2_1"  id="_tr_2_1_1" ><td id="_tr_2_1_1-1"  data-_i="2" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span onclick="_click_tree(this)" style="margin-right:5px;margin-left:15px;cursor:pointer;" >&#x25BC;</span>nnp_acsf.F<span onclick="_click_expand(this)" class="span_expand">&#8211;</span></td><td id="_tr_2_1_1-2"  data-_i="2" data-_j="2"  style="word-break:break-all;" ></td></tr>
+<tr class="_tr_2_1_1"  id="_tr_2_1_1_1" ><td id="_tr_2_1_1_1-1"  data-_i="3" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span style="margin-right:10px;margin-left:33px;" >&#x25CB;</span></td><td id="_tr_2_1_1_1-2"  data-_i="3" data-_j="2"  style="word-break:break-all;" >-g is missing for some functions (possibly ones added by the compiler), but debug locations are available. Some analysis may be inaccurate.</td></tr>
+<tr class="_tr_2_1_1"  id="_tr_2_1_1_2" ><td id="_tr_2_1_1_2-1"  data-_i="4" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span style="margin-right:10px;margin-left:33px;" >&#x25CB;</span></td><td id="_tr_2_1_1_2-2"  data-_i="4" data-_j="2"  style="word-break:break-all;" >-O2, -O3 or -Ofast is missing. </td></tr>
+<tr class="_tr_2_1_1"  id="_tr_2_1_1_3" ><td id="_tr_2_1_1_3-1"  data-_i="5" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span style="margin-right:10px;margin-left:33px;" >&#x25CB;</span></td><td id="_tr_2_1_1_3-2"  data-_i="5" data-_j="2"  style="word-break:break-all;" >-x(target) or -ax(target) is missing. </td></tr>
+<tr class="_tr_2_1"  id="_tr_2_1_2" ><td id="_tr_2_1_2-1"  data-_i="6" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span onclick="_click_tree(this)" style="margin-right:5px;margin-left:15px;cursor:pointer;" >&#x25BC;</span>molecule_kind_types.F<span onclick="_click_expand(this)" class="span_expand">&#8211;</span></td><td id="_tr_2_1_2-2"  data-_i="6" data-_j="2"  style="word-break:break-all;" ></td></tr>
+<tr class="_tr_2_1_2"  id="_tr_2_1_2_1" ><td id="_tr_2_1_2_1-1"  data-_i="7" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span style="margin-right:10px;margin-left:33px;" >&#x25CB;</span></td><td id="_tr_2_1_2_1-2"  data-_i="7" data-_j="2"  style="word-break:break-all;" >-g is missing for some functions (possibly ones added by the compiler), but debug locations are available. Some analysis may be inaccurate.</td></tr>
+<tr class="_tr_2_1_2"  id="_tr_2_1_2_2" ><td id="_tr_2_1_2_2-1"  data-_i="8" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span style="margin-right:10px;margin-left:33px;" >&#x25CB;</span></td><td id="_tr_2_1_2_2-2"  data-_i="8" data-_j="2"  style="word-break:break-all;" >-O2, -O3 or -Ofast is missing. </td></tr>
+<tr class="_tr_2_1_2"  id="_tr_2_1_2_3" ><td id="_tr_2_1_2_3-1"  data-_i="9" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span style="margin-right:10px;margin-left:33px;" >&#x25CB;</span></td><td id="_tr_2_1_2_3-2"  data-_i="9" data-_j="2"  style="word-break:break-all;" >-x(target) or -ax(target) is missing. </td></tr>
+<tr class="_tr_2_1"  id="_tr_2_1_3" ><td id="_tr_2_1_3-1"  data-_i="10" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span onclick="_click_tree(this)" style="margin-right:5px;margin-left:15px;cursor:pointer;" >&#x25BC;</span>list_routinestat.F<span onclick="_click_expand(this)" class="span_expand">&#8211;</span></td><td id="_tr_2_1_3-2"  data-_i="10" data-_j="2"  style="word-break:break-all;" ></td></tr>
+<tr class="_tr_2_1_3"  id="_tr_2_1_3_1" ><td id="_tr_2_1_3_1-1"  data-_i="11" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span style="margin-right:10px;margin-left:33px;" >&#x25CB;</span></td><td id="_tr_2_1_3_1-2"  data-_i="11" data-_j="2"  style="word-break:break-all;" >-g is missing for some functions (possibly ones added by the compiler), but debug locations are available. Some analysis may be inaccurate.</td></tr>
+<tr class="_tr_2_1_3"  id="_tr_2_1_3_2" ><td id="_tr_2_1_3_2-1"  data-_i="12" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span style="margin-right:10px;margin-left:33px;" >&#x25CB;</span></td><td id="_tr_2_1_3_2-2"  data-_i="12" data-_j="2"  style="word-break:break-all;" >-O2, -O3 or -Ofast is missing. </td></tr>
+<tr class="_tr_2_1_3"  id="_tr_2_1_3_3" ><td id="_tr_2_1_3_3-1"  data-_i="13" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span style="margin-right:10px;margin-left:33px;" >&#x25CB;</span></td><td id="_tr_2_1_3_3-2"  data-_i="13" data-_j="2"  style="word-break:break-all;" >-x(target) or -ax(target) is missing. </td></tr>
+<tr class="_tr_2_1"  id="_tr_2_1_4" ><td id="_tr_2_1_4-1"  data-_i="14" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span onclick="_click_tree(this)" style="margin-right:5px;margin-left:15px;cursor:pointer;" >&#x25BC;</span>input_enumeration_types.F<span onclick="_click_expand(this)" class="span_expand">&#8211;</span></td><td id="_tr_2_1_4-2"  data-_i="14" data-_j="2"  style="word-break:break-all;" ></td></tr>
+<tr class="_tr_2_1_4"  id="_tr_2_1_4_1" ><td id="_tr_2_1_4_1-1"  data-_i="15" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span style="margin-right:10px;margin-left:33px;" >&#x25CB;</span></td><td id="_tr_2_1_4_1-2"  data-_i="15" data-_j="2"  style="word-break:break-all;" >-g is missing for some functions (possibly ones added by the compiler), but debug locations are available. Some analysis may be inaccurate.</td></tr>
+<tr class="_tr_2_1_4"  id="_tr_2_1_4_2" ><td id="_tr_2_1_4_2-1"  data-_i="16" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span style="margin-right:10px;margin-left:33px;" >&#x25CB;</span></td><td id="_tr_2_1_4_2-2"  data-_i="16" data-_j="2"  style="word-break:break-all;" >-O2, -O3 or -Ofast is missing. </td></tr>
+<tr class="_tr_2_1_4"  id="_tr_2_1_4_3" ><td id="_tr_2_1_4_3-1"  data-_i="17" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span style="margin-right:10px;margin-left:33px;" >&#x25CB;</span></td><td id="_tr_2_1_4_3-2"  data-_i="17" data-_j="2"  style="word-break:break-all;" >-x(target) or -ax(target) is missing. </td></tr>
+<tr class="_tr_2_1"  id="_tr_2_1_5" ><td id="_tr_2_1_5-1"  data-_i="18" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span onclick="_click_tree(this)" style="margin-right:5px;margin-left:15px;cursor:pointer;" >&#x25BC;</span>nnp_force.F<span onclick="_click_expand(this)" class="span_expand">&#8211;</span></td><td id="_tr_2_1_5-2"  data-_i="18" data-_j="2"  style="word-break:break-all;" ></td></tr>
+<tr class="_tr_2_1_5"  id="_tr_2_1_5_1" ><td id="_tr_2_1_5_1-1"  data-_i="19" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span style="margin-right:10px;margin-left:33px;" >&#x25CB;</span></td><td id="_tr_2_1_5_1-2"  data-_i="19" data-_j="2"  style="word-break:break-all;" >-g is missing for some functions (possibly ones added by the compiler), but debug locations are available. Some analysis may be inaccurate.</td></tr>
+<tr class="_tr_2_1_5"  id="_tr_2_1_5_2" ><td id="_tr_2_1_5_2-1"  data-_i="20" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span style="margin-right:10px;margin-left:33px;" >&#x25CB;</span></td><td id="_tr_2_1_5_2-2"  data-_i="20" data-_j="2"  style="word-break:break-all;" >-O2, -O3 or -Ofast is missing. </td></tr>
+<tr class="_tr_2_1_5"  id="_tr_2_1_5_3" ><td id="_tr_2_1_5_3-1"  data-_i="21" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span style="margin-right:10px;margin-left:33px;" >&#x25CB;</span></td><td id="_tr_2_1_5_3-2"  data-_i="21" data-_j="2"  style="word-break:break-all;" >-x(target) or -ax(target) is missing. </td></tr>
+<tr class="_tr_2_1"  id="_tr_2_1_6" ><td id="_tr_2_1_6-1"  data-_i="22" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span onclick="_click_tree(this)" style="margin-right:5px;margin-left:15px;cursor:pointer;" >&#x25BC;</span>cell_types.F<span onclick="_click_expand(this)" class="span_expand">&#8211;</span></td><td id="_tr_2_1_6-2"  data-_i="22" data-_j="2"  style="word-break:break-all;" ></td></tr>
+<tr class="_tr_2_1_6"  id="_tr_2_1_6_1" ><td id="_tr_2_1_6_1-1"  data-_i="23" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span style="margin-right:10px;margin-left:33px;" >&#x25CB;</span></td><td id="_tr_2_1_6_1-2"  data-_i="23" data-_j="2"  style="word-break:break-all;" >-g is missing for some functions (possibly ones added by the compiler), but debug locations are available. Some analysis may be inaccurate.</td></tr>
+<tr class="_tr_2_1_6"  id="_tr_2_1_6_2" ><td id="_tr_2_1_6_2-1"  data-_i="24" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span style="margin-right:10px;margin-left:33px;" >&#x25CB;</span></td><td id="_tr_2_1_6_2-2"  data-_i="24" data-_j="2"  style="word-break:break-all;" >-O2, -O3 or -Ofast is missing. </td></tr>
+<tr class="_tr_2_1_6"  id="_tr_2_1_6_3" ><td id="_tr_2_1_6_3-1"  data-_i="25" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span style="margin-right:10px;margin-left:33px;" >&#x25CB;</span></td><td id="_tr_2_1_6_3-2"  data-_i="25" data-_j="2"  style="word-break:break-all;" >-x(target) or -ax(target) is missing. </td></tr>
+<tr class="_tr_2_1"  id="_tr_2_1_7" ><td id="_tr_2_1_7-1"  data-_i="26" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span onclick="_click_tree(this)" style="margin-right:5px;margin-left:15px;cursor:pointer;" >&#x25BC;</span>csvr_system_utils.F<span onclick="_click_expand(this)" class="span_expand">&#8211;</span></td><td id="_tr_2_1_7-2"  data-_i="26" data-_j="2"  style="word-break:break-all;" ></td></tr>
+<tr class="_tr_2_1_7"  id="_tr_2_1_7_1" ><td id="_tr_2_1_7_1-1"  data-_i="27" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span style="margin-right:10px;margin-left:33px;" >&#x25CB;</span></td><td id="_tr_2_1_7_1-2"  data-_i="27" data-_j="2"  style="word-break:break-all;" >-g is missing for some functions (possibly ones added by the compiler), but debug locations are available. Some analysis may be inaccurate.</td></tr>
+<tr class="_tr_2_1_7"  id="_tr_2_1_7_2" ><td id="_tr_2_1_7_2-1"  data-_i="28" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span style="margin-right:10px;margin-left:33px;" >&#x25CB;</span></td><td id="_tr_2_1_7_2-2"  data-_i="28" data-_j="2"  style="word-break:break-all;" >-O2, -O3 or -Ofast is missing. </td></tr>
+<tr class="_tr_2_1_7"  id="_tr_2_1_7_3" ><td id="_tr_2_1_7_3-1"  data-_i="29" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span style="margin-right:10px;margin-left:33px;" >&#x25CB;</span></td><td id="_tr_2_1_7_3-2"  data-_i="29" data-_j="2"  style="word-break:break-all;" >-x(target) or -ax(target) is missing. </td></tr>
+<tr class="_tr_2_1"  id="_tr_2_1_8" ><td id="_tr_2_1_8-1"  data-_i="30" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span onclick="_click_tree(this)" style="margin-right:5px;margin-left:15px;cursor:pointer;" >&#x25BC;</span>input_section_types.F<span onclick="_click_expand(this)" class="span_expand">&#8211;</span></td><td id="_tr_2_1_8-2"  data-_i="30" data-_j="2"  style="word-break:break-all;" ></td></tr>
+<tr class="_tr_2_1_8"  id="_tr_2_1_8_1" ><td id="_tr_2_1_8_1-1"  data-_i="31" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span style="margin-right:10px;margin-left:33px;" >&#x25CB;</span></td><td id="_tr_2_1_8_1-2"  data-_i="31" data-_j="2"  style="word-break:break-all;" >-g is missing for some functions (possibly ones added by the compiler), but debug locations are available. Some analysis may be inaccurate.</td></tr>
+<tr class="_tr_2_1_8"  id="_tr_2_1_8_2" ><td id="_tr_2_1_8_2-1"  data-_i="32" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span style="margin-right:10px;margin-left:33px;" >&#x25CB;</span></td><td id="_tr_2_1_8_2-2"  data-_i="32" data-_j="2"  style="word-break:break-all;" >-O2, -O3 or -Ofast is missing. </td></tr>
+<tr class="_tr_2_1_8"  id="_tr_2_1_8_3" ><td id="_tr_2_1_8_3-1"  data-_i="33" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span style="margin-right:10px;margin-left:33px;" >&#x25CB;</span></td><td id="_tr_2_1_8_3-2"  data-_i="33" data-_j="2"  style="word-break:break-all;" >-x(target) or -ax(target) is missing. </td></tr>
+<tr class="_tr_2_1"  id="_tr_2_1_9" ><td id="_tr_2_1_9-1"  data-_i="34" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span onclick="_click_tree(this)" style="margin-right:5px;margin-left:15px;cursor:pointer;" >&#x25BC;</span>parallel_rng_types.F<span onclick="_click_expand(this)" class="span_expand">&#8211;</span></td><td id="_tr_2_1_9-2"  data-_i="34" data-_j="2"  style="word-break:break-all;" ></td></tr>
+<tr class="_tr_2_1_9"  id="_tr_2_1_9_1" ><td id="_tr_2_1_9_1-1"  data-_i="35" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span style="margin-right:10px;margin-left:33px;" >&#x25CB;</span></td><td id="_tr_2_1_9_1-2"  data-_i="35" data-_j="2"  style="word-break:break-all;" >-g is missing for some functions (possibly ones added by the compiler), but debug locations are available. Some analysis may be inaccurate.</td></tr>
+<tr class="_tr_2_1_9"  id="_tr_2_1_9_2" ><td id="_tr_2_1_9_2-1"  data-_i="36" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span style="margin-right:10px;margin-left:33px;" >&#x25CB;</span></td><td id="_tr_2_1_9_2-2"  data-_i="36" data-_j="2"  style="word-break:break-all;" >-O2, -O3 or -Ofast is missing. </td></tr>
+<tr class="_tr_2_1_9"  id="_tr_2_1_9_3" ><td id="_tr_2_1_9_3-1"  data-_i="37" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span style="margin-right:10px;margin-left:33px;" >&#x25CB;</span></td><td id="_tr_2_1_9_3-2"  data-_i="37" data-_j="2"  style="word-break:break-all;" >-x(target) or -ax(target) is missing. </td></tr>
+<tr class="_tr_2_1"  id="_tr_2_1_10" ><td id="_tr_2_1_10-1"  data-_i="38" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span onclick="_click_tree(this)" style="margin-right:5px;margin-left:15px;cursor:pointer;" >&#x25BC;</span>constraint_fxd.F<span onclick="_click_expand(this)" class="span_expand">&#8211;</span></td><td id="_tr_2_1_10-2"  data-_i="38" data-_j="2"  style="word-break:break-all;" ></td></tr>
+<tr class="_tr_2_1_10"  id="_tr_2_1_10_1" ><td id="_tr_2_1_10_1-1"  data-_i="39" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span style="margin-right:10px;margin-left:33px;" >&#x25CB;</span></td><td id="_tr_2_1_10_1-2"  data-_i="39" data-_j="2"  style="word-break:break-all;" >-g is missing for some functions (possibly ones added by the compiler), but debug locations are available. Some analysis may be inaccurate.</td></tr>
+<tr class="_tr_2_1_10"  id="_tr_2_1_10_2" ><td id="_tr_2_1_10_2-1"  data-_i="40" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span style="margin-right:10px;margin-left:33px;" >&#x25CB;</span></td><td id="_tr_2_1_10_2-2"  data-_i="40" data-_j="2"  style="word-break:break-all;" >-O2, -O3 or -Ofast is missing. </td></tr>
+<tr class="_tr_2_1_10"  id="_tr_2_1_10_3" ><td id="_tr_2_1_10_3-1"  data-_i="41" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span style="margin-right:10px;margin-left:33px;" >&#x25CB;</span></td><td id="_tr_2_1_10_3-2"  data-_i="41" data-_j="2"  style="word-break:break-all;" >-x(target) or -ax(target) is missing. </td></tr>
+<tr class="_tr_2_1"  id="_tr_2_1_11" ><td id="_tr_2_1_11-1"  data-_i="42" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span onclick="_click_tree(this)" style="margin-right:5px;margin-left:15px;cursor:pointer;" >&#x25BC;</span>routine_map.F<span onclick="_click_expand(this)" class="span_expand">&#8211;</span></td><td id="_tr_2_1_11-2"  data-_i="42" data-_j="2"  style="word-break:break-all;" ></td></tr>
+<tr class="_tr_2_1_11"  id="_tr_2_1_11_1" ><td id="_tr_2_1_11_1-1"  data-_i="43" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span style="margin-right:10px;margin-left:33px;" >&#x25CB;</span></td><td id="_tr_2_1_11_1-2"  data-_i="43" data-_j="2"  style="word-break:break-all;" >-g is missing for some functions (possibly ones added by the compiler), but debug locations are available. Some analysis may be inaccurate.</td></tr>
+<tr class="_tr_2_1_11"  id="_tr_2_1_11_2" ><td id="_tr_2_1_11_2-1"  data-_i="44" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span style="margin-right:10px;margin-left:33px;" >&#x25CB;</span></td><td id="_tr_2_1_11_2-2"  data-_i="44" data-_j="2"  style="word-break:break-all;" >-O2, -O3 or -Ofast is missing. </td></tr>
+<tr class="_tr_2_1_11"  id="_tr_2_1_11_3" ><td id="_tr_2_1_11_3-1"  data-_i="45" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span style="margin-right:10px;margin-left:33px;" >&#x25CB;</span></td><td id="_tr_2_1_11_3-2"  data-_i="45" data-_j="2"  style="word-break:break-all;" >-x(target) or -ax(target) is missing. </td></tr>
+<tr class="_tr_2_1"  id="_tr_2_1_12" ><td id="_tr_2_1_12-1"  data-_i="46" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span onclick="_click_tree(this)" style="margin-right:5px;margin-left:15px;cursor:pointer;" >&#x25BC;</span>string_utilities.F<span onclick="_click_expand(this)" class="span_expand">&#8211;</span></td><td id="_tr_2_1_12-2"  data-_i="46" data-_j="2"  style="word-break:break-all;" ></td></tr>
+<tr class="_tr_2_1_12"  id="_tr_2_1_12_1" ><td id="_tr_2_1_12_1-1"  data-_i="47" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span style="margin-right:10px;margin-left:33px;" >&#x25CB;</span></td><td id="_tr_2_1_12_1-2"  data-_i="47" data-_j="2"  style="word-break:break-all;" >-g is missing for some functions (possibly ones added by the compiler), but debug locations are available. Some analysis may be inaccurate.</td></tr>
+<tr class="_tr_2_1_12"  id="_tr_2_1_12_2" ><td id="_tr_2_1_12_2-1"  data-_i="48" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span style="margin-right:10px;margin-left:33px;" >&#x25CB;</span></td><td id="_tr_2_1_12_2-2"  data-_i="48" data-_j="2"  style="word-break:break-all;" >-O2, -O3 or -Ofast is missing. </td></tr>
+<tr class="_tr_2_1_12"  id="_tr_2_1_12_3" ><td id="_tr_2_1_12_3-1"  data-_i="49" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span style="margin-right:10px;margin-left:33px;" >&#x25CB;</span></td><td id="_tr_2_1_12_3-2"  data-_i="49" data-_j="2"  style="word-break:break-all;" >-x(target) or -ax(target) is missing. </td></tr>
+<tr class="_tr_2_1"  id="_tr_2_1_13" ><td id="_tr_2_1_13-1"  data-_i="50" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span onclick="_click_tree(this)" style="margin-right:5px;margin-left:15px;cursor:pointer;" >&#x25BC;</span>timings.F<span onclick="_click_expand(this)" class="span_expand">&#8211;</span></td><td id="_tr_2_1_13-2"  data-_i="50" data-_j="2"  style="word-break:break-all;" ></td></tr>
+<tr class="_tr_2_1_13"  id="_tr_2_1_13_1" ><td id="_tr_2_1_13_1-1"  data-_i="51" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span style="margin-right:10px;margin-left:33px;" >&#x25CB;</span></td><td id="_tr_2_1_13_1-2"  data-_i="51" data-_j="2"  style="word-break:break-all;" >-g is missing for some functions (possibly ones added by the compiler), but debug locations are available. Some analysis may be inaccurate.</td></tr>
+<tr class="_tr_2_1_13"  id="_tr_2_1_13_2" ><td id="_tr_2_1_13_2-1"  data-_i="52" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span style="margin-right:10px;margin-left:33px;" >&#x25CB;</span></td><td id="_tr_2_1_13_2-2"  data-_i="52" data-_j="2"  style="word-break:break-all;" >-O2, -O3 or -Ofast is missing. </td></tr>
+<tr class="_tr_2_1_13"  id="_tr_2_1_13_3" ><td id="_tr_2_1_13_3-1"  data-_i="53" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span style="margin-right:10px;margin-left:33px;" >&#x25CB;</span></td><td id="_tr_2_1_13_3-2"  data-_i="53" data-_j="2"  style="word-break:break-all;" >-x(target) or -ax(target) is missing. </td></tr>
+<tr class="_tr_2_1"  id="_tr_2_1_14" ><td id="_tr_2_1_14-1"  data-_i="54" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span onclick="_click_tree(this)" style="margin-right:5px;margin-left:15px;cursor:pointer;" >&#x25BC;</span>thermostat_utils.F<span onclick="_click_expand(this)" class="span_expand">&#8211;</span></td><td id="_tr_2_1_14-2"  data-_i="54" data-_j="2"  style="word-break:break-all;" ></td></tr>
+<tr class="_tr_2_1_14"  id="_tr_2_1_14_1" ><td id="_tr_2_1_14_1-1"  data-_i="55" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span style="margin-right:10px;margin-left:33px;" >&#x25CB;</span></td><td id="_tr_2_1_14_1-2"  data-_i="55" data-_j="2"  style="word-break:break-all;" >-g is missing for some functions (possibly ones added by the compiler), but debug locations are available. Some analysis may be inaccurate.</td></tr>
+<tr class="_tr_2_1_14"  id="_tr_2_1_14_2" ><td id="_tr_2_1_14_2-1"  data-_i="56" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span style="margin-right:10px;margin-left:33px;" >&#x25CB;</span></td><td id="_tr_2_1_14_2-2"  data-_i="56" data-_j="2"  style="word-break:break-all;" >-O2, -O3 or -Ofast is missing. </td></tr>
+<tr class="_tr_2_1_14"  id="_tr_2_1_14_3" ><td id="_tr_2_1_14_3-1"  data-_i="57" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span style="margin-right:10px;margin-left:33px;" >&#x25CB;</span></td><td id="_tr_2_1_14_3-2"  data-_i="57" data-_j="2"  style="word-break:break-all;" >-x(target) or -ax(target) is missing. </td></tr>
+<tr class="_tr_2_1"  id="_tr_2_1_15" ><td id="_tr_2_1_15-1"  data-_i="58" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span onclick="_click_tree(this)" style="margin-right:5px;margin-left:15px;cursor:pointer;" >&#x25BC;</span>nnp_model.F<span onclick="_click_expand(this)" class="span_expand">&#8211;</span></td><td id="_tr_2_1_15-2"  data-_i="58" data-_j="2"  style="word-break:break-all;" ></td></tr>
+<tr class="_tr_2_1_15"  id="_tr_2_1_15_1" ><td id="_tr_2_1_15_1-1"  data-_i="59" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span style="margin-right:10px;margin-left:33px;" >&#x25CB;</span></td><td id="_tr_2_1_15_1-2"  data-_i="59" data-_j="2"  style="word-break:break-all;" >-g is missing for some functions (possibly ones added by the compiler), but debug locations are available. Some analysis may be inaccurate.</td></tr>
+<tr class="_tr_2_1_15"  id="_tr_2_1_15_2" ><td id="_tr_2_1_15_2-1"  data-_i="60" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span style="margin-right:10px;margin-left:33px;" >&#x25CB;</span></td><td id="_tr_2_1_15_2-2"  data-_i="60" data-_j="2"  style="word-break:break-all;" >-O2, -O3 or -Ofast is missing. </td></tr>
+<tr class="_tr_2_1_15"  id="_tr_2_1_15_3" ><td id="_tr_2_1_15_3-1"  data-_i="61" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span style="margin-right:10px;margin-left:33px;" >&#x25CB;</span></td><td id="_tr_2_1_15_3-2"  data-_i="61" data-_j="2"  style="word-break:break-all;" >-x(target) or -ax(target) is missing. </td></tr>
+<tr class="_tr_2_1"  id="_tr_2_1_16" ><td id="_tr_2_1_16-1"  data-_i="62" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span onclick="_click_tree(this)" style="margin-right:5px;margin-left:15px;cursor:pointer;" >&#x25BC;</span>integrator_utils.F<span onclick="_click_expand(this)" class="span_expand">&#8211;</span></td><td id="_tr_2_1_16-2"  data-_i="62" data-_j="2"  style="word-break:break-all;" ></td></tr>
+<tr class="_tr_2_1_16"  id="_tr_2_1_16_1" ><td id="_tr_2_1_16_1-1"  data-_i="63" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span style="margin-right:10px;margin-left:33px;" >&#x25CB;</span></td><td id="_tr_2_1_16_1-2"  data-_i="63" data-_j="2"  style="word-break:break-all;" >-g is missing for some functions (possibly ones added by the compiler), but debug locations are available. Some analysis may be inaccurate.</td></tr>
+<tr class="_tr_2_1_16"  id="_tr_2_1_16_2" ><td id="_tr_2_1_16_2-1"  data-_i="64" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span style="margin-right:10px;margin-left:33px;" >&#x25CB;</span></td><td id="_tr_2_1_16_2-2"  data-_i="64" data-_j="2"  style="word-break:break-all;" >-O2, -O3 or -Ofast is missing. </td></tr>
+<tr class="_tr_2_1_16"  id="_tr_2_1_16_3" ><td id="_tr_2_1_16_3-1"  data-_i="65" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span style="margin-right:10px;margin-left:33px;" >&#x25CB;</span></td><td id="_tr_2_1_16_3-2"  data-_i="65" data-_j="2"  style="word-break:break-all;" >-x(target) or -ax(target) is missing. </td></tr>
+<tr class="_tr_2_1"  id="_tr_2_1_17" ><td id="_tr_2_1_17-1"  data-_i="66" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span onclick="_click_tree(this)" style="margin-right:5px;margin-left:15px;cursor:pointer;" >&#x25BC;</span>list_callstackentry.F<span onclick="_click_expand(this)" class="span_expand">&#8211;</span></td><td id="_tr_2_1_17-2"  data-_i="66" data-_j="2"  style="word-break:break-all;" ></td></tr>
+<tr class="_tr_2_1_17"  id="_tr_2_1_17_1" ><td id="_tr_2_1_17_1-1"  data-_i="67" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span style="margin-right:10px;margin-left:33px;" >&#x25CB;</span></td><td id="_tr_2_1_17_1-2"  data-_i="67" data-_j="2"  style="word-break:break-all;" >-g is missing for some functions (possibly ones added by the compiler), but debug locations are available. Some analysis may be inaccurate.</td></tr>
+<tr class="_tr_2_1_17"  id="_tr_2_1_17_2" ><td id="_tr_2_1_17_2-1"  data-_i="68" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span style="margin-right:10px;margin-left:33px;" >&#x25CB;</span></td><td id="_tr_2_1_17_2-2"  data-_i="68" data-_j="2"  style="word-break:break-all;" >-O2, -O3 or -Ofast is missing. </td></tr>
+<tr class="_tr_2_1_17"  id="_tr_2_1_17_3" ><td id="_tr_2_1_17_3-1"  data-_i="69" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span style="margin-right:10px;margin-left:33px;" >&#x25CB;</span></td><td id="_tr_2_1_17_3-2"  data-_i="69" data-_j="2"  style="word-break:break-all;" >-x(target) or -ax(target) is missing. </td></tr>
+<tr class="_tr_2_1"  id="_tr_2_1_18" ><td id="_tr_2_1_18-1"  data-_i="70" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span onclick="_click_tree(this)" style="margin-right:5px;margin-left:15px;cursor:pointer;" >&#x25BC;</span>cp_output_handling.F<span onclick="_click_expand(this)" class="span_expand">&#8211;</span></td><td id="_tr_2_1_18-2"  data-_i="70" data-_j="2"  style="word-break:break-all;" ></td></tr>
+<tr class="_tr_2_1_18"  id="_tr_2_1_18_1" ><td id="_tr_2_1_18_1-1"  data-_i="71" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span style="margin-right:10px;margin-left:33px;" >&#x25CB;</span></td><td id="_tr_2_1_18_1-2"  data-_i="71" data-_j="2"  style="word-break:break-all;" >-g is missing for some functions (possibly ones added by the compiler), but debug locations are available. Some analysis may be inaccurate.</td></tr>
+<tr class="_tr_2_1_18"  id="_tr_2_1_18_2" ><td id="_tr_2_1_18_2-1"  data-_i="72" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span style="margin-right:10px;margin-left:33px;" >&#x25CB;</span></td><td id="_tr_2_1_18_2-2"  data-_i="72" data-_j="2"  style="word-break:break-all;" >-O2, -O3 or -Ofast is missing. </td></tr>
+<tr class="_tr_2_1_18"  id="_tr_2_1_18_3" ><td id="_tr_2_1_18_3-1"  data-_i="73" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span style="margin-right:10px;margin-left:33px;" >&#x25CB;</span></td><td id="_tr_2_1_18_3-2"  data-_i="73" data-_j="2"  style="word-break:break-all;" >-x(target) or -ax(target) is missing. </td></tr>
+<tr class="_tr_2_1"  id="_tr_2_1_19" ><td id="_tr_2_1_19-1"  data-_i="74" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span onclick="_click_tree(this)" style="margin-right:5px;margin-left:15px;cursor:pointer;" >&#x25BC;</span>input_val_types.F<span onclick="_click_expand(this)" class="span_expand">&#8211;</span></td><td id="_tr_2_1_19-2"  data-_i="74" data-_j="2"  style="word-break:break-all;" ></td></tr>
+<tr class="_tr_2_1_19"  id="_tr_2_1_19_1" ><td id="_tr_2_1_19_1-1"  data-_i="75" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span style="margin-right:10px;margin-left:33px;" >&#x25CB;</span></td><td id="_tr_2_1_19_1-2"  data-_i="75" data-_j="2"  style="word-break:break-all;" >-g is missing for some functions (possibly ones added by the compiler), but debug locations are available. Some analysis may be inaccurate.</td></tr>
+<tr class="_tr_2_1_19"  id="_tr_2_1_19_2" ><td id="_tr_2_1_19_2-1"  data-_i="76" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span style="margin-right:10px;margin-left:33px;" >&#x25CB;</span></td><td id="_tr_2_1_19_2-2"  data-_i="76" data-_j="2"  style="word-break:break-all;" >-O2, -O3 or -Ofast is missing. </td></tr>
+<tr class="_tr_2_1_19"  id="_tr_2_1_19_3" ><td id="_tr_2_1_19_3-1"  data-_i="77" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span style="margin-right:10px;margin-left:33px;" >&#x25CB;</span></td><td id="_tr_2_1_19_3-2"  data-_i="77" data-_j="2"  style="word-break:break-all;" >-x(target) or -ax(target) is missing. </td></tr>
+<tr class="_tr_2_1"  id="_tr_2_1_20" ><td id="_tr_2_1_20-1"  data-_i="78" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span onclick="_click_tree(this)" style="margin-right:5px;margin-left:15px;cursor:pointer;" >&#x25BC;</span>callgraph.F<span onclick="_click_expand(this)" class="span_expand">&#8211;</span></td><td id="_tr_2_1_20-2"  data-_i="78" data-_j="2"  style="word-break:break-all;" ></td></tr>
+<tr class="_tr_2_1_20"  id="_tr_2_1_20_1" ><td id="_tr_2_1_20_1-1"  data-_i="79" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span style="margin-right:10px;margin-left:33px;" >&#x25CB;</span></td><td id="_tr_2_1_20_1-2"  data-_i="79" data-_j="2"  style="word-break:break-all;" >-g is missing for some functions (possibly ones added by the compiler), but debug locations are available. Some analysis may be inaccurate.</td></tr>
+<tr class="_tr_2_1_20"  id="_tr_2_1_20_2" ><td id="_tr_2_1_20_2-1"  data-_i="80" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span style="margin-right:10px;margin-left:33px;" >&#x25CB;</span></td><td id="_tr_2_1_20_2-2"  data-_i="80" data-_j="2"  style="word-break:break-all;" >-O2, -O3 or -Ofast is missing. </td></tr>
+<tr class="_tr_2_1_20"  id="_tr_2_1_20_3" ><td id="_tr_2_1_20_3-1"  data-_i="81" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span style="margin-right:10px;margin-left:33px;" >&#x25CB;</span></td><td id="_tr_2_1_20_3-2"  data-_i="81" data-_j="2"  style="word-break:break-all;" >-x(target) or -ax(target) is missing. </td></tr>
+<tr class="_tr_2_1"  id="_tr_2_1_21" ><td id="_tr_2_1_21-1"  data-_i="82" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span onclick="_click_tree(this)" style="margin-right:5px;margin-left:15px;cursor:pointer;" >&#x25BC;</span>periodic_table.F<span onclick="_click_expand(this)" class="span_expand">&#8211;</span></td><td id="_tr_2_1_21-2"  data-_i="82" data-_j="2"  style="word-break:break-all;" ></td></tr>
+<tr class="_tr_2_1_21"  id="_tr_2_1_21_1" ><td id="_tr_2_1_21_1-1"  data-_i="83" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span style="margin-right:10px;margin-left:33px;" >&#x25CB;</span></td><td id="_tr_2_1_21_1-2"  data-_i="83" data-_j="2"  style="word-break:break-all;" >-g is missing for some functions (possibly ones added by the compiler), but debug locations are available. Some analysis may be inaccurate.</td></tr>
+<tr class="_tr_2_1_21"  id="_tr_2_1_21_2" ><td id="_tr_2_1_21_2-1"  data-_i="84" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span style="margin-right:10px;margin-left:33px;" >&#x25CB;</span></td><td id="_tr_2_1_21_2-2"  data-_i="84" data-_j="2"  style="word-break:break-all;" >-O2, -O3 or -Ofast is missing. </td></tr>
+<tr class="_tr_2_1_21"  id="_tr_2_1_21_3" ><td id="_tr_2_1_21_3-1"  data-_i="85" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span style="margin-right:10px;margin-left:33px;" >&#x25CB;</span></td><td id="_tr_2_1_21_3-2"  data-_i="85" data-_j="2"  style="word-break:break-all;" >-x(target) or -ax(target) is missing. </td></tr>
+<tr class="_tr_2_1"  id="_tr_2_1_22" ><td id="_tr_2_1_22-1"  data-_i="86" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span onclick="_click_tree(this)" style="margin-right:5px;margin-left:15px;cursor:pointer;" >&#x25BC;</span>input_keyword_types.F<span onclick="_click_expand(this)" class="span_expand">&#8211;</span></td><td id="_tr_2_1_22-2"  data-_i="86" data-_j="2"  style="word-break:break-all;" ></td></tr>
+<tr class="_tr_2_1_22"  id="_tr_2_1_22_1" ><td id="_tr_2_1_22_1-1"  data-_i="87" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span style="margin-right:10px;margin-left:33px;" >&#x25CB;</span></td><td id="_tr_2_1_22_1-2"  data-_i="87" data-_j="2"  style="word-break:break-all;" >-g is missing for some functions (possibly ones added by the compiler), but debug locations are available. Some analysis may be inaccurate.</td></tr>
+<tr class="_tr_2_1_22"  id="_tr_2_1_22_2" ><td id="_tr_2_1_22_2-1"  data-_i="88" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span style="margin-right:10px;margin-left:33px;" >&#x25CB;</span></td><td id="_tr_2_1_22_2-2"  data-_i="88" data-_j="2"  style="word-break:break-all;" >-O2, -O3 or -Ofast is missing. </td></tr>
+<tr class="_tr_2_1_22"  id="_tr_2_1_22_3" ><td id="_tr_2_1_22_3-1"  data-_i="89" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span style="margin-right:10px;margin-left:33px;" >&#x25CB;</span></td><td id="_tr_2_1_22_3-2"  data-_i="89" data-_j="2"  style="word-break:break-all;" >-x(target) or -ax(target) is missing. </td></tr>
+</table></div>
+</div>
+</div>
+<div id="compilation_options_run_2" style="display:none;">
+<div class="_div_table" ><div style="overflow:auto;">
+<table id="_tree_table_3" class="_tree_table"><tr><th class="_freezed_row  _left  tooltip-maqao" title="" tooltip_id="45"><span></span>Source Object</th><th class="_freezed_row  tooltip-maqao"><span></span>Issue</th></tr>
+<tr class=" _outer_row"  id="_tr_3_1" ><td id="_tr_3_1-1"  data-_i="1" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span onclick="_click_tree(this)" style="margin-right:5px;margin-left:0px;cursor:pointer;" >&#x25BC;</span>cp2k.psmp<span onclick="_click_expand(this)" class="span_expand">&#8211;</span></td><td id="_tr_3_1-2"  data-_i="1" data-_j="2"  style="word-break:break-all;" ></td></tr>
+<tr class="_tr_3_1"  id="_tr_3_1_1" ><td id="_tr_3_1_1-1"  data-_i="2" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span onclick="_click_tree(this)" style="margin-right:5px;margin-left:15px;cursor:pointer;" >&#x25BC;</span>nnp_acsf.F<span onclick="_click_expand(this)" class="span_expand">&#8211;</span></td><td id="_tr_3_1_1-2"  data-_i="2" data-_j="2"  style="word-break:break-all;" ></td></tr>
+<tr class="_tr_3_1_1"  id="_tr_3_1_1_1" ><td id="_tr_3_1_1_1-1"  data-_i="3" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span style="margin-right:10px;margin-left:33px;" >&#x25CB;</span></td><td id="_tr_3_1_1_1-2"  data-_i="3" data-_j="2"  style="word-break:break-all;" >-g is missing for some functions (possibly ones added by the compiler), but debug locations are available. Some analysis may be inaccurate.</td></tr>
+<tr class="_tr_3_1_1"  id="_tr_3_1_1_2" ><td id="_tr_3_1_1_2-1"  data-_i="4" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span style="margin-right:10px;margin-left:33px;" >&#x25CB;</span></td><td id="_tr_3_1_1_2-2"  data-_i="4" data-_j="2"  style="word-break:break-all;" >-O2, -O3 or -Ofast is missing. </td></tr>
+<tr class="_tr_3_1_1"  id="_tr_3_1_1_3" ><td id="_tr_3_1_1_3-1"  data-_i="5" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span style="margin-right:10px;margin-left:33px;" >&#x25CB;</span></td><td id="_tr_3_1_1_3-2"  data-_i="5" data-_j="2"  style="word-break:break-all;" >-x(target) or -ax(target) is missing. </td></tr>
+<tr class="_tr_3_1"  id="_tr_3_1_2" ><td id="_tr_3_1_2-1"  data-_i="6" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span onclick="_click_tree(this)" style="margin-right:5px;margin-left:15px;cursor:pointer;" >&#x25BC;</span>molecule_kind_types.F<span onclick="_click_expand(this)" class="span_expand">&#8211;</span></td><td id="_tr_3_1_2-2"  data-_i="6" data-_j="2"  style="word-break:break-all;" ></td></tr>
+<tr class="_tr_3_1_2"  id="_tr_3_1_2_1" ><td id="_tr_3_1_2_1-1"  data-_i="7" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span style="margin-right:10px;margin-left:33px;" >&#x25CB;</span></td><td id="_tr_3_1_2_1-2"  data-_i="7" data-_j="2"  style="word-break:break-all;" >-g is missing for some functions (possibly ones added by the compiler), but debug locations are available. Some analysis may be inaccurate.</td></tr>
+<tr class="_tr_3_1_2"  id="_tr_3_1_2_2" ><td id="_tr_3_1_2_2-1"  data-_i="8" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span style="margin-right:10px;margin-left:33px;" >&#x25CB;</span></td><td id="_tr_3_1_2_2-2"  data-_i="8" data-_j="2"  style="word-break:break-all;" >-O2, -O3 or -Ofast is missing. </td></tr>
+<tr class="_tr_3_1_2"  id="_tr_3_1_2_3" ><td id="_tr_3_1_2_3-1"  data-_i="9" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span style="margin-right:10px;margin-left:33px;" >&#x25CB;</span></td><td id="_tr_3_1_2_3-2"  data-_i="9" data-_j="2"  style="word-break:break-all;" >-x(target) or -ax(target) is missing. </td></tr>
+<tr class="_tr_3_1"  id="_tr_3_1_3" ><td id="_tr_3_1_3-1"  data-_i="10" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span onclick="_click_tree(this)" style="margin-right:5px;margin-left:15px;cursor:pointer;" >&#x25BC;</span>list_routinestat.F<span onclick="_click_expand(this)" class="span_expand">&#8211;</span></td><td id="_tr_3_1_3-2"  data-_i="10" data-_j="2"  style="word-break:break-all;" ></td></tr>
+<tr class="_tr_3_1_3"  id="_tr_3_1_3_1" ><td id="_tr_3_1_3_1-1"  data-_i="11" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span style="margin-right:10px;margin-left:33px;" >&#x25CB;</span></td><td id="_tr_3_1_3_1-2"  data-_i="11" data-_j="2"  style="word-break:break-all;" >-g is missing for some functions (possibly ones added by the compiler), but debug locations are available. Some analysis may be inaccurate.</td></tr>
+<tr class="_tr_3_1_3"  id="_tr_3_1_3_2" ><td id="_tr_3_1_3_2-1"  data-_i="12" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span style="margin-right:10px;margin-left:33px;" >&#x25CB;</span></td><td id="_tr_3_1_3_2-2"  data-_i="12" data-_j="2"  style="word-break:break-all;" >-O2, -O3 or -Ofast is missing. </td></tr>
+<tr class="_tr_3_1_3"  id="_tr_3_1_3_3" ><td id="_tr_3_1_3_3-1"  data-_i="13" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span style="margin-right:10px;margin-left:33px;" >&#x25CB;</span></td><td id="_tr_3_1_3_3-2"  data-_i="13" data-_j="2"  style="word-break:break-all;" >-x(target) or -ax(target) is missing. </td></tr>
+<tr class="_tr_3_1"  id="_tr_3_1_4" ><td id="_tr_3_1_4-1"  data-_i="14" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span onclick="_click_tree(this)" style="margin-right:5px;margin-left:15px;cursor:pointer;" >&#x25BC;</span>input_enumeration_types.F<span onclick="_click_expand(this)" class="span_expand">&#8211;</span></td><td id="_tr_3_1_4-2"  data-_i="14" data-_j="2"  style="word-break:break-all;" ></td></tr>
+<tr class="_tr_3_1_4"  id="_tr_3_1_4_1" ><td id="_tr_3_1_4_1-1"  data-_i="15" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span style="margin-right:10px;margin-left:33px;" >&#x25CB;</span></td><td id="_tr_3_1_4_1-2"  data-_i="15" data-_j="2"  style="word-break:break-all;" >-g is missing for some functions (possibly ones added by the compiler), but debug locations are available. Some analysis may be inaccurate.</td></tr>
+<tr class="_tr_3_1_4"  id="_tr_3_1_4_2" ><td id="_tr_3_1_4_2-1"  data-_i="16" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span style="margin-right:10px;margin-left:33px;" >&#x25CB;</span></td><td id="_tr_3_1_4_2-2"  data-_i="16" data-_j="2"  style="word-break:break-all;" >-O2, -O3 or -Ofast is missing. </td></tr>
+<tr class="_tr_3_1_4"  id="_tr_3_1_4_3" ><td id="_tr_3_1_4_3-1"  data-_i="17" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span style="margin-right:10px;margin-left:33px;" >&#x25CB;</span></td><td id="_tr_3_1_4_3-2"  data-_i="17" data-_j="2"  style="word-break:break-all;" >-x(target) or -ax(target) is missing. </td></tr>
+<tr class="_tr_3_1"  id="_tr_3_1_5" ><td id="_tr_3_1_5-1"  data-_i="18" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span onclick="_click_tree(this)" style="margin-right:5px;margin-left:15px;cursor:pointer;" >&#x25BC;</span>nnp_force.F<span onclick="_click_expand(this)" class="span_expand">&#8211;</span></td><td id="_tr_3_1_5-2"  data-_i="18" data-_j="2"  style="word-break:break-all;" ></td></tr>
+<tr class="_tr_3_1_5"  id="_tr_3_1_5_1" ><td id="_tr_3_1_5_1-1"  data-_i="19" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span style="margin-right:10px;margin-left:33px;" >&#x25CB;</span></td><td id="_tr_3_1_5_1-2"  data-_i="19" data-_j="2"  style="word-break:break-all;" >-g is missing for some functions (possibly ones added by the compiler), but debug locations are available. Some analysis may be inaccurate.</td></tr>
+<tr class="_tr_3_1_5"  id="_tr_3_1_5_2" ><td id="_tr_3_1_5_2-1"  data-_i="20" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span style="margin-right:10px;margin-left:33px;" >&#x25CB;</span></td><td id="_tr_3_1_5_2-2"  data-_i="20" data-_j="2"  style="word-break:break-all;" >-O2, -O3 or -Ofast is missing. </td></tr>
+<tr class="_tr_3_1_5"  id="_tr_3_1_5_3" ><td id="_tr_3_1_5_3-1"  data-_i="21" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span style="margin-right:10px;margin-left:33px;" >&#x25CB;</span></td><td id="_tr_3_1_5_3-2"  data-_i="21" data-_j="2"  style="word-break:break-all;" >-x(target) or -ax(target) is missing. </td></tr>
+<tr class="_tr_3_1"  id="_tr_3_1_6" ><td id="_tr_3_1_6-1"  data-_i="22" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span onclick="_click_tree(this)" style="margin-right:5px;margin-left:15px;cursor:pointer;" >&#x25BC;</span>cell_types.F<span onclick="_click_expand(this)" class="span_expand">&#8211;</span></td><td id="_tr_3_1_6-2"  data-_i="22" data-_j="2"  style="word-break:break-all;" ></td></tr>
+<tr class="_tr_3_1_6"  id="_tr_3_1_6_1" ><td id="_tr_3_1_6_1-1"  data-_i="23" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span style="margin-right:10px;margin-left:33px;" >&#x25CB;</span></td><td id="_tr_3_1_6_1-2"  data-_i="23" data-_j="2"  style="word-break:break-all;" >-g is missing for some functions (possibly ones added by the compiler), but debug locations are available. Some analysis may be inaccurate.</td></tr>
+<tr class="_tr_3_1_6"  id="_tr_3_1_6_2" ><td id="_tr_3_1_6_2-1"  data-_i="24" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span style="margin-right:10px;margin-left:33px;" >&#x25CB;</span></td><td id="_tr_3_1_6_2-2"  data-_i="24" data-_j="2"  style="word-break:break-all;" >-O2, -O3 or -Ofast is missing. </td></tr>
+<tr class="_tr_3_1_6"  id="_tr_3_1_6_3" ><td id="_tr_3_1_6_3-1"  data-_i="25" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span style="margin-right:10px;margin-left:33px;" >&#x25CB;</span></td><td id="_tr_3_1_6_3-2"  data-_i="25" data-_j="2"  style="word-break:break-all;" >-x(target) or -ax(target) is missing. </td></tr>
+<tr class="_tr_3_1"  id="_tr_3_1_7" ><td id="_tr_3_1_7-1"  data-_i="26" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span onclick="_click_tree(this)" style="margin-right:5px;margin-left:15px;cursor:pointer;" >&#x25BC;</span>csvr_system_utils.F<span onclick="_click_expand(this)" class="span_expand">&#8211;</span></td><td id="_tr_3_1_7-2"  data-_i="26" data-_j="2"  style="word-break:break-all;" ></td></tr>
+<tr class="_tr_3_1_7"  id="_tr_3_1_7_1" ><td id="_tr_3_1_7_1-1"  data-_i="27" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span style="margin-right:10px;margin-left:33px;" >&#x25CB;</span></td><td id="_tr_3_1_7_1-2"  data-_i="27" data-_j="2"  style="word-break:break-all;" >-g is missing for some functions (possibly ones added by the compiler), but debug locations are available. Some analysis may be inaccurate.</td></tr>
+<tr class="_tr_3_1_7"  id="_tr_3_1_7_2" ><td id="_tr_3_1_7_2-1"  data-_i="28" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span style="margin-right:10px;margin-left:33px;" >&#x25CB;</span></td><td id="_tr_3_1_7_2-2"  data-_i="28" data-_j="2"  style="word-break:break-all;" >-O2, -O3 or -Ofast is missing. </td></tr>
+<tr class="_tr_3_1_7"  id="_tr_3_1_7_3" ><td id="_tr_3_1_7_3-1"  data-_i="29" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span style="margin-right:10px;margin-left:33px;" >&#x25CB;</span></td><td id="_tr_3_1_7_3-2"  data-_i="29" data-_j="2"  style="word-break:break-all;" >-x(target) or -ax(target) is missing. </td></tr>
+<tr class="_tr_3_1"  id="_tr_3_1_8" ><td id="_tr_3_1_8-1"  data-_i="30" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span onclick="_click_tree(this)" style="margin-right:5px;margin-left:15px;cursor:pointer;" >&#x25BC;</span>input_section_types.F<span onclick="_click_expand(this)" class="span_expand">&#8211;</span></td><td id="_tr_3_1_8-2"  data-_i="30" data-_j="2"  style="word-break:break-all;" ></td></tr>
+<tr class="_tr_3_1_8"  id="_tr_3_1_8_1" ><td id="_tr_3_1_8_1-1"  data-_i="31" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span style="margin-right:10px;margin-left:33px;" >&#x25CB;</span></td><td id="_tr_3_1_8_1-2"  data-_i="31" data-_j="2"  style="word-break:break-all;" >-g is missing for some functions (possibly ones added by the compiler), but debug locations are available. Some analysis may be inaccurate.</td></tr>
+<tr class="_tr_3_1_8"  id="_tr_3_1_8_2" ><td id="_tr_3_1_8_2-1"  data-_i="32" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span style="margin-right:10px;margin-left:33px;" >&#x25CB;</span></td><td id="_tr_3_1_8_2-2"  data-_i="32" data-_j="2"  style="word-break:break-all;" >-O2, -O3 or -Ofast is missing. </td></tr>
+<tr class="_tr_3_1_8"  id="_tr_3_1_8_3" ><td id="_tr_3_1_8_3-1"  data-_i="33" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span style="margin-right:10px;margin-left:33px;" >&#x25CB;</span></td><td id="_tr_3_1_8_3-2"  data-_i="33" data-_j="2"  style="word-break:break-all;" >-x(target) or -ax(target) is missing. </td></tr>
+<tr class="_tr_3_1"  id="_tr_3_1_9" ><td id="_tr_3_1_9-1"  data-_i="34" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span onclick="_click_tree(this)" style="margin-right:5px;margin-left:15px;cursor:pointer;" >&#x25BC;</span>splines_methods.F<span onclick="_click_expand(this)" class="span_expand">&#8211;</span></td><td id="_tr_3_1_9-2"  data-_i="34" data-_j="2"  style="word-break:break-all;" ></td></tr>
+<tr class="_tr_3_1_9"  id="_tr_3_1_9_1" ><td id="_tr_3_1_9_1-1"  data-_i="35" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span style="margin-right:10px;margin-left:33px;" >&#x25CB;</span></td><td id="_tr_3_1_9_1-2"  data-_i="35" data-_j="2"  style="word-break:break-all;" >-g is missing for some functions (possibly ones added by the compiler), but debug locations are available. Some analysis may be inaccurate.</td></tr>
+<tr class="_tr_3_1_9"  id="_tr_3_1_9_2" ><td id="_tr_3_1_9_2-1"  data-_i="36" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span style="margin-right:10px;margin-left:33px;" >&#x25CB;</span></td><td id="_tr_3_1_9_2-2"  data-_i="36" data-_j="2"  style="word-break:break-all;" >-O2, -O3 or -Ofast is missing. </td></tr>
+<tr class="_tr_3_1_9"  id="_tr_3_1_9_3" ><td id="_tr_3_1_9_3-1"  data-_i="37" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span style="margin-right:10px;margin-left:33px;" >&#x25CB;</span></td><td id="_tr_3_1_9_3-2"  data-_i="37" data-_j="2"  style="word-break:break-all;" >-x(target) or -ax(target) is missing. </td></tr>
+<tr class="_tr_3_1"  id="_tr_3_1_10" ><td id="_tr_3_1_10-1"  data-_i="38" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span onclick="_click_tree(this)" style="margin-right:5px;margin-left:15px;cursor:pointer;" >&#x25BC;</span>parallel_rng_types.F<span onclick="_click_expand(this)" class="span_expand">&#8211;</span></td><td id="_tr_3_1_10-2"  data-_i="38" data-_j="2"  style="word-break:break-all;" ></td></tr>
+<tr class="_tr_3_1_10"  id="_tr_3_1_10_1" ><td id="_tr_3_1_10_1-1"  data-_i="39" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span style="margin-right:10px;margin-left:33px;" >&#x25CB;</span></td><td id="_tr_3_1_10_1-2"  data-_i="39" data-_j="2"  style="word-break:break-all;" >-g is missing for some functions (possibly ones added by the compiler), but debug locations are available. Some analysis may be inaccurate.</td></tr>
+<tr class="_tr_3_1_10"  id="_tr_3_1_10_2" ><td id="_tr_3_1_10_2-1"  data-_i="40" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span style="margin-right:10px;margin-left:33px;" >&#x25CB;</span></td><td id="_tr_3_1_10_2-2"  data-_i="40" data-_j="2"  style="word-break:break-all;" >-O2, -O3 or -Ofast is missing. </td></tr>
+<tr class="_tr_3_1_10"  id="_tr_3_1_10_3" ><td id="_tr_3_1_10_3-1"  data-_i="41" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span style="margin-right:10px;margin-left:33px;" >&#x25CB;</span></td><td id="_tr_3_1_10_3-2"  data-_i="41" data-_j="2"  style="word-break:break-all;" >-x(target) or -ax(target) is missing. </td></tr>
+<tr class="_tr_3_1"  id="_tr_3_1_11" ><td id="_tr_3_1_11-1"  data-_i="42" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span onclick="_click_tree(this)" style="margin-right:5px;margin-left:15px;cursor:pointer;" >&#x25BC;</span>list_timerenv.F<span onclick="_click_expand(this)" class="span_expand">&#8211;</span></td><td id="_tr_3_1_11-2"  data-_i="42" data-_j="2"  style="word-break:break-all;" ></td></tr>
+<tr class="_tr_3_1_11"  id="_tr_3_1_11_1" ><td id="_tr_3_1_11_1-1"  data-_i="43" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span style="margin-right:10px;margin-left:33px;" >&#x25CB;</span></td><td id="_tr_3_1_11_1-2"  data-_i="43" data-_j="2"  style="word-break:break-all;" >-g is missing for some functions (possibly ones added by the compiler), but debug locations are available. Some analysis may be inaccurate.</td></tr>
+<tr class="_tr_3_1_11"  id="_tr_3_1_11_2" ><td id="_tr_3_1_11_2-1"  data-_i="44" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span style="margin-right:10px;margin-left:33px;" >&#x25CB;</span></td><td id="_tr_3_1_11_2-2"  data-_i="44" data-_j="2"  style="word-break:break-all;" >-O2, -O3 or -Ofast is missing. </td></tr>
+<tr class="_tr_3_1_11"  id="_tr_3_1_11_3" ><td id="_tr_3_1_11_3-1"  data-_i="45" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span style="margin-right:10px;margin-left:33px;" >&#x25CB;</span></td><td id="_tr_3_1_11_3-2"  data-_i="45" data-_j="2"  style="word-break:break-all;" >-x(target) or -ax(target) is missing. </td></tr>
+<tr class="_tr_3_1"  id="_tr_3_1_12" ><td id="_tr_3_1_12-1"  data-_i="46" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span onclick="_click_tree(this)" style="margin-right:5px;margin-left:15px;cursor:pointer;" >&#x25BC;</span>constraint_fxd.F<span onclick="_click_expand(this)" class="span_expand">&#8211;</span></td><td id="_tr_3_1_12-2"  data-_i="46" data-_j="2"  style="word-break:break-all;" ></td></tr>
+<tr class="_tr_3_1_12"  id="_tr_3_1_12_1" ><td id="_tr_3_1_12_1-1"  data-_i="47" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span style="margin-right:10px;margin-left:33px;" >&#x25CB;</span></td><td id="_tr_3_1_12_1-2"  data-_i="47" data-_j="2"  style="word-break:break-all;" >-g is missing for some functions (possibly ones added by the compiler), but debug locations are available. Some analysis may be inaccurate.</td></tr>
+<tr class="_tr_3_1_12"  id="_tr_3_1_12_2" ><td id="_tr_3_1_12_2-1"  data-_i="48" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span style="margin-right:10px;margin-left:33px;" >&#x25CB;</span></td><td id="_tr_3_1_12_2-2"  data-_i="48" data-_j="2"  style="word-break:break-all;" >-O2, -O3 or -Ofast is missing. </td></tr>
+<tr class="_tr_3_1_12"  id="_tr_3_1_12_3" ><td id="_tr_3_1_12_3-1"  data-_i="49" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span style="margin-right:10px;margin-left:33px;" >&#x25CB;</span></td><td id="_tr_3_1_12_3-2"  data-_i="49" data-_j="2"  style="word-break:break-all;" >-x(target) or -ax(target) is missing. </td></tr>
+<tr class="_tr_3_1"  id="_tr_3_1_13" ><td id="_tr_3_1_13-1"  data-_i="50" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span onclick="_click_tree(this)" style="margin-right:5px;margin-left:15px;cursor:pointer;" >&#x25BC;</span>routine_map.F<span onclick="_click_expand(this)" class="span_expand">&#8211;</span></td><td id="_tr_3_1_13-2"  data-_i="50" data-_j="2"  style="word-break:break-all;" ></td></tr>
+<tr class="_tr_3_1_13"  id="_tr_3_1_13_1" ><td id="_tr_3_1_13_1-1"  data-_i="51" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span style="margin-right:10px;margin-left:33px;" >&#x25CB;</span></td><td id="_tr_3_1_13_1-2"  data-_i="51" data-_j="2"  style="word-break:break-all;" >-g is missing for some functions (possibly ones added by the compiler), but debug locations are available. Some analysis may be inaccurate.</td></tr>
+<tr class="_tr_3_1_13"  id="_tr_3_1_13_2" ><td id="_tr_3_1_13_2-1"  data-_i="52" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span style="margin-right:10px;margin-left:33px;" >&#x25CB;</span></td><td id="_tr_3_1_13_2-2"  data-_i="52" data-_j="2"  style="word-break:break-all;" >-O2, -O3 or -Ofast is missing. </td></tr>
+<tr class="_tr_3_1_13"  id="_tr_3_1_13_3" ><td id="_tr_3_1_13_3-1"  data-_i="53" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span style="margin-right:10px;margin-left:33px;" >&#x25CB;</span></td><td id="_tr_3_1_13_3-2"  data-_i="53" data-_j="2"  style="word-break:break-all;" >-x(target) or -ax(target) is missing. </td></tr>
+<tr class="_tr_3_1"  id="_tr_3_1_14" ><td id="_tr_3_1_14-1"  data-_i="54" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span onclick="_click_tree(this)" style="margin-right:5px;margin-left:15px;cursor:pointer;" >&#x25BC;</span>string_utilities.F<span onclick="_click_expand(this)" class="span_expand">&#8211;</span></td><td id="_tr_3_1_14-2"  data-_i="54" data-_j="2"  style="word-break:break-all;" ></td></tr>
+<tr class="_tr_3_1_14"  id="_tr_3_1_14_1" ><td id="_tr_3_1_14_1-1"  data-_i="55" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span style="margin-right:10px;margin-left:33px;" >&#x25CB;</span></td><td id="_tr_3_1_14_1-2"  data-_i="55" data-_j="2"  style="word-break:break-all;" >-g is missing for some functions (possibly ones added by the compiler), but debug locations are available. Some analysis may be inaccurate.</td></tr>
+<tr class="_tr_3_1_14"  id="_tr_3_1_14_2" ><td id="_tr_3_1_14_2-1"  data-_i="56" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span style="margin-right:10px;margin-left:33px;" >&#x25CB;</span></td><td id="_tr_3_1_14_2-2"  data-_i="56" data-_j="2"  style="word-break:break-all;" >-O2, -O3 or -Ofast is missing. </td></tr>
+<tr class="_tr_3_1_14"  id="_tr_3_1_14_3" ><td id="_tr_3_1_14_3-1"  data-_i="57" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span style="margin-right:10px;margin-left:33px;" >&#x25CB;</span></td><td id="_tr_3_1_14_3-2"  data-_i="57" data-_j="2"  style="word-break:break-all;" >-x(target) or -ax(target) is missing. </td></tr>
+<tr class="_tr_3_1"  id="_tr_3_1_15" ><td id="_tr_3_1_15-1"  data-_i="58" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span onclick="_click_tree(this)" style="margin-right:5px;margin-left:15px;cursor:pointer;" >&#x25BC;</span>timings.F<span onclick="_click_expand(this)" class="span_expand">&#8211;</span></td><td id="_tr_3_1_15-2"  data-_i="58" data-_j="2"  style="word-break:break-all;" ></td></tr>
+<tr class="_tr_3_1_15"  id="_tr_3_1_15_1" ><td id="_tr_3_1_15_1-1"  data-_i="59" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span style="margin-right:10px;margin-left:33px;" >&#x25CB;</span></td><td id="_tr_3_1_15_1-2"  data-_i="59" data-_j="2"  style="word-break:break-all;" >-g is missing for some functions (possibly ones added by the compiler), but debug locations are available. Some analysis may be inaccurate.</td></tr>
+<tr class="_tr_3_1_15"  id="_tr_3_1_15_2" ><td id="_tr_3_1_15_2-1"  data-_i="60" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span style="margin-right:10px;margin-left:33px;" >&#x25CB;</span></td><td id="_tr_3_1_15_2-2"  data-_i="60" data-_j="2"  style="word-break:break-all;" >-O2, -O3 or -Ofast is missing. </td></tr>
+<tr class="_tr_3_1_15"  id="_tr_3_1_15_3" ><td id="_tr_3_1_15_3-1"  data-_i="61" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span style="margin-right:10px;margin-left:33px;" >&#x25CB;</span></td><td id="_tr_3_1_15_3-2"  data-_i="61" data-_j="2"  style="word-break:break-all;" >-x(target) or -ax(target) is missing. </td></tr>
+<tr class="_tr_3_1"  id="_tr_3_1_16" ><td id="_tr_3_1_16-1"  data-_i="62" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span onclick="_click_tree(this)" style="margin-right:5px;margin-left:15px;cursor:pointer;" >&#x25BC;</span>functionals.c<span onclick="_click_expand(this)" class="span_expand">&#8211;</span></td><td id="_tr_3_1_16-2"  data-_i="62" data-_j="2"  style="word-break:break-all;" ></td></tr>
+<tr class="_tr_3_1_16"  id="_tr_3_1_16_1" ><td id="_tr_3_1_16_1-1"  data-_i="63" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span style="margin-right:10px;margin-left:33px;" >&#x25CB;</span></td><td id="_tr_3_1_16_1-2"  data-_i="63" data-_j="2"  style="word-break:break-all;" >-g is missing for some functions (possibly ones added by the compiler), but debug locations are available. Some analysis may be inaccurate.</td></tr>
+<tr class="_tr_3_1_16"  id="_tr_3_1_16_2" ><td id="_tr_3_1_16_2-1"  data-_i="64" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span style="margin-right:10px;margin-left:33px;" >&#x25CB;</span></td><td id="_tr_3_1_16_2-2"  data-_i="64" data-_j="2"  style="word-break:break-all;" >-O2, -O3 or -Ofast is missing. </td></tr>
+<tr class="_tr_3_1_16"  id="_tr_3_1_16_3" ><td id="_tr_3_1_16_3-1"  data-_i="65" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span style="margin-right:10px;margin-left:33px;" >&#x25CB;</span></td><td id="_tr_3_1_16_3-2"  data-_i="65" data-_j="2"  style="word-break:break-all;" >-x(target) or -ax(target) is missing. </td></tr>
+<tr class="_tr_3_1"  id="_tr_3_1_17" ><td id="_tr_3_1_17-1"  data-_i="66" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span onclick="_click_tree(this)" style="margin-right:5px;margin-left:15px;cursor:pointer;" >&#x25BC;</span>integrator_utils.F<span onclick="_click_expand(this)" class="span_expand">&#8211;</span></td><td id="_tr_3_1_17-2"  data-_i="66" data-_j="2"  style="word-break:break-all;" ></td></tr>
+<tr class="_tr_3_1_17"  id="_tr_3_1_17_1" ><td id="_tr_3_1_17_1-1"  data-_i="67" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span style="margin-right:10px;margin-left:33px;" >&#x25CB;</span></td><td id="_tr_3_1_17_1-2"  data-_i="67" data-_j="2"  style="word-break:break-all;" >-g is missing for some functions (possibly ones added by the compiler), but debug locations are available. Some analysis may be inaccurate.</td></tr>
+<tr class="_tr_3_1_17"  id="_tr_3_1_17_2" ><td id="_tr_3_1_17_2-1"  data-_i="68" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span style="margin-right:10px;margin-left:33px;" >&#x25CB;</span></td><td id="_tr_3_1_17_2-2"  data-_i="68" data-_j="2"  style="word-break:break-all;" >-O2, -O3 or -Ofast is missing. </td></tr>
+<tr class="_tr_3_1_17"  id="_tr_3_1_17_3" ><td id="_tr_3_1_17_3-1"  data-_i="69" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span style="margin-right:10px;margin-left:33px;" >&#x25CB;</span></td><td id="_tr_3_1_17_3-2"  data-_i="69" data-_j="2"  style="word-break:break-all;" >-x(target) or -ax(target) is missing. </td></tr>
+<tr class="_tr_3_1"  id="_tr_3_1_18" ><td id="_tr_3_1_18-1"  data-_i="70" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span onclick="_click_tree(this)" style="margin-right:5px;margin-left:15px;cursor:pointer;" >&#x25BC;</span>thermostat_utils.F<span onclick="_click_expand(this)" class="span_expand">&#8211;</span></td><td id="_tr_3_1_18-2"  data-_i="70" data-_j="2"  style="word-break:break-all;" ></td></tr>
+<tr class="_tr_3_1_18"  id="_tr_3_1_18_1" ><td id="_tr_3_1_18_1-1"  data-_i="71" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span style="margin-right:10px;margin-left:33px;" >&#x25CB;</span></td><td id="_tr_3_1_18_1-2"  data-_i="71" data-_j="2"  style="word-break:break-all;" >-g is missing for some functions (possibly ones added by the compiler), but debug locations are available. Some analysis may be inaccurate.</td></tr>
+<tr class="_tr_3_1_18"  id="_tr_3_1_18_2" ><td id="_tr_3_1_18_2-1"  data-_i="72" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span style="margin-right:10px;margin-left:33px;" >&#x25CB;</span></td><td id="_tr_3_1_18_2-2"  data-_i="72" data-_j="2"  style="word-break:break-all;" >-O2, -O3 or -Ofast is missing. </td></tr>
+<tr class="_tr_3_1_18"  id="_tr_3_1_18_3" ><td id="_tr_3_1_18_3-1"  data-_i="73" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span style="margin-right:10px;margin-left:33px;" >&#x25CB;</span></td><td id="_tr_3_1_18_3-2"  data-_i="73" data-_j="2"  style="word-break:break-all;" >-x(target) or -ax(target) is missing. </td></tr>
+<tr class="_tr_3_1"  id="_tr_3_1_19" ><td id="_tr_3_1_19-1"  data-_i="74" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span onclick="_click_tree(this)" style="margin-right:5px;margin-left:15px;cursor:pointer;" >&#x25BC;</span>callgraph.F<span onclick="_click_expand(this)" class="span_expand">&#8211;</span></td><td id="_tr_3_1_19-2"  data-_i="74" data-_j="2"  style="word-break:break-all;" ></td></tr>
+<tr class="_tr_3_1_19"  id="_tr_3_1_19_1" ><td id="_tr_3_1_19_1-1"  data-_i="75" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span style="margin-right:10px;margin-left:33px;" >&#x25CB;</span></td><td id="_tr_3_1_19_1-2"  data-_i="75" data-_j="2"  style="word-break:break-all;" >-g is missing for some functions (possibly ones added by the compiler), but debug locations are available. Some analysis may be inaccurate.</td></tr>
+<tr class="_tr_3_1_19"  id="_tr_3_1_19_2" ><td id="_tr_3_1_19_2-1"  data-_i="76" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span style="margin-right:10px;margin-left:33px;" >&#x25CB;</span></td><td id="_tr_3_1_19_2-2"  data-_i="76" data-_j="2"  style="word-break:break-all;" >-O2, -O3 or -Ofast is missing. </td></tr>
+<tr class="_tr_3_1_19"  id="_tr_3_1_19_3" ><td id="_tr_3_1_19_3-1"  data-_i="77" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span style="margin-right:10px;margin-left:33px;" >&#x25CB;</span></td><td id="_tr_3_1_19_3-2"  data-_i="77" data-_j="2"  style="word-break:break-all;" >-x(target) or -ax(target) is missing. </td></tr>
+<tr class="_tr_3_1"  id="_tr_3_1_20" ><td id="_tr_3_1_20-1"  data-_i="78" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span onclick="_click_tree(this)" style="margin-right:5px;margin-left:15px;cursor:pointer;" >&#x25BC;</span>list_callstackentry.F<span onclick="_click_expand(this)" class="span_expand">&#8211;</span></td><td id="_tr_3_1_20-2"  data-_i="78" data-_j="2"  style="word-break:break-all;" ></td></tr>
+<tr class="_tr_3_1_20"  id="_tr_3_1_20_1" ><td id="_tr_3_1_20_1-1"  data-_i="79" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span style="margin-right:10px;margin-left:33px;" >&#x25CB;</span></td><td id="_tr_3_1_20_1-2"  data-_i="79" data-_j="2"  style="word-break:break-all;" >-g is missing for some functions (possibly ones added by the compiler), but debug locations are available. Some analysis may be inaccurate.</td></tr>
+<tr class="_tr_3_1_20"  id="_tr_3_1_20_2" ><td id="_tr_3_1_20_2-1"  data-_i="80" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span style="margin-right:10px;margin-left:33px;" >&#x25CB;</span></td><td id="_tr_3_1_20_2-2"  data-_i="80" data-_j="2"  style="word-break:break-all;" >-O2, -O3 or -Ofast is missing. </td></tr>
+<tr class="_tr_3_1_20"  id="_tr_3_1_20_3" ><td id="_tr_3_1_20_3-1"  data-_i="81" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span style="margin-right:10px;margin-left:33px;" >&#x25CB;</span></td><td id="_tr_3_1_20_3-2"  data-_i="81" data-_j="2"  style="word-break:break-all;" >-x(target) or -ax(target) is missing. </td></tr>
+<tr class="_tr_3_1"  id="_tr_3_1_21" ><td id="_tr_3_1_21-1"  data-_i="82" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span onclick="_click_tree(this)" style="margin-right:5px;margin-left:15px;cursor:pointer;" >&#x25BC;</span>input_keyword_types.F<span onclick="_click_expand(this)" class="span_expand">&#8211;</span></td><td id="_tr_3_1_21-2"  data-_i="82" data-_j="2"  style="word-break:break-all;" ></td></tr>
+<tr class="_tr_3_1_21"  id="_tr_3_1_21_1" ><td id="_tr_3_1_21_1-1"  data-_i="83" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span style="margin-right:10px;margin-left:33px;" >&#x25CB;</span></td><td id="_tr_3_1_21_1-2"  data-_i="83" data-_j="2"  style="word-break:break-all;" >-g is missing for some functions (possibly ones added by the compiler), but debug locations are available. Some analysis may be inaccurate.</td></tr>
+<tr class="_tr_3_1_21"  id="_tr_3_1_21_2" ><td id="_tr_3_1_21_2-1"  data-_i="84" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span style="margin-right:10px;margin-left:33px;" >&#x25CB;</span></td><td id="_tr_3_1_21_2-2"  data-_i="84" data-_j="2"  style="word-break:break-all;" >-O2, -O3 or -Ofast is missing. </td></tr>
+<tr class="_tr_3_1_21"  id="_tr_3_1_21_3" ><td id="_tr_3_1_21_3-1"  data-_i="85" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span style="margin-right:10px;margin-left:33px;" >&#x25CB;</span></td><td id="_tr_3_1_21_3-2"  data-_i="85" data-_j="2"  style="word-break:break-all;" >-x(target) or -ax(target) is missing. </td></tr>
+<tr class="_tr_3_1"  id="_tr_3_1_22" ><td id="_tr_3_1_22-1"  data-_i="86" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span onclick="_click_tree(this)" style="margin-right:5px;margin-left:15px;cursor:pointer;" >&#x25BC;</span>nnp_model.F<span onclick="_click_expand(this)" class="span_expand">&#8211;</span></td><td id="_tr_3_1_22-2"  data-_i="86" data-_j="2"  style="word-break:break-all;" ></td></tr>
+<tr class="_tr_3_1_22"  id="_tr_3_1_22_1" ><td id="_tr_3_1_22_1-1"  data-_i="87" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span style="margin-right:10px;margin-left:33px;" >&#x25CB;</span></td><td id="_tr_3_1_22_1-2"  data-_i="87" data-_j="2"  style="word-break:break-all;" >-g is missing for some functions (possibly ones added by the compiler), but debug locations are available. Some analysis may be inaccurate.</td></tr>
+<tr class="_tr_3_1_22"  id="_tr_3_1_22_2" ><td id="_tr_3_1_22_2-1"  data-_i="88" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span style="margin-right:10px;margin-left:33px;" >&#x25CB;</span></td><td id="_tr_3_1_22_2-2"  data-_i="88" data-_j="2"  style="word-break:break-all;" >-O2, -O3 or -Ofast is missing. </td></tr>
+<tr class="_tr_3_1_22"  id="_tr_3_1_22_3" ><td id="_tr_3_1_22_3-1"  data-_i="89" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span style="margin-right:10px;margin-left:33px;" >&#x25CB;</span></td><td id="_tr_3_1_22_3-2"  data-_i="89" data-_j="2"  style="word-break:break-all;" >-x(target) or -ax(target) is missing. </td></tr>
+<tr class="_tr_3_1"  id="_tr_3_1_23" ><td id="_tr_3_1_23-1"  data-_i="90" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span onclick="_click_tree(this)" style="margin-right:5px;margin-left:15px;cursor:pointer;" >&#x25BC;</span>periodic_table.F<span onclick="_click_expand(this)" class="span_expand">&#8211;</span></td><td id="_tr_3_1_23-2"  data-_i="90" data-_j="2"  style="word-break:break-all;" ></td></tr>
+<tr class="_tr_3_1_23"  id="_tr_3_1_23_1" ><td id="_tr_3_1_23_1-1"  data-_i="91" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span style="margin-right:10px;margin-left:33px;" >&#x25CB;</span></td><td id="_tr_3_1_23_1-2"  data-_i="91" data-_j="2"  style="word-break:break-all;" >-g is missing for some functions (possibly ones added by the compiler), but debug locations are available. Some analysis may be inaccurate.</td></tr>
+<tr class="_tr_3_1_23"  id="_tr_3_1_23_2" ><td id="_tr_3_1_23_2-1"  data-_i="92" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span style="margin-right:10px;margin-left:33px;" >&#x25CB;</span></td><td id="_tr_3_1_23_2-2"  data-_i="92" data-_j="2"  style="word-break:break-all;" >-O2, -O3 or -Ofast is missing. </td></tr>
+<tr class="_tr_3_1_23"  id="_tr_3_1_23_3" ><td id="_tr_3_1_23_3-1"  data-_i="93" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span style="margin-right:10px;margin-left:33px;" >&#x25CB;</span></td><td id="_tr_3_1_23_3-2"  data-_i="93" data-_j="2"  style="word-break:break-all;" >-x(target) or -ax(target) is missing. </td></tr>
+<tr class="_tr_3_1"  id="_tr_3_1_24" ><td id="_tr_3_1_24-1"  data-_i="94" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span onclick="_click_tree(this)" style="margin-right:5px;margin-left:15px;cursor:pointer;" >&#x25BC;</span>input_val_types.F<span onclick="_click_expand(this)" class="span_expand">&#8211;</span></td><td id="_tr_3_1_24-2"  data-_i="94" data-_j="2"  style="word-break:break-all;" ></td></tr>
+<tr class="_tr_3_1_24"  id="_tr_3_1_24_1" ><td id="_tr_3_1_24_1-1"  data-_i="95" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span style="margin-right:10px;margin-left:33px;" >&#x25CB;</span></td><td id="_tr_3_1_24_1-2"  data-_i="95" data-_j="2"  style="word-break:break-all;" >-g is missing for some functions (possibly ones added by the compiler), but debug locations are available. Some analysis may be inaccurate.</td></tr>
+<tr class="_tr_3_1_24"  id="_tr_3_1_24_2" ><td id="_tr_3_1_24_2-1"  data-_i="96" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span style="margin-right:10px;margin-left:33px;" >&#x25CB;</span></td><td id="_tr_3_1_24_2-2"  data-_i="96" data-_j="2"  style="word-break:break-all;" >-O2, -O3 or -Ofast is missing. </td></tr>
+<tr class="_tr_3_1_24"  id="_tr_3_1_24_3" ><td id="_tr_3_1_24_3-1"  data-_i="97" data-_j="1"  class=" _left"  style="word-break:break-all;" ><span style="margin-right:10px;margin-left:33px;" >&#x25CB;</span></td><td id="_tr_3_1_24_3-2"  data-_i="97" data-_j="2"  style="word-break:break-all;" >-x(target) or -ax(target) is missing. </td></tr>
+</table></div>
+</div>
+</div>
+</div></div>
+<div  id="path_count_charts" class="_fixed_box" style="width:100%;"><h3 class="_header">Path Count Profiles<span class="tooltip-maqao-button extract-maqao rightpanelextract" title="" tooltip_id="46" onclick="extract_panel ('path_count_charts');"></span>
+</h3><div id="path_count_charts_content" class="_content _OV_chart_RP" style="overflow-y:auto;height:520px;max-height:520px;">
+<div class="_fixed_box" ><h3 class="_header">Coverage</h3>
+<div class="_content"><div style="margin-top: 10px; margin-bottom: 10px; background-color: var(--chart_background); overflow-x:auto; overflow-y:hidden; "><div id="chart_cat_12" style="height:460px;margin-top:20px;" ></div>
+</div>
+<script class="code" >
+  function __generate_chart_12(){
+    document.getElementById('chart_cat_12').innerHTML = '';
+  var plot12_data = [[8.13,0.36,0.91,0.44,0,0,0,0,0.2,],[8.13,8.49,9.4,9.83,9.83,9.83,9.83,9.83,10.03,],[4.5,1.04,6.64,0,0.64,0,0,0,0.22,],[4.5,5.54,12.18,12.18,12.82,12.82,12.82,12.82,13.04,],];
+  var plot12_ticks = ['1','2','3 to 4','5 to 8','9 to 16','17 to 32','33 to 64','> 64','unknown',];
+  var plot12 = jQuery.jqplot ('chart_cat_12', plot12_data, {
+    seriesColors:['#333399','#7979d2','#cc00cc','#ff4dff',],
+    seriesDefaults: {
+      renderer: jQuery.jqplot.BarRenderer,
+      rendererOptions: {},
+      pointLabels: {show: true      },
+    },
+    axes: {
+      xaxis: {
+        renderer: $.jqplot.CategoryAxisRenderer,ticks: plot12_ticks,label: 'Path Ranges',labelRenderer: $.jqplot.CanvasAxisLabelRenderer,},
+      yaxis: {label: 'Coverage (%)',labelRenderer: $.jqplot.CanvasAxisLabelRenderer,autoscale:true,min:0,},
+      y2axis: {label: 'Cumulated Coverage (%)',labelRenderer: $.jqplot.CanvasAxisLabelRenderer,autoscale:true,min:0,}
+    },
+    highlighter: {tooltipContentEditor: function (str, seriesIndex, pointIndex) {return plot12_ticks[pointIndex]+' - '+plot12_data[seriesIndex][pointIndex];},show: true,showTooltip: true,sizeAdjust: 10,formatString: '%s',tooltipLocation: 'n',useAxesFormatters: false,},
+    legend: {renderer: $.jqplot.EnhancedLegendRenderer, show: true,location: 's',placement: 'outsideGrid',rendererOptions: {numberRows: '1',},},
+    series: [{label:'r0', yaxis:'yaxis', },{label:'cumul. cov. r0', renderer: $.jqplot.LineRenderer, yaxis:'yaxis', },{label:'r1', yaxis:'yaxis', },{label:'cumul. cov. r1', renderer: $.jqplot.LineRenderer, yaxis:'yaxis', },],
+  });
+  }
+</script></div></div><div class="_fixed_box" ><h3 class="_header">Count</h3>
+<div class="_content"><div style="margin-top: 10px; margin-bottom: 10px; background-color: var(--chart_background); overflow-x:auto; overflow-y:hidden; "><div id="chart_cat_13" style="height:460px;margin-top:20px;" ></div>
+</div>
+<script class="code" >
+  function __generate_chart_13(){
+    document.getElementById('chart_cat_13').innerHTML = '';
+  var plot13_data = [[15,4,6,1,0,0,0,0,69,],[16,6,9,0,2,0,0,0,71,],];
+  var plot13_ticks = ['1','2','3 to 4','5 to 8','9 to 16','17 to 32','33 to 64','> 64','unknown',];
+  var plot13 = jQuery.jqplot ('chart_cat_13', plot13_data, {
+    seriesColors:['#333399','#cc00cc',],
+    seriesDefaults: {
+      renderer: jQuery.jqplot.BarRenderer,
+      rendererOptions: {},
+      pointLabels: {show: true      },
+    },
+    axes: {
+      xaxis: {
+        renderer: $.jqplot.CategoryAxisRenderer,ticks: plot13_ticks,label: 'Path Ranges',labelRenderer: $.jqplot.CanvasAxisLabelRenderer,},
+      yaxis: {label: 'Count',labelRenderer: $.jqplot.CanvasAxisLabelRenderer,autoscale:true,min:0,},
+      y2axis: {autoscale:true,min:0,}
+    },
+    highlighter: {tooltipContentEditor: function (str, seriesIndex, pointIndex) {return plot13_ticks[pointIndex]+' - '+plot13_data[seriesIndex][pointIndex];},show: true,showTooltip: true,sizeAdjust: 10,formatString: '%s',tooltipLocation: 'n',useAxesFormatters: false,},
+    legend: {renderer: $.jqplot.EnhancedLegendRenderer, show: true,location: 's',placement: 'outsideGrid',rendererOptions: {numberRows: '1',},},
+    series: [{label:'r0', yaxis:'yaxis', },{label:'r1', yaxis:'yaxis', },],
+  });
+  }
+</script></div></div></div></div>
+<div  id="iteration_count_charts" class="_fixed_box" style="width:100%;"><h3 class="_header">Low Iteration Count Profiles<span class="tooltip-maqao-button extract-maqao rightpanelextract" title="" tooltip_id="47" onclick="extract_panel ('iteration_count_charts');"></span>
+</h3><div id="iteration_count_charts_content" class="_content _OV_chart_RP" style="overflow-y:auto;height:520px;max-height:520px;">
+<div class="_fixed_box" ><h3 class="_header">Coverage</h3>
+<div class="_content"><div style="margin-top: 10px; margin-bottom: 10px; background-color: var(--chart_background); overflow-x:auto; overflow-y:hidden; "><div id="chart_cat_14" style="height:460px;margin-top:20px;" ></div>
+</div>
+<script class="code" >
+  function __generate_chart_14(){
+    document.getElementById('chart_cat_14').innerHTML = '';
+  var plot14_data = [[0,0,0,0,0,10.03,],[0,0,0,0,0,10.03,],[0,0,0,0,0,13.04,],[0,0,0,0,0,13.04,],];
+  var plot14_ticks = ['1 to 10','10 to 25','25 to 50','50 to 100','> 100','unknown',];
+  var plot14 = jQuery.jqplot ('chart_cat_14', plot14_data, {
+    seriesColors:['#333399','#7979d2','#cc00cc','#ff4dff',],
+    seriesDefaults: {
+      renderer: jQuery.jqplot.BarRenderer,
+      rendererOptions: {},
+      pointLabels: {show: true      },
+    },
+    axes: {
+      xaxis: {
+        renderer: $.jqplot.CategoryAxisRenderer,ticks: plot14_ticks,label: 'Iteration Ranges',labelRenderer: $.jqplot.CanvasAxisLabelRenderer,},
+      yaxis: {label: 'Coverage (%)',labelRenderer: $.jqplot.CanvasAxisLabelRenderer,autoscale:true,min:0,},
+      y2axis: {label: 'Cumulated Coverage (%)',labelRenderer: $.jqplot.CanvasAxisLabelRenderer,autoscale:true,min:0,}
+    },
+    highlighter: {tooltipContentEditor: function (str, seriesIndex, pointIndex) {return plot14_ticks[pointIndex]+' - '+plot14_data[seriesIndex][pointIndex];},show: true,showTooltip: true,sizeAdjust: 10,formatString: '%s',tooltipLocation: 'n',useAxesFormatters: false,},
+    legend: {renderer: $.jqplot.EnhancedLegendRenderer, show: true,location: 's',placement: 'outsideGrid',rendererOptions: {numberRows: '1',},},
+    series: [{label:'r0', yaxis:'yaxis', },{label:'cumul. cov. r0', renderer: $.jqplot.LineRenderer, yaxis:'yaxis', },{label:'r1', yaxis:'yaxis', },{label:'cumul. cov. r1', renderer: $.jqplot.LineRenderer, yaxis:'yaxis', },],
+  });
+  }
+</script></div></div><div class="_fixed_box" ><h3 class="_header">Count</h3>
+<div class="_content"><div style="margin-top: 10px; margin-bottom: 10px; background-color: var(--chart_background); overflow-x:auto; overflow-y:hidden; "><div id="chart_cat_15" style="height:460px;margin-top:20px;" ></div>
+</div>
+<script class="code" >
+  function __generate_chart_15(){
+    document.getElementById('chart_cat_15').innerHTML = '';
+  var plot15_data = [[0,0,0,0,0,95,],[0,0,0,0,0,104,],];
+  var plot15_ticks = ['1 to 10','10 to 25','25 to 50','50 to 100','> 100','unknown',];
+  var plot15 = jQuery.jqplot ('chart_cat_15', plot15_data, {
+    seriesColors:['#333399','#cc00cc',],
+    seriesDefaults: {
+      renderer: jQuery.jqplot.BarRenderer,
+      rendererOptions: {},
+      pointLabels: {show: true      },
+    },
+    axes: {
+      xaxis: {
+        renderer: $.jqplot.CategoryAxisRenderer,ticks: plot15_ticks,label: 'Iteration Ranges',labelRenderer: $.jqplot.CanvasAxisLabelRenderer,},
+      yaxis: {label: 'Count',labelRenderer: $.jqplot.CanvasAxisLabelRenderer,autoscale:true,min:0,},
+      y2axis: {autoscale:true,min:0,}
+    },
+    highlighter: {tooltipContentEditor: function (str, seriesIndex, pointIndex) {return plot15_ticks[pointIndex]+' - '+plot15_data[seriesIndex][pointIndex];},show: true,showTooltip: true,sizeAdjust: 10,formatString: '%s',tooltipLocation: 'n',useAxesFormatters: false,},
+    legend: {renderer: $.jqplot.EnhancedLegendRenderer, show: true,location: 's',placement: 'outsideGrid',rendererOptions: {numberRows: '1',},},
+    series: [{label:'r0', yaxis:'yaxis', },{label:'r1', yaxis:'yaxis', },],
+  });
+  }
+</script></div></div></div></div>
+<div  id="active_threads_panel" class="_fixed_box" style="width:100%;"><h3 class="_header">Average Number of Active Threads<span class="tooltip-maqao-button extract-maqao rightpanelextract" title="" tooltip_id="48" onclick="extract_panel ('active_threads_panel');"></span>
+</h3><div id="active_threads_panel_content" class="_content _OV_chart_RP" style="overflow-y:auto;height:520px;max-height:520px;">
+<div class="_fixed_box" ><h3 class="_header">Run 1 - /rds/user/crm98/hpc-work/cp2k-benchmarks/maqao/xp_master</h3>
+<div class="_content"><div style="margin-top: 10px; margin-bottom: 10px; background-color: var(--chart_background); overflow-x:auto; overflow-y:hidden; "><div id="chart_cat_16" style="height:400px;margin-top:20px;" ></div>
+<div style="text-align: center;"><p style="display: inline-block; margin-top: 0px;">Enable log scale <label class="switch" style="vertical-align: middle;"><input id="checkbox_toggle_scale_16" type="checkbox" onchange="__generate_chart_16()"><span class="slider round"></span></label></p></div>
+</div>
+<script class="code" >
+  function __generate_chart_16(){
+    document.getElementById('chart_cat_16').innerHTML = '';
+    let is_log_scale = false;
+    if (document.getElementById ('checkbox_toggle_scale_16').checked) {
+      is_log_scale = true;
+    }
+  var plot16_data = [[0.4253,0.0315,6.0517,13.3866,13.5046,15.7363,11.1859,6.9769,15.8585,15.8592,15.7948,15.8317,15.8665,15.8662,15.8657,15.869,15.9005,15.8363,15.8409,15.8691,15.7696,15.8353,15.796,15.9004,15.837,15.9009,15.9009,15.869,15.8979,15.7769,15.8396,15.8632,15.8022,15.9008,15.9008,15.9008,15.9008,15.8695,15.901,15.8696,15.9014,15.9014,15.87,15.9019,15.8703,15.8705,15.8782,15.9112,15.7439,15.8303,15.7311,15.7657,15.8985,15.8677,15.8845,15.8189,15.8561,15.7429,15.8065,15.8359,15.8983,15.7991,15.6885,15.804,15.8303,15.7723,15.7728,15.7884,15.8659,15.8033,15.7077,15.8293,15.8654,15.8666,15.8654,15.8967,15.8653,15.823,15.7879,15.7128,15.8343,15.8663,15.8336,15.8954,15.8954,15.7679,15.8618,15.8921,15.8921,15.8631,15.8986,15.8986,15.8363,15.8059,15.8676,15.8943,15.829,15.856,15.821,11.6506,],[15,1,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,],];
+  var plot16_ticks = [['1'],[''],[''],[''],['5'],[''],[''],[''],[''],['10'],[''],[''],[''],[''],['15'],[''],[''],[''],[''],['20'],[''],[''],[''],[''],['25'],[''],[''],[''],[''],['30'],[''],[''],[''],[''],['35'],[''],[''],[''],[''],['40'],[''],[''],[''],[''],['45'],[''],[''],[''],[''],['50'],[''],[''],[''],[''],['55'],[''],[''],[''],[''],['60'],[''],[''],[''],[''],['65'],[''],[''],[''],[''],['70'],[''],[''],[''],[''],['75'],[''],[''],[''],[''],['80'],[''],[''],[''],[''],['85'],[''],[''],[''],[''],['90'],[''],[''],[''],[''],['95'],[''],[''],[''],[''],['100'],];
+  var plot16 = jQuery.jqplot ('chart_cat_16', plot16_data, {
+    seriesColors:['#0a92f3','#0a92f3','#4e5f9e','#a51d31','#a51d31','#c2070c','#922c49','#575792','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#922c49',],
+    seriesDefaults: {
+      renderer: jQuery.jqplot.BarRenderer,
+      rendererOptions: {varyBarColor: true,},
+      pointLabels: {show: false      },
+    },
+    axes: {
+      xaxis: {
+        renderer: $.jqplot.CategoryAxisRenderer,ticks: plot16_ticks,label: 'Time Progress (%)',labelRenderer: $.jqplot.CanvasAxisLabelRenderer,tickRenderer: $.jqplot.CanvasAxisTickRenderer,tickOptions: {angle: -30, fontSize: '10pt'}},
+      yaxis: {label: 'Count',labelRenderer: $.jqplot.CanvasAxisLabelRenderer,autoscale:true,min:0,min: (is_log_scale ? null: 0),renderer: (is_log_scale ? $.jqplot.LogAxisRenderer: $.jqplot.LinearAxisRenderer),},
+      y2axis: {autoscale:true,min:0,}
+    },
+    highlighter: {tooltipContentEditor: function (str, seriesIndex, pointIndex) {return (pointIndex + 1)+' - '+plot16_data[seriesIndex][pointIndex];},show: true,showTooltip: true,sizeAdjust: 10,formatString: '%s',tooltipLocation: 'n',useAxesFormatters: false,},
+    legend: {renderer: $.jqplot.EnhancedLegendRenderer, show: true,location: 's',placement: 'outsideGrid',rendererOptions: {numberRows: '1',},},
+    series: [{label:'average', yaxis:'yaxis', },{label:'total', renderer: $.jqplot.LineRenderer, yaxis:'yaxis', color: "#909090", markerOptions: { show:false },},],
+  });
+  var div_chart = document.getElementById ("chart_cat_16");
+  var series  = div_chart.getElementsByClassName ("jqplot-table-legend");
+  for (let i = 0; i < series.length; i++) {
+    series[i].style["display"] = "none";
+  }
+  }
+</script></div></div><div class="_fixed_box" ><h3 class="_header">Run 2 - /rds/user/crm98/hpc-work/cp2k-benchmarks/maqao/xp_feature-nnp-native-spline</h3>
+<div class="_content"><div style="margin-top: 10px; margin-bottom: 10px; background-color: var(--chart_background); overflow-x:auto; overflow-y:hidden; "><div id="chart_cat_17" style="height:400px;margin-top:20px;" ></div>
+<div style="text-align: center;"><p style="display: inline-block; margin-top: 0px;">Enable log scale <label class="switch" style="vertical-align: middle;"><input id="checkbox_toggle_scale_17" type="checkbox" onchange="__generate_chart_17()"><span class="slider round"></span></label></p></div>
+</div>
+<script class="code" >
+  function __generate_chart_17(){
+    document.getElementById('chart_cat_17').innerHTML = '';
+    let is_log_scale = false;
+    if (document.getElementById ('checkbox_toggle_scale_17').checked) {
+      is_log_scale = true;
+    }
+  var plot17_data = [[0.638,0.0354,4.9086,14.6722,12.6339,15.8999,15.8999,12.5811,15.803,15.8097,15.7988,15.7586,15.8929,15.8929,15.8929,15.8226,15.8609,15.8633,15.8987,15.8231,15.8716,15.8759,15.8546,15.7817,15.8895,15.8545,15.6258,15.8906,15.8906,15.8567,15.8246,15.8564,15.8548,15.7854,15.8914,15.8523,15.8875,15.8875,15.8518,15.7813,15.7873,15.858,15.8222,15.8219,15.859,15.8526,15.7804,15.8962,15.7896,15.8976,15.825,15.8566,15.8631,15.8247,15.8602,15.7924,15.8318,15.8316,15.8294,15.9003,15.8292,15.8284,15.862,15.8619,15.8616,15.7886,15.8191,15.7786,15.8555,15.8568,15.8457,15.7708,15.8164,15.8203,15.7765,15.8881,15.6764,15.8905,15.8905,15.8552,15.8553,15.8572,15.8187,15.7832,15.8595,15.8899,15.7843,15.7852,15.7845,15.8565,15.8214,15.8933,15.7843,15.8155,15.8605,15.8524,15.8517,15.844,15.8678,10.8077,],[15,1,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,],];
+  var plot17_ticks = [['1'],[''],[''],[''],['5'],[''],[''],[''],[''],['10'],[''],[''],[''],[''],['15'],[''],[''],[''],[''],['20'],[''],[''],[''],[''],['25'],[''],[''],[''],[''],['30'],[''],[''],[''],[''],['35'],[''],[''],[''],[''],['40'],[''],[''],[''],[''],['45'],[''],[''],[''],[''],['50'],[''],[''],[''],[''],['55'],[''],[''],[''],[''],['60'],[''],[''],[''],[''],['65'],[''],[''],[''],[''],['70'],[''],[''],[''],[''],['75'],[''],[''],[''],[''],['80'],[''],[''],[''],[''],['85'],[''],[''],[''],[''],['90'],[''],[''],[''],[''],['95'],[''],[''],[''],[''],['100'],];
+  var plot17 = jQuery.jqplot ('chart_cat_17', plot17_data, {
+    seriesColors:['#0a92f3','#0a92f3','#4466aa','#b90f18','#9b243d','#c2070c','#c2070c','#9b243d','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#c2070c','#883355',],
+    seriesDefaults: {
+      renderer: jQuery.jqplot.BarRenderer,
+      rendererOptions: {varyBarColor: true,},
+      pointLabels: {show: false      },
+    },
+    axes: {
+      xaxis: {
+        renderer: $.jqplot.CategoryAxisRenderer,ticks: plot17_ticks,label: 'Time Progress (%)',labelRenderer: $.jqplot.CanvasAxisLabelRenderer,tickRenderer: $.jqplot.CanvasAxisTickRenderer,tickOptions: {angle: -30, fontSize: '10pt'}},
+      yaxis: {label: 'Count',labelRenderer: $.jqplot.CanvasAxisLabelRenderer,autoscale:true,min:0,min: (is_log_scale ? null: 0),renderer: (is_log_scale ? $.jqplot.LogAxisRenderer: $.jqplot.LinearAxisRenderer),},
+      y2axis: {autoscale:true,min:0,}
+    },
+    highlighter: {tooltipContentEditor: function (str, seriesIndex, pointIndex) {return (pointIndex + 1)+' - '+plot17_data[seriesIndex][pointIndex];},show: true,showTooltip: true,sizeAdjust: 10,formatString: '%s',tooltipLocation: 'n',useAxesFormatters: false,},
+    legend: {renderer: $.jqplot.EnhancedLegendRenderer, show: true,location: 's',placement: 'outsideGrid',rendererOptions: {numberRows: '1',},},
+    series: [{label:'average', yaxis:'yaxis', },{label:'total', renderer: $.jqplot.LineRenderer, yaxis:'yaxis', color: "#909090", markerOptions: { show:false },},],
+  });
+  var div_chart = document.getElementById ("chart_cat_17");
+  var series  = div_chart.getElementsByClassName ("jqplot-table-legend");
+  for (let i = 0; i < series.length; i++) {
+    series[i].style["display"] = "none";
+  }
+  }
+</script></div></div></div></div>
+<script>
+function display_charts (id) {
+if (id == 0) {
+  document.getElementById('chart_cat_0').innerHTML = '';
+  $(document).ready(function(){
+     __generate_chart_0()
+  });
+}
+if (id == 1) {
+  document.getElementById('chart_cat_1').innerHTML = '';
+  $(document).ready(function(){
+     __generate_chart_1()
+  });
+}
+if (id == 2) {
+  document.getElementById('chart_cat_2').innerHTML = '';
+  $(document).ready(function(){
+     __generate_chart_2()
+  });
+}
+if (id == 3) {
+  document.getElementById('chart_cat_3').innerHTML = '';
+  $(document).ready(function(){
+     __generate_chart_3()
+  });
+}
+}
+function display_loop_profile_charts () {
+  document.getElementById('chart_cat_4').innerHTML = '';
+  $(document).ready(function(){
+     __generate_chart_4()
+  });
+  document.getElementById('chart_cat_5').innerHTML = '';
+  $(document).ready(function(){
+     __generate_chart_5()
+  });
+  document.getElementById('chart_cat_6').innerHTML = '';
+  $(document).ready(function(){
+     __generate_chart_6()
+  });
+  document.getElementById('chart_cat_7').innerHTML = '';
+  $(document).ready(function(){
+     __generate_chart_7()
+  });
+}
+function display_path_count_charts () {
+  document.getElementById('chart_cat_12').innerHTML = '';
+  $(document).ready(function(){
+     __generate_chart_12()
+  });
+  document.getElementById('chart_cat_13').innerHTML = '';
+  $(document).ready(function(){
+     __generate_chart_13()
+  });
+}
+function display_iteration_count_charts () {
+  document.getElementById('chart_cat_14').innerHTML = '';
+  $(document).ready(function(){
+     __generate_chart_14()
+  });
+  document.getElementById('chart_cat_15').innerHTML = '';
+  $(document).ready(function(){
+     __generate_chart_15()
+  });
+}
+function display_inner_loops_charts () {
+  document.getElementById('chart_cat_8').innerHTML = '';
+  $(document).ready(function(){
+     __generate_chart_8()
+  });
+  document.getElementById('chart_cat_9').innerHTML = '';
+  $(document).ready(function(){
+     __generate_chart_9()
+  });
+}
+function display_categorization_charts () {
+  document.getElementById('chart_cat_10').innerHTML = '';
+  $(document).ready(function(){
+     __generate_chart_10()
+  });
+  $('#chart_cat_10').bind('jqplotDataClick',
+    function (ev, seriesIndex, pointIndex, data) {
+      document.getElementById("maqao_modal-body").innerHTML="<object id=\"maqao_modal-body_content\" type=\"text/html\" data=\"./modals/detailled_cat_run_"+(pointIndex + 1)+".html\"></object>";
+      var modal = document.getElementById('MaqaoModal');
+      modal.style.display = "block";
+    }
+  );
+  document.getElementById('chart_cat_11').innerHTML = '';
+  $(document).ready(function(){
+     __generate_chart_11()
+  });
+  $('#chart_cat_11').bind('jqplotDataClick',
+    function (ev, seriesIndex, pointIndex, data) {
+      document.getElementById("maqao_modal-body").innerHTML="<object id=\"maqao_modal-body_content\" type=\"text/html\" data=\"./modals/detailled_cat_run_"+(pointIndex + 1)+".html\"></object>";
+      var modal = document.getElementById('MaqaoModal');
+      modal.style.display = "block";
+    }
+  );
+}
+function display_active_threads_charts () {
+  document.getElementById('chart_cat_16').innerHTML = '';
+  $(document).ready(function(){
+     __generate_chart_16()
+  });
+  document.getElementById('chart_cat_17').innerHTML = '';
+  $(document).ready(function(){
+     __generate_chart_17()
+  });
+}
+</script>
+</div>
+<div style="display: table-row;height:5px;"></div></div>
+<div id="_OV_exp_summary_box" class="_fixed_box"><h3 class="_header">Experiment Summaries<span class="tooltip-maqao-button help-maqao" title="" tooltip_id="49"></span></h3><div class="_content"><table id="_OV_exp_summary" style="table-layout:fixed;word-break:break-word;">
+<tr><th></th><th><span class="tooltip-maqao" title="" tooltip_id="50" >r0</span></th><th><span class="tooltip-maqao" title="" tooltip_id="51" >r1</span></th></tr>
+<tr><th>Experiment Name</th><td>cp2k-master-NNP-H2O64</td><td>cp2k-optimized-native-spline-NNP-H2O64</td></tr>
+<tr><th>Application</th><td>/rds/user/crm98/hpc-work/cp2k_binaries/csd3/master/cp2k.psmp</td><td>/rds/user/crm98/hpc-work/cp2k_binaries/csd3/feature-nnp-native-spline/cp2k.psmp</td></tr>
+<tr><th>Timestamp</th><td>2026-05-14 23:46:32</td><td>2026-05-14 23:52:18</td></tr>
+<tr><th>Experiment Type</th><td>MPI; </td><td><i>same as <b>r0</b></i></td></tr>
+<tr><th>Machine</th><td style="word-break: break-word;">cpu-q-154</td><td style="word-break: break-word;"><i>same as <b>r0</b></i></td></tr>
+<tr><th>Architecture</th><td>x86_64</td><td><i>same as <b>r0</b></i></td></tr>
+<tr><th>Micro Architecture</th><td>ICELAKE_SP</td><td><i>same as <b>r0</b></i></td></tr>
+<tr><th>Model Name</th><td>Intel(R) Xeon(R) Platinum 8368Q CPU @ 2.60GHz</td><td><i>same as <b>r0</b></i></td></tr>
+<tr><th>Cache Size</th><td>58368 KB</td><td><i>same as <b>r0</b></i></td></tr>
+<tr><th>Number of Cores</th><td>38</td><td><i>same as <b>r0</b></i></td></tr>
+<tr><th>Maximal Frequency</th><td>3.7 GHz</td><td><i>same as <b>r0</b></i></td></tr>
+<tr><th>OS Version</th><td>Linux 4.18.0-553.123.1.el8_10.x86_64 #1 SMP Tue May 5 08:15:03 UTC 2026</td><td><i>same as <b>r0</b></i></td></tr>
+<tr><th>Architecture used during static analysis</th><td>x86_64</td><td><i>same as <b>r0</b></i></td></tr>
+<tr><th>Micro Architecture used during static analysis</th><td>ICELAKE_SP</td><td><i>same as <b>r0</b></i></td></tr>
+<tr><th><span class="tooltip-maqao" title="" tooltip_id="52" >Compilation Options</span></th>
+<td><strong>cp2k.psmp</strong>: Intel(R) Fortran Intel(R) 64 Compiler Classic for applications running on Intel(R) 64, Version 2021.6.0 Build 20220226_000000  </td><td><i>same as <b>r0</b></i></td></tr>
+<tr><th>Number of processes observed</th><td>16</td><td><i>same as <b>r0</b></i></td></tr>
+<tr><th>Number of threads observed</th><td>16</td><td><i>same as <b>r0</b></i></td></tr>
+<tr><th>Frequency Driver</th><td>intel_cpufreq</td><td><i>same as <b>r0</b></i></td></tr>
+<tr><th>Frequency Governor</th><td>performance</td><td><i>same as <b>r0</b></i></td></tr>
+<tr><th>Huge Pages</th><td>always</td><td><i>same as <b>r0</b></i></td></tr>
+<tr><th>Hyperthreading</th><td>off</td><td><i>same as <b>r0</b></i></td></tr>
+<tr><th>Number of sockets</th><td>2</td><td><i>same as <b>r0</b></i></td></tr>
+<tr><th>Number of cores per socket</th><td>38</td><td><i>same as <b>r0</b></i></td></tr>
+<tr><th>MAQAO version</th><td>2026.0.0-b</td><td><i>same as <b>r0</b></i></td></tr>
+<tr style="word-wrap: break-word;"><th>MAQAO build</th><td>d53714498d38428ad6a75949c25b07c813f07f11::20260206-105209</td><td><i>same as <b>r0</b></i></td></tr>
+<tr style="word-wrap: break-word;"><th>Comments</th><td>Upstream CP2K master, pure-MPI NNP code path. Baseline for the feature/nnp-native-spline comparison report.</td><td>cp2k_optimized feature/nnp-native-spline -- optimised pure-MPI NNP path. Compared against upstream master.</td></tr>
+</table></div>
+<div style="height:5px;"></div></div>
+</div></div>
+<script>
+function set_chart(id, idsec) {
+  var ids = [0, 1, 2, 3];
+  for (var i = 0; i < ids.length; i++) {
+    if (id == ids[i]) {
+      document.getElementById('chart_'+ids[i]+'_fixed').style.display = 'table-cell';
+    }
+    else {
+      document.getElementById('chart_'+ids[i]+'_fixed').style.display = 'none';
+    }
+  }
+  document.getElementById('loop_profile_charts').style.display = 'none';
+  document.getElementById('path_count_charts').style.display = 'none';
+  document.getElementById('iteration_count_charts').style.display = 'none';
+  document.getElementById('inner_loop_profile_charts').style.display = 'none';
+  document.getElementById('application_categorization_charts').style.display = 'none';
+  document.getElementById('compilation_options_panel').style.display = 'none';
+  document.getElementById('active_threads_panel').style.display = 'none';
+  if (id > -1) {
+    display_charts (id);
+  }
+  else if (idsec == 0){
+    document.getElementById('loop_profile_charts').style.display = 'table-cell';
+    display_loop_profile_charts ();
+  }
+  else if (idsec == 1){
+    document.getElementById('path_count_charts').style.display = 'table-cell';
+    display_path_count_charts ();
+  }
+  else if (idsec == 2){
+    document.getElementById('inner_loop_profile_charts').style.display = 'table-cell';
+    display_inner_loops_charts ();
+  }
+  else if (idsec == 3){
+    document.getElementById('iteration_count_charts').style.display = 'table-cell';
+    display_iteration_count_charts ();
+  }
+  else if (idsec == 4){
+    document.getElementById('application_categorization_charts').style.display = 'table-cell';
+    display_categorization_charts ();
+  }
+  else if (idsec == 5){
+    document.getElementById('compilation_options_panel').style.display = 'table-cell';
+  }
+  else if (idsec == 6){
+    document.getElementById('active_threads_panel').style.display = 'table-cell';
+    display_active_threads_charts ();
+  }
+}
+function onchange_comp_opts (selector) {
+  let selected_id = selector.value;
+  let i           = 1;
+  let e           = document.getElementById ("compilation_options_run_"+i);
+  while (e != null) {
+    if (i == selected_id){
+      e.style.display = "block";
+    }
+    else {
+      e.style.display = "none";
+    }
+    i ++;
+    e = document.getElementById ("compilation_options_run_"+i);
+  }
+}
+function extract_panel (__id__) {
+  // Open the panel in a new window / tab
+  let url   = new URL(window.location.href);
+  window.open(url.href+"?panel="+__id__);
+}
+</script>
+<style>
+._tr_odd {background-color: var(--table_row_odd_background);}
+.border_left_hover:hover {border-left: 4px solid var(--fixed_box_borders);}
+#_OV_exp_summary,#_OV_conf_summary {border-collapse: collapse;}
+#_OV_exp_summary tr:nth-child(odd), #_OV_conf_summary tr:nth-child(odd) {background-color: var(--table_row_odd_background);}
+._OV_chart_RP {margin:0px 0px 0px 0px !important;}
+#_tab_global_metrics {border-collapse:collapse;width:100%;border-left: 4px solid var(--background);}
+.extract-maqao {
+  background:url("images/OV_extract_20.png") no-repeat;
+  width:20px;
+  height:20px;
+  float: right;
+  margin-right: 20px;
+  cursor:pointer;
+}
+</style><script>
+function _onresize (__panel__) {
+  let ids = [0, 1, 2, 3];
+  let isPanelFound = false;
+  for (var i = 0; i < ids.length; i++) {
+    if (document.getElementById('chart_'+ids[i]+'_fixed').style.display != 'none' || __panel__ == 'chart_'+ids[i]+'_fixed') {
+       display_charts (ids[i]);
+       isPanelFound = true;
+    }
+  }
+  if (document.getElementById('loop_profile_charts').style.display != 'none' || __panel__ == 'loop_profile_charts') {
+    display_loop_profile_charts ();
+    isPanelFound = true;
+  }
+  if (document.getElementById('path_count_charts').style.display != 'none' || __panel__ == 'path_count_charts') {
+    display_path_count_charts ();
+    isPanelFound = true;
+  }
+  if (document.getElementById('iteration_count_charts').style.display != 'none' || __panel__ == 'iteration_count_charts') {
+    display_path_count_charts ();
+    isPanelFound = true;
+  }
+  if (document.getElementById('inner_loop_profile_charts').style.display != 'none' || __panel__ == 'inner_loop_profile_charts') {
+    display_inner_loops_charts ();
+    isPanelFound = true;
+  }
+  if (document.getElementById('application_categorization_charts').style.display != 'none' || __panel__ == 'application_categorization_charts') {
+    display_categorization_charts ();
+    isPanelFound = true;
+  }
+  if (document.getElementById('compilation_options_panel').style.display != 'none' || __panel__ == 'compilation_options_panel') {
+    isPanelFound = true;
+  }
+  if (document.getElementById('active_threads_panel').style.display != 'none' || __panel__ == 'active_threads_panel') {
+    display_active_threads_charts ();
+    isPanelFound = true;
+  }
+  __maqao_legacy_onresize ();
+  if (__PANEL__ == null) {
+    let w = window,
+        d = document,
+        e = d.documentElement,
+        g = d.getElementsByTagName("body")[0],
+        x = w.innerWidth || e.clientWidth || g.clientWidth;
+    document.getElementById("_OV_exp_summary").style.width = (x - 40)+"px";
+    let charts_RP = document.getElementsByClassName("_OV_chart_RP");
+    let y = document.getElementById("_tab_global_metrics").clientHeight + 40;
+    if (y < 520) {
+      y = 520;
+    }
+    for (var i = 0; i < charts_RP.length; i++) {
+      let elem = charts_RP.item(i);
+      elem.style.height = (y)+"px";
+      elem.style.maxHeight = (y)+"px";
+    }
+  }
+  return isPanelFound;
+}
+var resizeId;
+window.addEventListener("resize", function() {
+  clearTimeout(resizeId);
+  resizeId = setTimeout(_onresize, 250);
+});
+var __PANEL__ = null;
+$(document).ready(function(){
+  let ids = [0, 1, 2, 3];
+  for (var i = 0; i < ids.length; i++) {
+    document.getElementById('chart_'+ids[i]+'_fixed').style.display = 'none';
+  }
+  document.getElementById('loop_profile_charts').style.display = 'none';
+  document.getElementById('path_count_charts').style.display = 'none';
+  document.getElementById('iteration_count_charts').style.display = 'none';
+  document.getElementById('inner_loop_profile_charts').style.display = 'none';
+  document.getElementById('application_categorization_charts').style.display = 'none';
+  document.getElementById('compilation_options_panel').style.display = 'none';
+  document.getElementById('active_threads_panel').style.display = 'none';
+  let e = document.getElementById ('compilation_options_selector');
+  if (e) {
+    e.value = 1;
+  }
+  e = document.getElementById ('active_threads_selector');
+  if (e) {
+    e.value = 1;
+  }
+  let url   = new URL(window.location.href);
+  let panel = url.searchParams.get("panel");
+  if (panel != null) {
+    __PANEL__ = panel;
+    document.getElementById ("_OV_exp_summary_box").style.display = "none";
+    document.getElementById ("_tab_global_metrics_box").style.display = "none";
+    document.getElementById ("reports_description_box").style.display = "none";
+    document.getElementById ("help_main").style.display = "none";
+    let d = document.getElementById(panel);
+    if (d) {
+      d.style.display = 'table-cell';
+    }
+    let isPanelFound = _onresize (panel);
+    if (isPanelFound == false) {
+       let d = document.getElementById("error_charts");
+       d.innerText = "Error: No panel "+panel+" found";
+       d.style.display = "block";
+    }
+    let extracts = document.getElementsByClassName("rightpanelextract");
+    for(var i = 0; i < extracts.length; i++) {
+       extracts[i].style.display = "none";
+    }
+    let panels = document.getElementsByClassName("_OV_chart_RP");
+    for(var i = 0; i < panels.length; i++) {
+       panels[i].style.removeProperty("height");
+       panels[i].style.removeProperty("max-height");
+    }
+  }
+  else {
+    set_chart(-1, 4);
+    _onresize ();
+  }
+});
+</script>
+
+  <div id="MaqaoModal" class="maqao_modal">
+    <div class="maqao_modal-content">
+      <div class="maqao_modal-header">
+        <span class="maqao_close">&times;</span>
+      </div>
+      <div id="maqao_modal-body" class="maqao_modal-body">
+      </div>
+    </div>
+  </div>
+</div><script>
+var tooltips_texts = ['Details some global metrics that summarize the application performance. Moving the cursor over a metric  displays some help about the metric. Most of rows can be clicked to display a chart related to the analysis. Metrics colors are:<ul><li><span style="background:#66cc00;">green </span> when the value is good.</li><li><span style="background:#FFCC99; width:20px;">light orange </span> when the value is good but it can be improved.</li><li><span style="background:#FF950E; width:20px;">orange </span> when the value is average and shows a potential performance issue.</li><li><span style="background:#FF3333; width:20px;">red </span> when the value is bad and shows probably a performance issue.</li></ul>',
+'/rds/user/crm98/hpc-work/cp2k-benchmarks/maqao/xp_master',
+'/rds/user/crm98/hpc-work/cp2k-benchmarks/maqao/xp_feature-nnp-native-spline',
+'Time spent by the application in seconds',
+'Application profiling duration in seconds. A too low value means the profiling does not last long enough, and it could lead to an inaccurate profile.',
+'96.02% of the total time',
+'96.62% of the total time',
+'Sum of threads CPU time divided by thread count.',
+'Sum over all threads of their CPU time divided by the sum of their walltime.',
+'Sum over all threads of their active time divided by the application walltime.',
+'Sum over all threads of the max time spent on the same CPU divided by the sum over all threads of the thread walltime.',
+'Percentage of the application time spent in loops (excluding loops present in modules not analyzed by the profiler). It represents 13.34 seconds.',
+'Percentage of the application time spent in innermost loops (excluding loops present in modules not analyzed by the profiler). It represents 3.06 seconds.',
+'Percentage of the application time spent in user code (meaning the time spent in the binary and external libraries specified in custom_categories).',
+'Global score based on basic options to use with the compiler to have good performance. Related report is based on the hottest profiled function, so it may not be fully representative of how each module was really compiled.',
+'Global score based on basic options to use with the compiler to have good performance. Related report is based on the hottest profiled function, so it may not be fully representative of how each module was really compiled.',
+'Potential speedups are based on active time (not total time aka walltime).<br/>Considering two loops that can be accelerated by 2x (resp. 3x) and covering 20% (resp. 60%) of application active time, potential speedup is 100 / (20/2 + 60/3 + 20) = 2.',
+'Optimistic speedup available by reducing the number of paths in loops. Having multiple paths in a loop can prevent the compiler to vectorize the code, decreasing performances. The metric provides an estimation of a global speedup that can be achieved if all loops with more than two paths were fully vectorized.\nLower is better.',
+'Optimistic speedup if OpenMP, MPI, Pthread and TBB runtimes are perfect.\nLower is better.\nThis metric presents an estimation of the speed-up at application level if the MPI/OpenMP/Pthread/TBB behaviour is perfect.\nspeedup = MAX (time) / MAX (time without OpenMP, MPI, Pthread and TBB)',
+'Optimistic speedup if OpenMP, MPI, Pthread and TBB runtimes are perfect and the load distribution if perfect.\nLower is better.\nThis metric presents an estimation of the speed-up at application level if most common parallel bottelnecks are perfect.\nspeedup = MAX (time) / AVG (time without OpenMP, MPI, Pthread and TBB)',
+'Optimistic speedup if all instructions performing addresses computations and scalar integer computations have been deleted. \nLower is better.',
+'Lower is better.',
+'Number of loops to optimize to get 80% of the speedup.<br>Lower is better.',
+'Optimistic speedup if all floating point instructions are vectorized in all analyzed loops. Memory instructions are not considered as vectorized.\nLower is better.',
+'Lower is better.',
+'Number of loops to optimize to get 80% of the speedup.<br>Lower is better.',
+'Optimistic speedup if all instructions are vectorized in all analyzed loops.\nLower is better.',
+'Lower is better.',
+'Number of loops to optimize to get 80% of the speedup.<br>Lower is better.',
+'Optimistic speedup if only arithmetic floating point instructions are kept.\nLower is better.',
+'Lower is better.',
+'Number of loops to optimize to get 80% of the speedup.<br>Lower is better.',
+'Open on a new tab',
+'Open on a new tab',
+'Open on a new tab',
+'Open on a new tab',
+'Open on a new tab',
+'Open on a new tab',
+'Open on a new tab',
+'/rds/user/crm98/hpc-work/cp2k-benchmarks/maqao/xp_master<br>',
+'/rds/user/crm98/hpc-work/cp2k-benchmarks/maqao/xp_feature-nnp-native-spline<br>',
+'/rds/user/crm98/hpc-work/cp2k-benchmarks/maqao/xp_master<br>',
+'/rds/user/crm98/hpc-work/cp2k-benchmarks/maqao/xp_feature-nnp-native-spline<br>',
+'Open on a new tab',
+'Name of the source object (binary file or source file)',
+'Name of the source object (binary file or source file)',
+'Open on a new tab',
+'Open on a new tab',
+'Open on a new tab',
+'Details about how experiments have been run',
+'/rds/user/crm98/hpc-work/cp2k-benchmarks/maqao/xp_master',
+'/rds/user/crm98/hpc-work/cp2k-benchmarks/maqao/xp_feature-nnp-native-spline',
+'Options are based on the hottest profiled source file, it may not be fully representative of compilation options really used to generate the binary file.'];
+var modal = document.getElementById('MaqaoModal');
+var span = document.getElementsByClassName("maqao_close")[0];
+span.onclick = function() {
+    modal.style.display = "none";
+}
+window.onclick = function(event) {
+    if (event.target == modal) {
+        modal.style.display = "none";
+    }
+}
+const getCellValue = (tr, idx) => tr.children[idx].innerText || tr.children[idx].textContent;
+const comparer = (idx, asc) => (a, b) => ((v1, v2) => 
+    v1 !== '' && v2 !== '' && !isNaN(v1) && !isNaN(v2) ? v2 - v1 : v1.toString().localeCompare(v2)
+    )(getCellValue(asc ? a : b, idx) === '' ? -1: (getCellValue(asc ? a : b, idx).replace(/\s/g,'')), 
+      getCellValue(asc ? b : a, idx) === '' ? -1: (getCellValue(asc ? b : a, idx).replace(/\s/g,'')));
+addLoadEvent(function(){
+  document.querySelectorAll('._fixed_table:not(._no_auto_sorting) th').forEach(th => th.addEventListener('click', (() => {
+    const table = th.closest('table');
+    // Remove all symbols in header
+    table.querySelectorAll('th').forEach(function (e) {
+      e.firstChild.textContent = "";
+    });
+    // Change the symbol on the clicked header
+    if (this.asc != true) {
+      th.firstChild.textContent = "\u25BC";
+    }
+    else {
+      th.firstChild.textContent = "\u25B2";
+    }
+    Array.from(table.querySelectorAll('tr:nth-child(n+2)'))
+        .sort(comparer(Array.from(th.parentNode.children).indexOf(th), this.asc = !this.asc))
+        .forEach(tr => table.appendChild(tr) );
+  })));
+});
+addLoadEvent(function(){
+  document.querySelectorAll('._tree_table:not(._no_auto_sorting) th').forEach(th => th.addEventListener('click', (() => {
+    const table = th.closest('table');
+    // Remove all symbols in header
+    table.querySelectorAll('th').forEach(function (e) {
+      e.firstChild.textContent = "";
+    });
+    // Change the symbol on the clicked header
+    if (this.asc != true) {
+      th.firstChild.textContent = "\u25BC";
+    }
+    else {
+      th.firstChild.textContent = "\u25B2";
+    }
+    let last_id = "";
+    const t_outermost = new Array ();
+    const t_children  = new Map ();
+    for (let i = 1, row; row = table.rows[i]; i++) {
+      if (row.classList.contains ("_outer_row")) {
+        t_outermost.push (row);
+        last_id = row.id;
+        t_children [last_id] = new Array ();
+      }
+      else {
+        t_children [last_id].push (row);
+      }
+    }
+    t_outermost.sort(comparer(Array.from(th.parentNode.children).indexOf(th), this.asc = !this.asc));
+    for (let i = 0, row; row = t_outermost[i]; i++) {
+      table.appendChild(row)
+      for (let j = 0, child; child = t_children[row.id][j]; j++) {
+        table.appendChild(child)
+      }
+    }
+  })));
+});
+function _check_all_checkbox_ (obj_id, opts_ids) {
+  var obj   = document.getElementById (obj_id);
+  var opts  = window[opts_ids];
+  var count = 0
+  for (i = 0; i < opts.length; i++) {
+    var obj_s = document.getElementById(opts[i]);
+    if (obj_s && obj_s.checked) {
+      count ++;
+    }
+  }
+  if (count == 0) {
+    obj.value = "Select all";
+  }
+  else if (count == opts.length) {
+    obj.value = "Select none";
+  }
+}
+// Fonction for table selector
+function click_table_menu (c, obj_id, opt_ids) {
+  var is_checked = document.getElementById (c).checked;
+  localStorage.setItem(c, is_checked);
+  $("."+c).each(function(index, element) {
+    if (is_checked) {
+      element.classList.remove("_tcol_hidden");
+    }
+    else {
+      element.classList.add("_tcol_hidden");
+    }
+  });
+  if (obj_id != undefined) {
+    _check_all_checkbox_ (obj_id, opt_ids)
+  }
+}
+function set_all_table_menu (obj, var_opt_ids) {
+  var opt_ids = window[var_opt_ids];
+  var is_selected = true
+  if (obj.value == "Select all") {
+    is_selected = false;
+  }
+  for (i = 0; i < opt_ids.length; i++) {
+    var obj_s = document.getElementById(opt_ids[i]);
+    if (obj_s && is_selected == obj_s.checked) {
+      obj_s.checked = !obj_s.checked;
+      click_table_menu (opt_ids[i]);
+    }
+  }
+  if (is_selected == false) {
+    obj.value = "Select none";
+  } else {
+    obj.value = "Select all";
+  }
+  localStorage.setItem(obj.id, obj.value);
+}
+// Script for accordion box
+function _click_accordion_header(obj) {
+  var content = obj.nextSibling;
+  content.classList.toggle('collapsed');
+  obj.classList.toggle('collapsed');
+  obj.parentNode.classList.toggle('collapsed');
+  // Check if the box must be openned ...
+  if (obj.classList.contains ('collapsed'))
+  {
+    obj.firstChild.textContent = "\u25B6";
+  }
+  // or closed.
+  else 
+  {
+    obj.firstChild.textContent = "\u25BC";
+  }
+  if (typeof _onresize === "function") {
+    _onresize ();
+  }
+}
+  // Script for paged table
+function _click_paged_prev(obj) {
+  var pages_content_id = '_paged_tables_page_' + obj.parentNode.parentNode.id.substr (obj.parentNode.parentNode.id.lastIndexOf('_') + 1);
+  var pages_content = document.getElementById(pages_content_id).innerHTML;
+  var max_pages = pages_content.substr (pages_content.lastIndexOf('/') + 1);
+  var cur_page  = pages_content.substring (pages_content.lastIndexOf(' ') + 1, pages_content.lastIndexOf('/'));
+  max_pages = Number (max_pages);
+  cur_page  = Number (cur_page);
+  if (cur_page > 1) {
+    var div_paged = obj.parentNode.parentNode.id;
+    var i;
+    var x = document.getElementsByClassName(div_paged + '_' + (cur_page - 1));
+    for (i = 0; i < x.length; i++) {
+      x[i].classList.toggle('_paged_hidden');
+    }
+    x = document.getElementsByClassName(div_paged + '_' + (cur_page - 2));
+    for (i = 0; i < x.length; i++) {
+      x[i].classList.toggle('_paged_hidden');
+    }
+  document.getElementById(pages_content_id).textContent = "Page " + (cur_page - 1) + "/" + max_pages;
+  }
+}
+function _click_paged_next(obj) {
+  var pages_content_id = '_paged_tables_page_' + obj.parentNode.parentNode.id.substr (obj.parentNode.parentNode.id.lastIndexOf('_') + 1);
+  var pages_content = document.getElementById(pages_content_id).innerHTML;
+  var max_pages = pages_content.substr (pages_content.lastIndexOf('/') + 1);
+  var cur_page  = pages_content.substring (pages_content.lastIndexOf(' ') + 1, pages_content.lastIndexOf('/'));
+  max_pages = Number (max_pages);
+  cur_page  = Number (cur_page);
+  if (cur_page < max_pages) {
+    var div_paged = obj.parentNode.parentNode.id;
+    var i;
+    var x = document.getElementsByClassName(div_paged + '_' + (cur_page - 1));
+    for (i = 0; i < x.length; i++) {
+      x[i].classList.toggle('_paged_hidden');
+    }
+    x = document.getElementsByClassName(div_paged + '_' + cur_page);
+    for (i = 0; i < x.length; i++) {
+      x[i].classList.toggle('_paged_hidden');
+    }
+    document.getElementById(pages_content_id).textContent = "Page " + (cur_page + 1) + "/" + max_pages;
+  }
+}
+// Function for tree table
+function _click_tree(obj) {
+  if (obj.innerHTML == "\u25BA") {
+    obj.textContent = "\u25BC";
+    // Open childs
+    var x = document.getElementsByClassName(obj.parentNode.parentNode.id);
+    for (var i = 0; i < x.length; i++) {
+      x[i].classList.toggle('_tree_hidden');
+    }
+  }
+  else if (obj.innerHTML == "\u25BC") {
+    obj.textContent = "\u25BA";
+    // Close all childs
+    var trs = document.getElementsByTagName('tr');
+    var r   = obj.parentNode.parentNode.id+'_';
+    var re  = new RegExp (r, "g");
+    for (var i = 0; i < trs.length; i++) {
+      var s = trs[i].id+""
+      if (s.match(re)) {
+        var o = document.getElementById(s);
+        if (! o.classList.contains('_tree_hidden')) {
+          o.classList.toggle('_tree_hidden');
+        }
+        if (o.firstChild.firstChild.textContent == "\u25BC") {
+          o.firstChild.firstChild.textContent = "\u25BA";
+        }
+        if (o.firstChild.childNodes.length == 3) {
+          o.firstChild.childNodes[2].textContent = '+';
+        }
+      }
+    }
+    if (obj.parentNode.childNodes.length == 3) {
+      obj.parentNode.childNodes[2].textContent = '+';
+    }
+  }
+}
+function _click_expand (obj) {
+  var trs = document.getElementsByTagName('tr');
+  var r   = obj.parentNode.parentNode.id+'_';
+  var re  = new RegExp (r, "g");
+  // Symbole + => expand all
+  if (obj.textContent == "+") {
+    for (var i = 0; i < trs.length; i++) {
+      var s = trs[i].id+"";
+      if (s.match(re)) {
+        var o = document.getElementById(s);
+        if (o.classList.contains('_tree_hidden')) {
+           o.classList.toggle('_tree_hidden');
+        }
+        if (o.firstChild.firstChild.textContent == "\u25BA") {
+          o.firstChild.firstChild.textContent = "\u25BC";
+        }
+        if (o.firstChild.childNodes.length == 3) {
+          o.firstChild.childNodes[2].textContent = '\u2010';
+        }
+      }
+    }
+    var o = obj.parentNode.parentNode;
+    if (o.firstChild.firstChild.textContent == "\u25BA") {
+      o.firstChild.firstChild.textContent = "\u25BC";
+    }
+    obj.textContent = "\u2010";
+  }
+  // Symbole - => collapse all
+  else {
+    for (var i = 0; i < trs.length; i++) {
+      var s = trs[i].id+"";
+      if (s.match(re)) {
+        var o = document.getElementById(s);
+        if (! o.classList.contains('_tree_hidden')) {
+           o.classList.toggle('_tree_hidden');
+        }
+        if (o.firstChild.firstChild.textContent == "\u25BC") {
+          o.firstChild.firstChild.textContent = "\u25BA";
+        }
+        if (o.firstChild.childNodes.length == 3) {
+          o.firstChild.childNodes[2].textContent = '+';
+        }
+      }
+    }
+    var o = obj.parentNode.parentNode;
+    if (o.firstChild.firstChild.textContent == "\u25BC") {
+      o.firstChild.firstChild.textContent = "\u25BA";
+    }
+    obj.textContent = "+";
+  }
+}
+// Hide unselected tabs
+addLoadEvent(function(){
+  var x = document.getElementsByClassName("_tab_header_li");
+  for (var i = 0; i < x.length; i++) {
+    if (x[i].classList.contains("selected_tab") == false) {
+      var e = document.getElementById (x[i].dataset.tab);
+      e.style.display = "none";
+    }
+  }
+});
+// Change tab
+function change_tab (e, baseId) {
+  // Handle tabs
+  var i = 1;
+  while (true) {
+    var id = baseId + i;
+    var t = document.getElementById (id);
+    if (t == null) {
+      break;
+    }
+    if (id == e.dataset.tab) {
+      t.style.removeProperty("display");
+    }
+    else {
+      t.style.display = "none";
+    }
+    i = i + 1;
+  }
+  // Handle headers
+  $(e).siblings().each( function () {
+    this.classList.remove("selected_tab");
+  });
+  e.classList.add("selected_tab");
+}
+function __maqao_legacy_onresize () {
+  var obj = document.getElementById("spacer_page_title");
+  if (obj) {
+    obj.style.height = (document.getElementById("page_title").clientHeight + 20)+"px";
+  }
+  var obj = document.getElementById("page_title");
+  if (obj) {
+    var elems = document.getElementsByClassName ("_first_menu_level")
+    if (obj.clientHeight < 90) {
+      for (var i = 0; i < elems.length; i++) {
+        elems.item(i).style.borderBottomLeftRadius = "";
+        elems.item(i).style.borderBottomRightRadius = "";
+      }
+    }
+    else {
+      for (var i = 0; i < elems.length; i++) {
+        elems.item(i).style.borderBottomLeftRadius = "10px";
+        elems.item(i).style.borderBottomRightRadius = "10px";
+      }
+    }
+  }
+}
+</script>
+</body>
+</html>

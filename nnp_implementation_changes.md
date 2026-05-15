@@ -20,10 +20,12 @@ Branches under test (all rooted at upstream master):
        │                                    (fc/dfc/dr hoisting, sqrt skip,
        │                                     ASSOCIATE, cut_type local)
        │
-       └── feature/nnp-openmp-implementation
-                                         ← verlet-cells base + OpenMP threading
+       └── feature/nnp-native-spline-omp ← native-spline base + OpenMP threading
                                             (THREADPRIVATE scratch, OMP PARALLEL DO
-                                             with local-reduction + CRITICAL)
+                                             with local-reduction + CRITICAL) +
+                                            cache-miss reductions in nnp_scale_acsf
+                                            (precomputed scaling factors, sorted
+                                             active_atoms via in-place heap sort)
 ```
 
 ---
@@ -36,10 +38,10 @@ matters because the strategies interact:
 
 | Concern | Affected branches | Reason for separate measurement |
 |---|---|---|
-| Spline evaluation cost (Horner vs basis form) | `nnp-verlet-cells` (Horner) vs `nnp-native-spline` (basis) | Native CP2K splines use basis-function form (~22 MULs); local Horner cache uses ~5 MULs.  We need to know the absolute cost of going "native" before recommending it as the merge candidate |
-| Synchronisation overhead vs work granularity | `nnp-openmp-implementation` | Adding OpenMP on top of the already-optimised verlet-cells base lets us isolate whether threading helps once the per-call work is small.  Mixing it with native-spline would confuse the measurement |
-| Maintenance burden of new modules | `nnp-native-spline` adds public symbols to `splines_methods.F` | This change touches CP2K core and benefits the wider codebase; we want to see the real-world cost in the NNP context |
-| Hyperthread contention | `nnp-openmp-implementation` | Cerberus has 32 physical cores × 2 hyperthreads.  OMP behaviour is sensitive to physical-vs-logical core binding; pure-MPI baselines on the other branches give us the reference for "what should be possible" |
+| Spline evaluation cost (Horner vs basis form) | `nnp-verlet-cells` (Horner) vs `nnp-native-spline` / `nnp-native-spline-omp` (basis) | Native CP2K splines use basis-function form (~22 MULs); local Horner cache uses ~5 MULs.  We need to know the absolute cost of going "native" before recommending it as the merge candidate |
+| Synchronisation overhead vs work granularity | `nnp-native-spline-omp` | Adding OpenMP on top of `nnp-native-spline` rather than `nnp-verlet-cells` keeps the spline strategy constant across the MPI / MPI+OMP comparison — the measured difference is *only* the threading overhead, not the spline cost.  This is the right pairing for "does hybrid MPI+OMP recover scaling that pure MPI loses past ~16 ranks?" |
+| Maintenance burden of new modules | `nnp-native-spline` / `nnp-native-spline-omp` add public symbols to `splines_methods.F` | This change touches CP2K core and benefits the wider codebase; we want to see the real-world cost in the NNP context |
+| Hyperthread contention | `nnp-native-spline-omp` | Cerberus has 32 physical cores × 2 hyperthreads.  OMP behaviour is sensitive to physical-vs-logical core binding; pure-MPI baselines on `nnp-native-spline` give us the same-spline-strategy reference for "what should be possible" |
 
 The benchmark harness builds **all four** binaries (master + three feature
 branches) into separate per-branch directories so `LD_LIBRARY_PATH` cannot
@@ -76,7 +78,7 @@ The remaining branches treat this as the truth-source for correctness and the
 
 `src/nnp_acsf.F` ≈ 2 193 lines.  This is the foundational performance branch.
 Its changes are mostly about avoiding work the upstream couldn't avoid; almost
-everything that follows in `nnp-native-spline` and `nnp-openmp-implementation`
+everything that follows in `nnp-native-spline` and `nnp-native-spline-omp`
 inherits from this branch.
 
 ### 2.1 New module-level types
@@ -426,14 +428,25 @@ Whether the trade is profitable is exactly the question the benchmark answers.
 
 ---
 
-## Branch 4 — `feature/nnp-openmp-implementation`
+## Branch 4 — `feature/nnp-native-spline-omp`
 
-`src/nnp_acsf.F` ≈ 2 310 lines.  Built on top of verlet-cells (still uses the
-local `nnp_spline_cache_type` Horner cache, **not** the native splines).
+`src/nnp_acsf.F` ≈ 2 491 lines.  Built directly on top of `nnp-native-spline`:
+inherits the full native-spline optimisation stack (sections 3.1–3.7) and
+adds two distinguishable changes:
 
-The single distinguishing feature is OpenMP threading of the per-centre work.
-This was a research branch to answer: *can we trade some MPI ranks for OMP
-threads to recover the efficiency that pure-MPI loses past ~16 ranks?*
+1. **OpenMP threading** of the four hot loops in `nnp_calc_acsf` and the
+   `dsymdxyz` scaling loops in `nnp_scale_acsf`, using the THREADPRIVATE
+   scratch + local-reduction + CRITICAL pattern.
+2. **Cache-miss reductions in `nnp_scale_acsf`** — precomputed per-symfunc
+   scaling factors (kills the inner divide), and a sort of `active_atoms`
+   per centre so subsequent walks of `dsymdxyz(:, :, k)` hit memory in
+   ascending `k` order.
+
+The original goal was to answer: *can we trade some MPI ranks for OMP threads
+to recover scaling efficiency that pure-MPI loses past ~16 ranks?*  Layering
+on top of `nnp-native-spline` (rather than `nnp-verlet-cells`) keeps the
+spline strategy fixed in the MPI / MPI+OMP comparison, so the measured
+difference is purely the threading overhead.
 
 ### 4.1 THREADPRIVATE persistent buffers
 
@@ -449,12 +462,16 @@ REAL(KIND=dp), ALLOCATABLE, SAVE, PRIVATE :: local_stress(:,:,:)
 !$OMP&              local_y, local_fi, local_stress)
 ```
 
-Each thread has its own copy of:
-- The same scratch buffers verlet-cells uses (`scratch_sym/forcetmp/force3tmp`)
+Each thread keeps its own copies of:
+- The same scratch buffers `nnp-native-spline` uses (`scratch_sym/forcetmp/force3tmp`)
 - New per-thread reduction accumulators (`local_y`, `local_fi`, `local_stress`)
-  used to defer race-prone shared-array writes until end of the parallel loop.
+  used to defer race-prone shared-array writes until the end of the parallel loop.
 
-These persist across calls and grow lazily — no per-call allocation.
+These persist across calls and grow lazily (grow-to-fit) — no per-call allocation.
+
+The fc/dr precompute scratch (`scratch_fc1/dfc1/fc2/dfc2/dr1dx/dr2dx` from
+section 3.3–3.4) intentionally stays **shared, not threadprivate**: one thread
+fills it, the rest read it.  See §4.3.
 
 ### 4.2 Parallel-region structure
 
@@ -486,12 +503,50 @@ CALL timestop(handle_sf)
 ```
 
 One PARALLEL region wraps the entire s-loop (not one per `s`), to amortise
-fork/join overhead.
+fork/join overhead across all symfgrps for a given centre.
 
-### 4.3 Why the local-reduction + CRITICAL pattern
+### 4.3 Shared fc/dr precompute under `!$OMP SINGLE` + `!$OMP DO`
+
+The `scratch_fc1/dfc1/fc2/dfc2/dr1dx/dr2dx` arrays added in `nnp-native-spline`
+(§3.3, §3.4) are read by every thread inside the `(j,k)` loop and so must be
+**shared**.  The precompute pattern is:
+
+```fortran
+!$OMP SINGLE
+   ! one thread does the realloc check + grow-to-fit on the SHARED arrays
+!$OMP END SINGLE
+! implicit barrier — alloc visible to every thread
+
+SELECT CASE (cut_type)
+CASE (nnp_cut_cos)
+   !$OMP DO SCHEDULE(static)
+   DO j = 1, neighbor%n_ang1(s)
+      ! all threads share the precompute work — spline calls are the bulk of it
+   END DO
+   !$OMP END DO        ! implicit barrier publishes scratch_fc*/dr*
+   IF (sg%ele(1) /= sg%ele(2)) THEN
+      !$OMP DO SCHEDULE(static)
+      DO k = 1, neighbor%n_ang2(s)
+         ! same for n_ang2
+      END DO
+      !$OMP END DO
+   END IF
+CASE (nnp_cut_tanh)
+   ...
+END SELECT
+```
+
+Earlier iterations of this branch did the entire precompute under
+`!$OMP SINGLE`, with one thread executing all the spline evaluations and the
+rest spinning on the implicit barrier.  Splitting the realloc check (which
+must be serial — only one allocator) from the precompute loops (which are
+embarrassingly parallel and dominated by spline calls) gives the team useful
+work during what was previously dead time.
+
+### 4.4 Why the local-reduction + CRITICAL pattern
 
 The naïve approach — `!$OMP ATOMIC UPDATE` on every shared write — produced
-**100 % contention** on `dsymdxyz(m, l, i)` and `nnp%rad/ang(ind)%y(m)`,
+**high contention** on `dsymdxyz(m, l, i)` and `nnp%rad/ang(ind)%y(m)`,
 because every `j` iteration writes to the same `i`-indexed slot and the same
 `m`-indexed slot for a given `sf`.  The hardware bus lock serialised every
 update, making the parallel loop slower than serial.
@@ -500,13 +555,30 @@ The fix is the local-reduction pattern:
 - Accumulate per-thread partial sums in `local_fi`, `local_y`, `local_stress`
   (THREADPRIVATE — no contention).
 - One `!$OMP CRITICAL` block per thread per s-iteration reduces the locals
-  into the shared arrays.  CRITICAL serialises 2 threads × ~10 simple
+  into the shared arrays.  CRITICAL serialises ~`n_threads` × ~10 simple
   scalar operations — negligible compared to the work saved.
 - `!$OMP ATOMIC UPDATE` is kept only for `dsymdxyz(m, l, jj)` and `(:, :, kk)`
   writes, where different `j`/`k` iterations index different atoms (low
   contention) but PBC images of the same atom can occasionally collide.
 
-### 4.4 Defensive grow-check
+### 4.5 Schedule + COLLAPSE tuning on the angular j-k loops
+
+Two refinements on top of the §4.2 skeleton, applied to the angular
+(triple) loops in both forces and no-forces variants:
+
+| Branch of the angular loop | Original (initial port) | Tuned |
+|---|---|---|
+| Same-element (triangular: `k = j+1..n_ang1`) | `!$OMP DO SCHEDULE(dynamic)` | `!$OMP DO SCHEDULE(dynamic, 4)` |
+| Mixed-element (rectangular: `k = 1..n_ang2`) | `!$OMP DO SCHEDULE(dynamic)` | `!$OMP DO COLLAPSE(2) SCHEDULE(dynamic, 16)` |
+
+Triangular case can't COLLAPSE; the chunk size of 4 reduces scheduling
+overhead vs the chunk-1 default of plain `dynamic`.  Rectangular case adds
+COLLAPSE(2) so the `(j, k)` iteration space is fully distributed — keeps
+threads busy when `n_ang1` alone is too small for the team — at the cost of
+moving the j-only `rvect1`/`r1` reads inside the inner loop to satisfy
+COLLAPSE's perfectly-nested-loop requirement.
+
+### 4.6 Defensive grow-check
 
 ```fortran
 IF (.NOT. ALLOCATED(scratch_sym) .OR. .NOT. ALLOCATED(local_y) .OR. &
@@ -517,27 +589,86 @@ END IF
 
 The `.NOT. ALLOCATED(local_y)` guard is non-obvious: a separate code path
 (`nnp_neighbor_ensure_persistent` in serial code) pre-allocates `scratch_sym`
-for the master thread.  Without the `local_y` guard, the master thread would
-skip the grow branch on first parallel entry — leaving `local_y` unallocated
-for the master and segfaulting on `local_y(1:n_symf_s) = 0.0_dp`.
+for the master thread only.  Without the `local_y` guard, the master thread
+would skip the grow branch on first parallel entry — leaving `local_y`
+unallocated for the master and segfaulting on `local_y(1:n_symf_s) = 0.0_dp`.
 
-### Performance — observed
+### 4.7 Cache-miss reductions in `nnp_scale_acsf`
 
-OpenMP at the `j`-loop level **does not help** for the typical 64-molecule
-benchmark.  At a single MPI rank:
-- 1 thread: 7.92 s
-- 2 threads: 10.93 s (38 % slower)
+Cachegrind on the pure-MPI native-spline branch flagged `nnp_scale_acsf` as
+the largest contributor to L1 / L2 misses.  Two fixes ship on this branch:
 
-The j-loop is too short to amortise OMP synchronisation overhead.  Per
-s-iteration the body has ~7.5 µs of useful compute and ~5 µs of sync
-(`!$OMP DO` distribution + `!$OMP CRITICAL` + `!$OMP BARRIER`).
+#### Pre-computed scaling factors
 
-This branch is preserved as a **negative result** in the benchmark suite —
-it documents that OMP at this granularity is not the right approach for this
-workload.  Coarser-grained OMP (parallelising the outer atom loop in
-`nnp_force.F`) would be required for a real win, but that requires
-significant refactoring of the shared `dsymdxyz` accumulator and was out of
-scope for this work.
+The original inner body recomputed `(scmax − scmin)/(loc_max(j) − loc_min(j))`
+for every `(centre, sym, neighbour)` triple — pulling `loc_max(j)`,
+`loc_min(j)`, and either `sigma(j)` or `loc_av(j)` through the cache
+alongside the hot `dsymdxyz` traffic.  All four values are static for the
+whole run.  Two new per-element arrays in `nnp_environment_types.F`
+(`nnp_acsf_rad_type` / `nnp_acsf_ang_type`):
+
+```fortran
+REAL(KIND=dp), ALLOCATABLE, DIMENSION(:) :: scale_factor      ! (scmax-scmin) / (loc_max-loc_min)
+REAL(KIND=dp), ALLOCATABLE, DIMENSION(:) :: inv_sigma_factor  ! (scmax-scmin) / sigma
+```
+
+are filled once in `nnp_init_model` immediately after the scaling-data file
+is parsed.  The hot path becomes:
+
+```fortran
+dsymdxyz(j, :, k) = dsymdxyz(j, :, k) * nnp%rad(ind)%scale_factor(j)
+```
+
+— one multiply, one load.  No divide, no extra `loc_max`/`loc_min` reads.
+
+#### Sorted `active_atoms`
+
+The active-atoms list was previously inserted in BFS order (the order
+neighbours appear in the rad/ang lists), so the `k` walk in `nnp_scale_acsf`
+jumped randomly through `dsymdxyz(:, :, k)` — defeating prefetch and
+thrashing TLB.  After the BFS construction, `active_atoms(1:n_active)` is
+now sorted ascending via in-place heap sort:
+
+```fortran
+IF (n_active > 1) CALL nnp_sort_active_atoms(active_atoms, n_active)
+```
+
+`nnp_sort_active_atoms` is a `PURE` private helper — O(n log n) worst case,
+zero `ALLOCATE`/`DEALLOCATE`, fully in place.  The heap-sort choice over a
+generic merge sort (e.g. `cp_1d_i4_sort`) is deliberate: it avoids per-call
+malloc traffic that would compound at large N, while keeping the optimal
+asymptotic.  `n_active` itself stays geometrically bounded (cutoff sphere ×
+density) regardless of system size, so total scaling remains O(N).
+
+### 4.8 Parallelised `nnp_scale_acsf`
+
+The hot `dsymdxyz` scaling loops are parallelised with
+`!$OMP PARALLEL DO COLLAPSE(2) SCHEDULE(static)` over the `(idx, j)` pair —
+each pair writes a unique `dsymdxyz(j, :, k)` slot, so no atomics are
+needed.  COLLAPSE(2) handles the case where `n_active` or `n_rad/n_ang`
+is small relative to the team.  Both the active-atoms branch and the
+no-active-atoms (full `1..num_atoms`) fallback are parallelised.
+
+### Performance — what it measures
+
+This branch is the MPI+OMP comparison point against `nnp-native-spline`
+(pure-MPI).  The benchmark question is whether the OMP overhead in
+sections 4.2–4.6 is recovered by:
+
+1. Reducing the MPI rank count (less collective overhead).
+2. Spreading per-centre work across more cores when MPI ranks are limited
+   by per-rank memory or by the number of NUMA domains on a node.
+3. The cache-miss savings of §4.7, which are also visible in the pure-MPI
+   path but matter more in the OMP path because the threadprivate
+   reduction adds memory pressure.
+
+Earlier OMP experiments at this granularity (the deprecated
+`nnp-openmp-implementation`, layered on `nnp-verlet-cells`) were a net loss
+for small systems — the j-loop body was too short to amortise the
+synchronisation overhead.  The native-spline-omp branch retests that
+hypothesis with a more expensive per-iteration body (basis-form spline
+evaluation) and the cache-miss fixes; whether the threading wins is exactly
+what the size-scaling and core-scaling sweeps answer.
 
 ---
 
@@ -550,7 +681,7 @@ scope for this work.
 | `master` | libm | ~30–80 cycles | Direct intrinsic call |
 | `nnp-verlet-cells` | local `nnp_spline_cache_type` Horner form | ~5 MULs + 4 ADDs | Module-local; doesn't extend the public framework |
 | `nnp-native-spline` | `splines_methods.F` Hermite basis form | ~22 MULs + 12 ADDs | Public, available to any CP2K caller; partly compensated by §3.3–3.5 hoisting |
-| `nnp-openmp-implementation` | local `nnp_spline_cache_type` Horner form | ~5 MULs + 4 ADDs | Same as verlet-cells base |
+| `nnp-native-spline-omp` | `splines_methods.F` Hermite basis form | ~22 MULs + 12 ADDs | Same as `nnp-native-spline` (OMP layered on top — keeps spline strategy fixed across the MPI/OMP comparison) |
 
 ### Threading
 
@@ -559,31 +690,34 @@ scope for this work.
 | `master` | Single-threaded; MPI atom decomposition | None within a call |
 | `nnp-verlet-cells` | Single-threaded; MPI atom decomposition | None within a call |
 | `nnp-native-spline` | Single-threaded; MPI atom decomposition | None within a call |
-| `nnp-openmp-implementation` | OMP DO over the j-loop, per s-iteration | `!$OMP DO`, `!$OMP CRITICAL`, `!$OMP BARRIER` |
+| `nnp-native-spline-omp` | OMP DO over j-loop per s-iteration in `nnp_calc_acsf`; OMP DO COLLAPSE(2) over (idx, j) in `nnp_scale_acsf` | `!$OMP DO`, `!$OMP SINGLE`, `!$OMP CRITICAL`, `!$OMP BARRIER`, `!$OMP ATOMIC UPDATE` |
 
 ### Key files touched
 
-| File | master | verlet-cells | native-spline | openmp |
+| File | master | verlet-cells | native-spline | native-spline-omp |
 |---|---:|---:|---:|---:|
-| `nnp_acsf.F` | 1 414 | 2 193 | 2 279 | 2 310 |
+| `nnp_acsf.F` | 1 414 | 2 193 | 2 279 | **2 491** |
 | `nnp_force.F` | 674 | 710 | 710 | 710 |
-| `nnp_environment_types.F` | 592 | 618 | 618 | 618 |
-| `nnp_environment.F` | 798 | 800 | 800 | 800 |
-| `splines_methods.F` | 244 | 244 | **313** | 244 |
+| `nnp_environment_types.F` | 592 | 618 | 618 | **635** |
+| `nnp_environment.F` | 798 | 800 | 800 | **832** |
+| `splines_methods.F` | 244 | 244 | **313** | 313 |
 
-The only branch that touches `splines_methods.F` is `nnp-native-spline`, and
-that change is purely additive (two new public functions; nothing rewritten).
+`nnp-native-spline-omp` inherits the `splines_methods.F` extension from
+`nnp-native-spline` (additive — two new public functions).  The bumps to
+`nnp_environment_types.F` and `nnp_environment.F` are the new
+`scale_factor` / `inv_sigma_factor` per-element fields and the once-at-init
+fill in `nnp_init_model` (§4.7).
 
 ### Optimisation matrix
 
-| Optimisation | master | verlet-cells | native-spline | openmp |
+| Optimisation | master | verlet-cells | native-spline | native-spline-omp |
 |---|:-:|:-:|:-:|:-:|
 | Cell-list / Verlet cache | — | ✓ | ✓ | ✓ |
 | Persistent neighbour buffer | — | ✓ | ✓ | ✓ |
 | Module SAVE scratch + `POINTER, CONTIGUOUS` aliases | — | ✓ | ✓ | ✓ THREADPRIVATE |
 | `kk` index correction (hetero-angular) | — | ✓ | ✓ | ✓ |
-| Hermite spline for EXP/COS/TANH | — | ✓ Horner | ✓ basis | ✓ Horner |
-| Native CP2K splines (`splines_methods.F`) | — | — | ✓ | — |
+| Hermite spline for EXP/COS/TANH | — | ✓ Horner | ✓ basis | ✓ basis |
+| Native CP2K splines (`splines_methods.F`) | — | — | ✓ | ✓ |
 | Division → reciprocal-multiply | — | ✓ | ✓ | ✓ |
 | Precomputed `cutoff_sq` / `inv_cut` / `pi_over_cut` | — | ✓ | ✓ | ✓ |
 | `zeta_int` / `zeta_is_int` precompute | — | ✓ | ✓ | ✓ |
@@ -591,12 +725,19 @@ that change is purely additive (two new public functions; nothing rewritten).
 | MPI allgather → analytical `istart` | — | ✓ | ✓ | ✓ |
 | O(n_active) force-accumulation loop | — | ✓ | ✓ | ✓ |
 | Selective zeroing of `dsymdxyz` | — | ✓ | ✓ | ✓ |
-| Hoist `f_c(r1)` / `f_c(r2)` from k-loop | — | partial | ✓ | partial |
-| Hoist `dr1dx` / `dr2dx` from k-loop | — | — | ✓ | — |
-| Skip SQRT via `cutoff_sq` in angular | — | — | ✓ | — |
-| `ASSOCIATE` aliases for hot fields | — | — | ✓ | — |
-| Local `cut_type` instead of `nnp%cut_type` | — | — | ✓ | — |
-| OpenMP threading of the j-loop | — | — | — | ✓ |
+| Hoist `f_c(r1)` / `f_c(r2)` from k-loop | — | partial | ✓ | ✓ |
+| Hoist `dr1dx` / `dr2dx` from k-loop | — | — | ✓ | ✓ |
+| Skip SQRT via `cutoff_sq` in angular | — | — | ✓ | ✓ |
+| `ASSOCIATE` aliases for hot fields | — | — | ✓ | ✓ |
+| Local `cut_type` instead of `nnp%cut_type` | — | — | ✓ | ✓ |
+| OpenMP threading in `nnp_calc_acsf` (4 hot loops) | — | — | — | ✓ |
+| `!$OMP SINGLE` realloc + `!$OMP DO` fc/dr precompute | — | — | — | ✓ |
+| COLLAPSE(2) on mixed-element angular j-k loop | — | — | — | ✓ |
+| `SCHEDULE(dynamic, chunk)` tuning on angular | — | — | — | ✓ |
+| OpenMP threading in `nnp_scale_acsf` (COLLAPSE(2)) | — | — | — | ✓ |
+| Pre-computed `scale_factor` / `inv_sigma_factor` | — | — | — | ✓ |
+| Sorted `active_atoms` (in-place heap sort) | — | — | — | ✓ |
+| `has_stress` / `stress_p` hoist (skip `PRESENT` checks in hot loop) | — | — | — | ✓ |
 
 ---
 
@@ -609,12 +750,9 @@ under:
 /local/data/public/crm98/cp2k-benchmarks/results/
   ├── cp2k_master/NNP/...
   ├── cp2k_feature_verlet_cells/NNP/...
-  └── cp2k_feature_native_spline/NNP/...
+  ├── cp2k_feature_native_spline/NNP/...
+  └── cp2k_feature_native_spline_omp/NNP/...
 ```
-
-(The OpenMP branch's results land under `cp2k_feature_verlet_cells` if
-benchmarked there, or have their own subtree if a separate OMP harness run
-is performed.)
 
 When comparing:
 
@@ -625,9 +763,15 @@ When comparing:
   additional inner-loop micro-optimisations on this branch.  Expected:
   comparable to verlet-cells, sometimes slightly slower due to basis-form
   evaluator.
-- **`verlet-cells` vs `openmp-implementation`** measures whether OMP at the
-  j-loop level helps once you've already paid the synchronisation cost.
-  Expected: slower than pure MPI for typical system sizes.
+- **`native-spline` vs `native-spline-omp`** is the pure-MPI vs hybrid-MPI+OMP
+  comparison with spline strategy held fixed.  The measured difference is the
+  net of OMP synchronisation overhead (sections 4.2–4.6) against threaded
+  speedup of the j-loops in `nnp_calc_acsf` and the `(idx, j)` loops in
+  `nnp_scale_acsf`, plus the cache-miss savings from §4.7 (which appear in
+  the OMP path more strongly because the threadprivate reduction pattern
+  raises memory pressure on the shared arrays).  At small per-rank atom
+  counts the synchronisation overhead is expected to dominate; the question
+  is at what system / rank ratio hybrid wins.
 
 Treating each branch as a separable benchmark makes it possible to point at
 which optimisation strategy is responsible for which performance change,

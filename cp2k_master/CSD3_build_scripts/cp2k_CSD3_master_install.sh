@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-source /home/raid/crm98/cp2k-benchmarks/scripts/CSD3_benchmark_scripts/cp2k_CSD3_env.sh
+source /home/crm98/cp2k-benchmarks/scripts/CSD3_benchmark_scripts/cp2k_CSD3_env.sh
 
 cd ~/cp2k_master/tools/toolchain
 
@@ -21,6 +21,8 @@ cd ~/cp2k_master/tools/toolchain
 cd ~/cp2k_master
 rm -rf build
 
+source ~/cp2k_master/tools/toolchain/install/setup
+
 cmake -S . -B build \
     -DCP2K_USE_EVERYTHING=ON \
     -DCP2K_USE_DLAF=OFF \
@@ -39,9 +41,9 @@ cmake -S . -B build \
     -DCMAKE_CXX_LINK_EXECUTABLE="mpiifort <FLAGS> <CMAKE_CXX_LINK_FLAGS> <LINK_FLAGS> <OBJECTS> -o <TARGET> <LINK_LIBRARIES> -nofor-main -cxxlib -L${GCC11_LIB} -lstdc++" \
     -DCMAKE_INSTALL_PREFIX=/home/crm98/cp2k_optimized/install \
     -DCP2K_DATA_DIR=/home/crm98/cp2k_optimized/data \
-    -DCMAKE_C_FLAGS="-O2 -march=icelake-server -qopenmp" \
-    -DCMAKE_CXX_FLAGS="-O2 -march=icelake-server -qopenmp" \
-    -DCMAKE_Fortran_FLAGS="-O2 -march=icelake-server -qopenmp -funroll-loops -ftree-vectorize"
+    -DCMAKE_C_FLAGS="-O2 -qopenmp" \
+    -DCMAKE_CXX_FLAGS="-O2 -qopenmp" \
+    -DCMAKE_Fortran_FLAGS="-O2 -qopenmp -funroll-loops -ftree-vectorize"
 
 cmake --build build -j 16
 cmake --install build

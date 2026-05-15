@@ -1,0 +1,927 @@
+<!DOCTYPE html>
+<html translate="no" lang="en-US"><head><title>OV - cp2k-optimized-native-spline-omp-NNP-H2O64 - Application</title>
+<meta charset="utf-8" />
+<meta name="google" content="notranslate" />
+<link rel="stylesheet" type="text/css" media="screen" href="css/ui.jqgrid.css" />
+<link rel="stylesheet" type="text/css" href="css/themes/redmond_custom/jquery-ui.css" />
+<link rel="stylesheet" type="text/css" href="css/themes/redmond_custom/jquery.jqplot.min.css" />
+<link rel="stylesheet" type="text/css" href="css/MAQAO_theme.css" />
+<link rel="stylesheet" type="text/css" href="css/maqao_modal.css" />
+<link rel="stylesheet" type="text/css" href="css/global.css" />
+<link rel="stylesheet" type="text/css" href="css/maqao_menu.css" />
+<script src="js/jquery-1.9.0.min.js" ></script>
+<script src="js/jquery-ui-1.10.3.custom.min.js" ></script>
+<script src="js/grid.locale-en.js" ></script>
+<script src="js/jquery.jqGrid.min.js" ></script>
+<script src="js/d3.min.js" ></script>
+<script class="include" src="js/jquery.jqplot.min.js"></script>
+<script class="include" src="js/jqplot.pieRenderer.min.js"></script>
+<script class="include" src="js/jqplot.barRenderer.min.js"></script>
+<script class="include" src="js/jqplot.categoryAxisRenderer.min.js"></script>
+<script class="include" src="js/jqplot.pointLabels.min.js"></script>
+<script class="include" src="js/jqplot.cursor.min.js"></script>
+<script class="include" src="js/jqplot.canvasTextRenderer.min.js"></script>
+<script class="include" src="js/jqplot.canvasAxisTickRenderer.min.js"></script>
+<script class="include" src="js/jqplot.canvasAxisLabelRenderer.min.js"></script>
+<script class="include" src="js/jqplot.enhancedLegendRenderer.min.js"></script>
+<script class="include" src="js/jqplot.highlighter.min.js"></script>
+<script class="include" src="js/jqplot.logAxisRenderer.min.js"></script>
+<script class="include" src="js/maqao_menu.js"></script>
+<script>
+$( function() {
+  $( document ).tooltip({
+    content: function() {
+      if (this.classList.contains ("tooltip-maqao")
+      ||  this.classList.contains ("tooltip-maqao-button")) {
+        return tooltips_texts[$(this).attr('tooltip_id')];
+      }
+    },
+    position: {
+      my: "center bottom-20",
+        at: "center top",
+        using: function( position, feedback ) {
+          $( this ).css( position );
+          $( "<div>" )
+            .addClass( "arrow-tt" )
+            .addClass( feedback.vertical )
+            .addClass( feedback.horizontal )
+            .appendTo( this );
+        }
+      }
+  });
+} );
+
+// Code from https://www.htmlgoodies.com/beyond/javascript/article.php/3724571/Using-Multiple-JavaScript-Onload-Functions.htm
+function addLoadEvent(func) {
+  var oldonload = window.onload;
+  if (typeof window.onload != 'function') {
+    window.onload = func;
+  } else {
+    window.onload = function() {
+      if (oldonload) {
+        oldonload();
+      }
+      func();
+    }
+  }
+}
+function loadCSS(filename){ 
+  var file = document.createElement("link");
+  file.setAttribute("rel", "stylesheet");
+  file.setAttribute("type", "text/css");
+  file.setAttribute("href", filename);
+  document.head.appendChild(file);
+}
+addLoadEvent(function(){
+  var theme = localStorage.getItem("__MAQAO_OV_theme__");
+  if (theme) {
+    loadCSS("css/"+theme+".css");
+  }
+  else {
+    localStorage.setItem("__MAQAO_OV_theme__", "MAQAO_theme");
+    loadCSS("css/MAQAO_theme.css");
+  }
+});
+</script>
+</head><body>
+<div id="page_title"><img alt="MAQAO" id="maqao_logo" src="images/MAQAO_small_logo.png"/><ul id="maqao_menu"><li ><a  href="index.html">Global</a><ul><li ><a  href="config.html">Configurations</a></li><li ><a  href="env.html">Environment Variables</a></li><li ><a  href="outputs.html">Outputs</a></li><li ><a  href="log.html">Logs</a></li><li ><a  href="tools_status.html">Tools Status</a></li></ul></li><li ><a  href="summary.html">Summary</a></li><li ><a class="_current_page _first_menu_level" href="application.html">Application</a></li><li ><a  href="fcts_and_loops.html">Functions</a></li><li ><a  href="loops_index.html">Loops</a></li><li ><a  href="topology.html">Topology</a><ul><li ><a  href="lstopo.html">lstopo</a></li><li ><a  href="lstopo_PU.html">lstopo_PU</a></li><li ><a  href="lstopo_threads.html">lstopo_threads</a></li></ul></li></ul>
+<span><img alt="options" id="menu_options_icon" src="images/gear_20.png" onclick="__open_options ()"/></span>
+</div>
+<script>
+function __change_theme () {
+  var new_theme = document.getElementById("select_theme").value;
+  localStorage.setItem("__MAQAO_OV_theme__", new_theme);
+    loadCSS("css/"+new_theme+".css");
+}
+function __open_options () {
+  var elem = document.getElementById ("options_configuration");
+  if (elem.dataset.open == "false") {
+    elem.dataset.open = "true";
+    elem.style.display = "block";
+  }
+  else {
+    elem.dataset.open = "false";
+    elem.style.display = "none";
+  }
+}
+</script>
+<div id="anchor_file_start"></div>
+<div id="maqao_content">
+<div>
+  <div id="spacer_page_title" ></div>
+  <div id="options_configuration" data-open="false" style="display:none;">
+    <h3 id="options_configuration_header">Report Configuration</h3>
+    <span style="margin-left:10px;"><label for="select_theme">Theme: </label>    <select name="theme" id="select_theme" onchange="__change_theme ()">  <option value="MAQAO_theme">MAQAO_theme</option>  <option value="darkgrey">darkgrey</option>  <option value="cyan">cyan</option></select></span>    <span style="margin-left:10px;"><label for="select_chart_theme">Chart Theme: </label>    <select name="theme" id="select_chart_theme" onchange="__change_chart_theme ()">  <option value="Default_Chart_Theme">Default_Chart_Theme</option>  <option value="grey">grey</option></select></span></div>
+</div>
+<script>
+  let theme = localStorage.getItem("__MAQAO_OV_theme__");
+  if (theme) {
+    document.getElementById("select_theme").value = theme;
+  }
+  theme = localStorage.getItem("__MAQAO_OV_chart_theme__");
+  if (theme) {
+    document.getElementById("select_chart_theme").value = theme;
+  }
+document.getElementById("spacer_page_title").style.height = (document.getElementById("page_title").clientHeight + 25)+"px";
+var obj = document.getElementById("page_title");
+if (obj) {
+  var elems = document.getElementsByClassName ("_first_menu_level")
+  if (obj.clientHeight < 90) {
+    for (var i = 0; i < elems.length; i++) {
+      elems.item(i).style.borderBottomLeftRadius = "";
+      elems.item(i).style.borderBottomRightRadius = "";
+    }
+  }
+  else {
+    for (var i = 0; i < elems.length; i++) {
+      elems.item(i).style.borderBottomLeftRadius = "10px";
+      elems.item(i).style.borderBottomRightRadius = "10px";
+    }
+  }
+}
+</script>
+<div id="main_div" style="width: 100%; display: table;" class="main_section_div">
+<div style="display: table-row">
+<div id="selector_table" class="_fixed_box" style="width:30%;display: table-cell;overflow-y: auto;"><table style="width: 100%;">
+<tr><td id="select_det_app_cat" onclick="__load_det_app_cat(this);" class="td_app_selector">Detailed Application Categorization<span class="tooltip-maqao-button help-maqao" title="" tooltip_id="0" style="background-color:var(--fixed_box_header_background);"></span></td></tr>
+<tr><td id="select_fct_tps" onclick="__load_fct_tps(this);" class="td_app_selector">Detailed Function Times<span class="tooltip-maqao-button help-maqao" title="" tooltip_id="1" style="background-color:var(--fixed_box_header_background);"></span></td></tr>
+<tr><td id="select_fct_prof" onclick="__load_fct_prof(this);" class="td_app_selector">Function Based Profile<span class="tooltip-maqao-button help-maqao" title="" tooltip_id="2" style="background-color:var(--fixed_box_header_background);"></span></td></tr>
+<tr><td id="select_libraries" onclick="__load_libraries(this);" class="td_app_selector">Libraries<span class="tooltip-maqao-button help-maqao" title="" tooltip_id="3" style="background-color:var(--fixed_box_header_background);"></span></td></tr>
+</table></div>
+<div id="selected_table" class="_fixed_box" style="width:70%;display: table-cell;overflow-y: auto;">
+<div id="panel_det_app_cat" class="td_app_selected">
+<h3 class="selected_panel_h3">Detailed Application Categorization</h3>
+      <div id="chart_cat_3756" style="height:400px; margin: 0 auto; overflow-x:auto; overflow-y:hidden;"></div>
+      <script class="code" >
+      </script><div id="det_cat_table"><div class="_div_table" ><div style="overflow:auto;">
+<table id="_tree_table_510" class="_tree_table"><tr><th class="_freezed_row  _left "><span></span>ID</th><th class="_freezed_row "><span></span>Time(s)</th><th class="_freezed_row "><span></span>Binary(%)</th><th class="_freezed_row "><span></span>MPI(%)</th><th class="_freezed_row "><span></span>OMP(%)</th><th class="_freezed_row "><span></span>TBB(%)</th><th class="_freezed_row "><span></span>Math(%)</th><th class="_freezed_row "><span></span>System(%)</th><th class="_freezed_row "><span></span>Pthread(%)</th><th class="_freezed_row "><span></span>IO(%)</th><th class="_freezed_row "><span></span>String(%)</th><th class="_freezed_row "><span></span>Memory(%)</th><th class="_freezed_row "><span></span>Others(%)</th></tr>
+<tr class=" _outer_row"  id="_tr_510_1" ><td id="_tr_510_1-1"  data-_i="1" data-_j="1"  class=" _left" ><span onclick="_click_tree(this)" style="margin-right:5px;margin-left:0px;cursor:pointer;" >&#x25BC;</span>run_0<span onclick="_click_expand(this)" class="span_expand">&#8211;</span></td><td id="_tr_510_1-2"  data-_i="1" data-_j="2"  class=" _centered" >42.66</td><td id="_tr_510_1-3"  data-_i="1" data-_j="3"  class=" _centered" >37.16</td><td id="_tr_510_1-4"  data-_i="1" data-_j="4"  class=" _centered" >27.50</td><td id="_tr_510_1-5"  data-_i="1" data-_j="5"  class=" _centered" >29.55</td><td id="_tr_510_1-6"  data-_i="1" data-_j="6"  class=" _centered" >0.00</td><td id="_tr_510_1-7"  data-_i="1" data-_j="7"  class=" _centered" >4.41</td><td id="_tr_510_1-8"  data-_i="1" data-_j="8"  class=" _centered" >0.10</td><td id="_tr_510_1-9"  data-_i="1" data-_j="9"  class=" _centered" >0.03</td><td id="_tr_510_1-10"  data-_i="1" data-_j="10"  class=" _centered" >0.01</td><td id="_tr_510_1-11"  data-_i="1" data-_j="11"  class=" _centered" >0.04</td><td id="_tr_510_1-12"  data-_i="1" data-_j="12"  class=" _centered" >0.41</td><td id="_tr_510_1-13"  data-_i="1" data-_j="13"  class=" _centered" >0.79</td></tr>
+<tr class="_tr_510_1"  id="_tr_510_1_1" ><td id="_tr_510_1_1-1"  data-_i="2" data-_j="1"  class=" _left" ><span onclick="_click_tree(this)" style="margin-right:5px;margin-left:15px;cursor:pointer;" >&#x25BC;</span>Node cpu-q-154<span onclick="_click_expand(this)" class="span_expand">&#8211;</span></td><td id="_tr_510_1_1-2"  data-_i="2" data-_j="2"  class=" _centered" >42.66</td><td id="_tr_510_1_1-3"  data-_i="2" data-_j="3"  class=" _centered" >37.16</td><td id="_tr_510_1_1-4"  data-_i="2" data-_j="4"  class=" _centered" >27.50</td><td id="_tr_510_1_1-5"  data-_i="2" data-_j="5"  class=" _centered" >29.55</td><td id="_tr_510_1_1-6"  data-_i="2" data-_j="6"  class=" _centered" >0.00</td><td id="_tr_510_1_1-7"  data-_i="2" data-_j="7"  class=" _centered" >4.41</td><td id="_tr_510_1_1-8"  data-_i="2" data-_j="8"  class=" _centered" >0.10</td><td id="_tr_510_1_1-9"  data-_i="2" data-_j="9"  class=" _centered" >0.03</td><td id="_tr_510_1_1-10"  data-_i="2" data-_j="10"  class=" _centered" >0.01</td><td id="_tr_510_1_1-11"  data-_i="2" data-_j="11"  class=" _centered" >0.04</td><td id="_tr_510_1_1-12"  data-_i="2" data-_j="12"  class=" _centered" >0.41</td><td id="_tr_510_1_1-13"  data-_i="2" data-_j="13"  class=" _centered" >0.79</td></tr>
+<tr class="_tr_510_1_1"  id="_tr_510_1_1_1" ><td id="_tr_510_1_1_1-1"  data-_i="3" data-_j="1"  class=" _left" ><span onclick="_click_tree(this)" style="margin-right:5px;margin-left:30px;cursor:pointer;" >&#x25BC;</span>Process 1519089<span onclick="_click_expand(this)" class="span_expand">&#8211;</span></td><td id="_tr_510_1_1_1-2"  data-_i="3" data-_j="2"  class=" _centered" >40.42</td><td id="_tr_510_1_1_1-3"  data-_i="3" data-_j="3"  class=" _centered" >37.28</td><td id="_tr_510_1_1_1-4"  data-_i="3" data-_j="4"  class=" _centered" >24.11</td><td id="_tr_510_1_1_1-5"  data-_i="3" data-_j="5"  class=" _centered" >28.70</td><td id="_tr_510_1_1_1-6"  data-_i="3" data-_j="6"  class=" _centered" >0.00</td><td id="_tr_510_1_1_1-7"  data-_i="3" data-_j="7"  class=" _centered" >4.22</td><td id="_tr_510_1_1_1-8"  data-_i="3" data-_j="8"  class=" _centered" >0.31</td><td id="_tr_510_1_1_1-9"  data-_i="3" data-_j="9"  class=" _centered" >0.12</td><td id="_tr_510_1_1_1-10"  data-_i="3" data-_j="10"  class=" _centered" >0.01</td><td id="_tr_510_1_1_1-11"  data-_i="3" data-_j="11"  class=" _centered" >0.16</td><td id="_tr_510_1_1_1-12"  data-_i="3" data-_j="12"  class=" _centered" >1.16</td><td id="_tr_510_1_1_1-13"  data-_i="3" data-_j="13"  class=" _centered" >3.93</td></tr>
+<tr class="_tr_510_1_1_1"  id="_tr_510_1_1_1_1"  ondblclick="_action_406(this,4,-1, 'topo/run_0_cpu-q-154_1519089_1519089.html');"  style="cursor:pointer;"><td id="_tr_510_1_1_1_1-1"  data-_i="4" data-_j="1"  class=" _left" ><span style="margin-right:10px;margin-left:48px;" >&#x25CB;</span>Thread 1519089</td><td id="_tr_510_1_1_1_1-2"  data-_i="4" data-_j="2"  class=" _centered" >40.42</td><td id="_tr_510_1_1_1_1-3"  data-_i="4" data-_j="3"  class=" _centered" >37.28</td><td id="_tr_510_1_1_1_1-4"  data-_i="4" data-_j="4"  class=" _centered" >24.11</td><td id="_tr_510_1_1_1_1-5"  data-_i="4" data-_j="5"  class=" _centered" >28.70</td><td id="_tr_510_1_1_1_1-6"  data-_i="4" data-_j="6"  class=" _centered" >0.00</td><td id="_tr_510_1_1_1_1-7"  data-_i="4" data-_j="7"  class=" _centered" >4.22</td><td id="_tr_510_1_1_1_1-8"  data-_i="4" data-_j="8"  class=" _centered" >0.31</td><td id="_tr_510_1_1_1_1-9"  data-_i="4" data-_j="9"  class=" _centered" >0.12</td><td id="_tr_510_1_1_1_1-10"  data-_i="4" data-_j="10"  class=" _centered" >0.01</td><td id="_tr_510_1_1_1_1-11"  data-_i="4" data-_j="11"  class=" _centered" >0.16</td><td id="_tr_510_1_1_1_1-12"  data-_i="4" data-_j="12"  class=" _centered" >1.16</td><td id="_tr_510_1_1_1_1-13"  data-_i="4" data-_j="13"  class=" _centered" >3.93</td></tr>
+<tr class="_tr_510_1_1"  id="_tr_510_1_1_2" ><td id="_tr_510_1_1_2-1"  data-_i="5" data-_j="1"  class=" _left" ><span onclick="_click_tree(this)" style="margin-right:5px;margin-left:30px;cursor:pointer;" >&#x25BC;</span>Process 1519090<span onclick="_click_expand(this)" class="span_expand">&#8211;</span></td><td id="_tr_510_1_1_2-2"  data-_i="5" data-_j="2"  class=" _centered" >42.66</td><td id="_tr_510_1_1_2-3"  data-_i="5" data-_j="3"  class=" _centered" >33.16</td><td id="_tr_510_1_1_2-4"  data-_i="5" data-_j="4"  class=" _centered" >36.10</td><td id="_tr_510_1_1_2-5"  data-_i="5" data-_j="5"  class=" _centered" >26.50</td><td id="_tr_510_1_1_2-6"  data-_i="5" data-_j="6"  class=" _centered" >0.00</td><td id="_tr_510_1_1_2-7"  data-_i="5" data-_j="7"  class=" _centered" >3.49</td><td id="_tr_510_1_1_2-8"  data-_i="5" data-_j="8"  class=" _centered" >0.08</td><td id="_tr_510_1_1_2-9"  data-_i="5" data-_j="9"  class=" _centered" >0.00</td><td id="_tr_510_1_1_2-10"  data-_i="5" data-_j="10"  class=" _centered" >0.01</td><td id="_tr_510_1_1_2-11"  data-_i="5" data-_j="11"  class=" _centered" >0.00</td><td id="_tr_510_1_1_2-12"  data-_i="5" data-_j="12"  class=" _centered" >0.27</td><td id="_tr_510_1_1_2-13"  data-_i="5" data-_j="13"  class=" _centered" >0.39</td></tr>
+<tr class="_tr_510_1_1_2"  id="_tr_510_1_1_2_1"  ondblclick="_action_406(this,6,-1, 'topo/run_0_cpu-q-154_1519092_1519092.html?origin=cpu-q-154_1519090_1519090');"  style="cursor:pointer;"><td id="_tr_510_1_1_2_1-1"  data-_i="6" data-_j="1"  class=" _left" ><span style="margin-right:10px;margin-left:48px;" >&#x25CB;</span>Thread 1519090</td><td id="_tr_510_1_1_2_1-2"  data-_i="6" data-_j="2"  class=" _centered" >42.66</td><td id="_tr_510_1_1_2_1-3"  data-_i="6" data-_j="3"  class=" _centered" >33.16</td><td id="_tr_510_1_1_2_1-4"  data-_i="6" data-_j="4"  class=" _centered" >36.10</td><td id="_tr_510_1_1_2_1-5"  data-_i="6" data-_j="5"  class=" _centered" >26.50</td><td id="_tr_510_1_1_2_1-6"  data-_i="6" data-_j="6"  class=" _centered" >0.00</td><td id="_tr_510_1_1_2_1-7"  data-_i="6" data-_j="7"  class=" _centered" >3.49</td><td id="_tr_510_1_1_2_1-8"  data-_i="6" data-_j="8"  class=" _centered" >0.08</td><td id="_tr_510_1_1_2_1-9"  data-_i="6" data-_j="9"  class=" _centered" >0.00</td><td id="_tr_510_1_1_2_1-10"  data-_i="6" data-_j="10"  class=" _centered" >0.01</td><td id="_tr_510_1_1_2_1-11"  data-_i="6" data-_j="11"  class=" _centered" >0.00</td><td id="_tr_510_1_1_2_1-12"  data-_i="6" data-_j="12"  class=" _centered" >0.27</td><td id="_tr_510_1_1_2_1-13"  data-_i="6" data-_j="13"  class=" _centered" >0.39</td></tr>
+<tr class="_tr_510_1_1"  id="_tr_510_1_1_3" ><td id="_tr_510_1_1_3-1"  data-_i="7" data-_j="1"  class=" _left" ><span onclick="_click_tree(this)" style="margin-right:5px;margin-left:30px;cursor:pointer;" >&#x25BC;</span>Process 1519091<span onclick="_click_expand(this)" class="span_expand">&#8211;</span></td><td id="_tr_510_1_1_3-2"  data-_i="7" data-_j="2"  class=" _centered" >42.63</td><td id="_tr_510_1_1_3-3"  data-_i="7" data-_j="3"  class=" _centered" >39.27</td><td id="_tr_510_1_1_3-4"  data-_i="7" data-_j="4"  class=" _centered" >23.01</td><td id="_tr_510_1_1_3-5"  data-_i="7" data-_j="5"  class=" _centered" >31.77</td><td id="_tr_510_1_1_3-6"  data-_i="7" data-_j="6"  class=" _centered" >0.00</td><td id="_tr_510_1_1_3-7"  data-_i="7" data-_j="7"  class=" _centered" >5.24</td><td id="_tr_510_1_1_3-8"  data-_i="7" data-_j="8"  class=" _centered" >0.07</td><td id="_tr_510_1_1_3-9"  data-_i="7" data-_j="9"  class=" _centered" >0.02</td><td id="_tr_510_1_1_3-10"  data-_i="7" data-_j="10"  class=" _centered" >0.00</td><td id="_tr_510_1_1_3-11"  data-_i="7" data-_j="11"  class=" _centered" >0.02</td><td id="_tr_510_1_1_3-12"  data-_i="7" data-_j="12"  class=" _centered" >0.30</td><td id="_tr_510_1_1_3-13"  data-_i="7" data-_j="13"  class=" _centered" >0.28</td></tr>
+<tr class="_tr_510_1_1_3"  id="_tr_510_1_1_3_1"  ondblclick="_action_406(this,8,-1, 'topo/run_0_cpu-q-154_1519089_1519089.html?origin=cpu-q-154_1519091_1519091');"  style="cursor:pointer;"><td id="_tr_510_1_1_3_1-1"  data-_i="8" data-_j="1"  class=" _left" ><span style="margin-right:10px;margin-left:48px;" >&#x25CB;</span>Thread 1519091</td><td id="_tr_510_1_1_3_1-2"  data-_i="8" data-_j="2"  class=" _centered" >42.63</td><td id="_tr_510_1_1_3_1-3"  data-_i="8" data-_j="3"  class=" _centered" >39.27</td><td id="_tr_510_1_1_3_1-4"  data-_i="8" data-_j="4"  class=" _centered" >23.01</td><td id="_tr_510_1_1_3_1-5"  data-_i="8" data-_j="5"  class=" _centered" >31.77</td><td id="_tr_510_1_1_3_1-6"  data-_i="8" data-_j="6"  class=" _centered" >0.00</td><td id="_tr_510_1_1_3_1-7"  data-_i="8" data-_j="7"  class=" _centered" >5.24</td><td id="_tr_510_1_1_3_1-8"  data-_i="8" data-_j="8"  class=" _centered" >0.07</td><td id="_tr_510_1_1_3_1-9"  data-_i="8" data-_j="9"  class=" _centered" >0.02</td><td id="_tr_510_1_1_3_1-10"  data-_i="8" data-_j="10"  class=" _centered" >0.00</td><td id="_tr_510_1_1_3_1-11"  data-_i="8" data-_j="11"  class=" _centered" >0.02</td><td id="_tr_510_1_1_3_1-12"  data-_i="8" data-_j="12"  class=" _centered" >0.30</td><td id="_tr_510_1_1_3_1-13"  data-_i="8" data-_j="13"  class=" _centered" >0.28</td></tr>
+<tr class="_tr_510_1_1"  id="_tr_510_1_1_4" ><td id="_tr_510_1_1_4-1"  data-_i="9" data-_j="1"  class=" _left" ><span onclick="_click_tree(this)" style="margin-right:5px;margin-left:30px;cursor:pointer;" >&#x25BC;</span>Process 1519092<span onclick="_click_expand(this)" class="span_expand">&#8211;</span></td><td id="_tr_510_1_1_4-2"  data-_i="9" data-_j="2"  class=" _centered" >42.64</td><td id="_tr_510_1_1_4-3"  data-_i="9" data-_j="3"  class=" _centered" >33.83</td><td id="_tr_510_1_1_4-4"  data-_i="9" data-_j="4"  class=" _centered" >35.89</td><td id="_tr_510_1_1_4-5"  data-_i="9" data-_j="5"  class=" _centered" >25.96</td><td id="_tr_510_1_1_4-6"  data-_i="9" data-_j="6"  class=" _centered" >0.00</td><td id="_tr_510_1_1_4-7"  data-_i="9" data-_j="7"  class=" _centered" >3.52</td><td id="_tr_510_1_1_4-8"  data-_i="9" data-_j="8"  class=" _centered" >0.08</td><td id="_tr_510_1_1_4-9"  data-_i="9" data-_j="9"  class=" _centered" >0.00</td><td id="_tr_510_1_1_4-10"  data-_i="9" data-_j="10"  class=" _centered" >0.02</td><td id="_tr_510_1_1_4-11"  data-_i="9" data-_j="11"  class=" _centered" >0.04</td><td id="_tr_510_1_1_4-12"  data-_i="9" data-_j="12"  class=" _centered" >0.25</td><td id="_tr_510_1_1_4-13"  data-_i="9" data-_j="13"  class=" _centered" >0.41</td></tr>
+<tr class="_tr_510_1_1_4"  id="_tr_510_1_1_4_1"  ondblclick="_action_406(this,10,-1, 'topo/run_0_cpu-q-154_1519092_1519092.html');"  style="cursor:pointer;"><td id="_tr_510_1_1_4_1-1"  data-_i="10" data-_j="1"  class=" _left" ><span style="margin-right:10px;margin-left:48px;" >&#x25CB;</span>Thread 1519092</td><td id="_tr_510_1_1_4_1-2"  data-_i="10" data-_j="2"  class=" _centered" >42.64</td><td id="_tr_510_1_1_4_1-3"  data-_i="10" data-_j="3"  class=" _centered" >33.83</td><td id="_tr_510_1_1_4_1-4"  data-_i="10" data-_j="4"  class=" _centered" >35.89</td><td id="_tr_510_1_1_4_1-5"  data-_i="10" data-_j="5"  class=" _centered" >25.96</td><td id="_tr_510_1_1_4_1-6"  data-_i="10" data-_j="6"  class=" _centered" >0.00</td><td id="_tr_510_1_1_4_1-7"  data-_i="10" data-_j="7"  class=" _centered" >3.52</td><td id="_tr_510_1_1_4_1-8"  data-_i="10" data-_j="8"  class=" _centered" >0.08</td><td id="_tr_510_1_1_4_1-9"  data-_i="10" data-_j="9"  class=" _centered" >0.00</td><td id="_tr_510_1_1_4_1-10"  data-_i="10" data-_j="10"  class=" _centered" >0.02</td><td id="_tr_510_1_1_4_1-11"  data-_i="10" data-_j="11"  class=" _centered" >0.04</td><td id="_tr_510_1_1_4_1-12"  data-_i="10" data-_j="12"  class=" _centered" >0.25</td><td id="_tr_510_1_1_4_1-13"  data-_i="10" data-_j="13"  class=" _centered" >0.41</td></tr>
+<tr class="_tr_510_1_1"  id="_tr_510_1_1_5" ><td id="_tr_510_1_1_5-1"  data-_i="11" data-_j="1"  class=" _left" ><span onclick="_click_tree(this)" style="margin-right:5px;margin-left:30px;cursor:pointer;" >&#x25BC;</span>Process 1519093<span onclick="_click_expand(this)" class="span_expand">&#8211;</span></td><td id="_tr_510_1_1_5-2"  data-_i="11" data-_j="2"  class=" _centered" >42.60</td><td id="_tr_510_1_1_5-3"  data-_i="11" data-_j="3"  class=" _centered" >43.38</td><td id="_tr_510_1_1_5-4"  data-_i="11" data-_j="4"  class=" _centered" >15.29</td><td id="_tr_510_1_1_5-5"  data-_i="11" data-_j="5"  class=" _centered" >34.94</td><td id="_tr_510_1_1_5-6"  data-_i="11" data-_j="6"  class=" _centered" >0.00</td><td id="_tr_510_1_1_5-7"  data-_i="11" data-_j="7"  class=" _centered" >5.62</td><td id="_tr_510_1_1_5-8"  data-_i="11" data-_j="8"  class=" _centered" >0.06</td><td id="_tr_510_1_1_5-9"  data-_i="11" data-_j="9"  class=" _centered" >0.01</td><td id="_tr_510_1_1_5-10"  data-_i="11" data-_j="10"  class=" _centered" >0.01</td><td id="_tr_510_1_1_5-11"  data-_i="11" data-_j="11"  class=" _centered" >0.02</td><td id="_tr_510_1_1_5-12"  data-_i="11" data-_j="12"  class=" _centered" >0.31</td><td id="_tr_510_1_1_5-13"  data-_i="11" data-_j="13"  class=" _centered" >0.36</td></tr>
+<tr class="_tr_510_1_1_5"  id="_tr_510_1_1_5_1"  ondblclick="_action_406(this,12,-1, 'topo/run_0_cpu-q-154_1519096_1519096.html?origin=cpu-q-154_1519093_1519093');"  style="cursor:pointer;"><td id="_tr_510_1_1_5_1-1"  data-_i="12" data-_j="1"  class=" _left" ><span style="margin-right:10px;margin-left:48px;" >&#x25CB;</span>Thread 1519093</td><td id="_tr_510_1_1_5_1-2"  data-_i="12" data-_j="2"  class=" _centered" >42.60</td><td id="_tr_510_1_1_5_1-3"  data-_i="12" data-_j="3"  class=" _centered" >43.38</td><td id="_tr_510_1_1_5_1-4"  data-_i="12" data-_j="4"  class=" _centered" >15.29</td><td id="_tr_510_1_1_5_1-5"  data-_i="12" data-_j="5"  class=" _centered" >34.94</td><td id="_tr_510_1_1_5_1-6"  data-_i="12" data-_j="6"  class=" _centered" >0.00</td><td id="_tr_510_1_1_5_1-7"  data-_i="12" data-_j="7"  class=" _centered" >5.62</td><td id="_tr_510_1_1_5_1-8"  data-_i="12" data-_j="8"  class=" _centered" >0.06</td><td id="_tr_510_1_1_5_1-9"  data-_i="12" data-_j="9"  class=" _centered" >0.01</td><td id="_tr_510_1_1_5_1-10"  data-_i="12" data-_j="10"  class=" _centered" >0.01</td><td id="_tr_510_1_1_5_1-11"  data-_i="12" data-_j="11"  class=" _centered" >0.02</td><td id="_tr_510_1_1_5_1-12"  data-_i="12" data-_j="12"  class=" _centered" >0.31</td><td id="_tr_510_1_1_5_1-13"  data-_i="12" data-_j="13"  class=" _centered" >0.36</td></tr>
+<tr class="_tr_510_1_1"  id="_tr_510_1_1_6" ><td id="_tr_510_1_1_6-1"  data-_i="13" data-_j="1"  class=" _left" ><span onclick="_click_tree(this)" style="margin-right:5px;margin-left:30px;cursor:pointer;" >&#x25BC;</span>Process 1519094<span onclick="_click_expand(this)" class="span_expand">&#8211;</span></td><td id="_tr_510_1_1_6-2"  data-_i="13" data-_j="2"  class=" _centered" >42.58</td><td id="_tr_510_1_1_6-3"  data-_i="13" data-_j="3"  class=" _centered" >32.97</td><td id="_tr_510_1_1_6-4"  data-_i="13" data-_j="4"  class=" _centered" >34.91</td><td id="_tr_510_1_1_6-5"  data-_i="13" data-_j="5"  class=" _centered" >27.58</td><td id="_tr_510_1_1_6-6"  data-_i="13" data-_j="6"  class=" _centered" >0.00</td><td id="_tr_510_1_1_6-7"  data-_i="13" data-_j="7"  class=" _centered" >3.66</td><td id="_tr_510_1_1_6-8"  data-_i="13" data-_j="8"  class=" _centered" >0.07</td><td id="_tr_510_1_1_6-9"  data-_i="13" data-_j="9"  class=" _centered" >0.05</td><td id="_tr_510_1_1_6-10"  data-_i="13" data-_j="10"  class=" _centered" >0.01</td><td id="_tr_510_1_1_6-11"  data-_i="13" data-_j="11"  class=" _centered" >0.02</td><td id="_tr_510_1_1_6-12"  data-_i="13" data-_j="12"  class=" _centered" >0.32</td><td id="_tr_510_1_1_6-13"  data-_i="13" data-_j="13"  class=" _centered" >0.40</td></tr>
+<tr class="_tr_510_1_1_6"  id="_tr_510_1_1_6_1"  ondblclick="_action_406(this,14,-1, 'topo/run_0_cpu-q-154_1519092_1519092.html?origin=cpu-q-154_1519094_1519094');"  style="cursor:pointer;"><td id="_tr_510_1_1_6_1-1"  data-_i="14" data-_j="1"  class=" _left" ><span style="margin-right:10px;margin-left:48px;" >&#x25CB;</span>Thread 1519094</td><td id="_tr_510_1_1_6_1-2"  data-_i="14" data-_j="2"  class=" _centered" >42.58</td><td id="_tr_510_1_1_6_1-3"  data-_i="14" data-_j="3"  class=" _centered" >32.97</td><td id="_tr_510_1_1_6_1-4"  data-_i="14" data-_j="4"  class=" _centered" >34.91</td><td id="_tr_510_1_1_6_1-5"  data-_i="14" data-_j="5"  class=" _centered" >27.58</td><td id="_tr_510_1_1_6_1-6"  data-_i="14" data-_j="6"  class=" _centered" >0.00</td><td id="_tr_510_1_1_6_1-7"  data-_i="14" data-_j="7"  class=" _centered" >3.66</td><td id="_tr_510_1_1_6_1-8"  data-_i="14" data-_j="8"  class=" _centered" >0.07</td><td id="_tr_510_1_1_6_1-9"  data-_i="14" data-_j="9"  class=" _centered" >0.05</td><td id="_tr_510_1_1_6_1-10"  data-_i="14" data-_j="10"  class=" _centered" >0.01</td><td id="_tr_510_1_1_6_1-11"  data-_i="14" data-_j="11"  class=" _centered" >0.02</td><td id="_tr_510_1_1_6_1-12"  data-_i="14" data-_j="12"  class=" _centered" >0.32</td><td id="_tr_510_1_1_6_1-13"  data-_i="14" data-_j="13"  class=" _centered" >0.40</td></tr>
+<tr class="_tr_510_1_1"  id="_tr_510_1_1_7" ><td id="_tr_510_1_1_7-1"  data-_i="15" data-_j="1"  class=" _left" ><span onclick="_click_tree(this)" style="margin-right:5px;margin-left:30px;cursor:pointer;" >&#x25BC;</span>Process 1519095<span onclick="_click_expand(this)" class="span_expand">&#8211;</span></td><td id="_tr_510_1_1_7-2"  data-_i="15" data-_j="2"  class=" _centered" >42.62</td><td id="_tr_510_1_1_7-3"  data-_i="15" data-_j="3"  class=" _centered" >32.82</td><td id="_tr_510_1_1_7-4"  data-_i="15" data-_j="4"  class=" _centered" >36.37</td><td id="_tr_510_1_1_7-5"  data-_i="15" data-_j="5"  class=" _centered" >26.36</td><td id="_tr_510_1_1_7-6"  data-_i="15" data-_j="6"  class=" _centered" >0.00</td><td id="_tr_510_1_1_7-7"  data-_i="15" data-_j="7"  class=" _centered" >3.64</td><td id="_tr_510_1_1_7-8"  data-_i="15" data-_j="8"  class=" _centered" >0.06</td><td id="_tr_510_1_1_7-9"  data-_i="15" data-_j="9"  class=" _centered" >0.02</td><td id="_tr_510_1_1_7-10"  data-_i="15" data-_j="10"  class=" _centered" >0.01</td><td id="_tr_510_1_1_7-11"  data-_i="15" data-_j="11"  class=" _centered" >0.01</td><td id="_tr_510_1_1_7-12"  data-_i="15" data-_j="12"  class=" _centered" >0.32</td><td id="_tr_510_1_1_7-13"  data-_i="15" data-_j="13"  class=" _centered" >0.39</td></tr>
+<tr class="_tr_510_1_1_7"  id="_tr_510_1_1_7_1"  ondblclick="_action_406(this,16,-1, 'topo/run_0_cpu-q-154_1519092_1519092.html?origin=cpu-q-154_1519095_1519095');"  style="cursor:pointer;"><td id="_tr_510_1_1_7_1-1"  data-_i="16" data-_j="1"  class=" _left" ><span style="margin-right:10px;margin-left:48px;" >&#x25CB;</span>Thread 1519095</td><td id="_tr_510_1_1_7_1-2"  data-_i="16" data-_j="2"  class=" _centered" >42.62</td><td id="_tr_510_1_1_7_1-3"  data-_i="16" data-_j="3"  class=" _centered" >32.82</td><td id="_tr_510_1_1_7_1-4"  data-_i="16" data-_j="4"  class=" _centered" >36.37</td><td id="_tr_510_1_1_7_1-5"  data-_i="16" data-_j="5"  class=" _centered" >26.36</td><td id="_tr_510_1_1_7_1-6"  data-_i="16" data-_j="6"  class=" _centered" >0.00</td><td id="_tr_510_1_1_7_1-7"  data-_i="16" data-_j="7"  class=" _centered" >3.64</td><td id="_tr_510_1_1_7_1-8"  data-_i="16" data-_j="8"  class=" _centered" >0.06</td><td id="_tr_510_1_1_7_1-9"  data-_i="16" data-_j="9"  class=" _centered" >0.02</td><td id="_tr_510_1_1_7_1-10"  data-_i="16" data-_j="10"  class=" _centered" >0.01</td><td id="_tr_510_1_1_7_1-11"  data-_i="16" data-_j="11"  class=" _centered" >0.01</td><td id="_tr_510_1_1_7_1-12"  data-_i="16" data-_j="12"  class=" _centered" >0.32</td><td id="_tr_510_1_1_7_1-13"  data-_i="16" data-_j="13"  class=" _centered" >0.39</td></tr>
+<tr class="_tr_510_1_1"  id="_tr_510_1_1_8" ><td id="_tr_510_1_1_8-1"  data-_i="17" data-_j="1"  class=" _left" ><span onclick="_click_tree(this)" style="margin-right:5px;margin-left:30px;cursor:pointer;" >&#x25BC;</span>Process 1519096<span onclick="_click_expand(this)" class="span_expand">&#8211;</span></td><td id="_tr_510_1_1_8-2"  data-_i="17" data-_j="2"  class=" _centered" >42.61</td><td id="_tr_510_1_1_8-3"  data-_i="17" data-_j="3"  class=" _centered" >44.58</td><td id="_tr_510_1_1_8-4"  data-_i="17" data-_j="4"  class=" _centered" >14.13</td><td id="_tr_510_1_1_8-5"  data-_i="17" data-_j="5"  class=" _centered" >34.57</td><td id="_tr_510_1_1_8-6"  data-_i="17" data-_j="6"  class=" _centered" >0.00</td><td id="_tr_510_1_1_8-7"  data-_i="17" data-_j="7"  class=" _centered" >5.91</td><td id="_tr_510_1_1_8-8"  data-_i="17" data-_j="8"  class=" _centered" >0.07</td><td id="_tr_510_1_1_8-9"  data-_i="17" data-_j="9"  class=" _centered" >0.02</td><td id="_tr_510_1_1_8-10"  data-_i="17" data-_j="10"  class=" _centered" >0.00</td><td id="_tr_510_1_1_8-11"  data-_i="17" data-_j="11"  class=" _centered" >0.04</td><td id="_tr_510_1_1_8-12"  data-_i="17" data-_j="12"  class=" _centered" >0.36</td><td id="_tr_510_1_1_8-13"  data-_i="17" data-_j="13"  class=" _centered" >0.32</td></tr>
+<tr class="_tr_510_1_1_8"  id="_tr_510_1_1_8_1"  ondblclick="_action_406(this,18,-1, 'topo/run_0_cpu-q-154_1519096_1519096.html');"  style="cursor:pointer;"><td id="_tr_510_1_1_8_1-1"  data-_i="18" data-_j="1"  class=" _left" ><span style="margin-right:10px;margin-left:48px;" >&#x25CB;</span>Thread 1519096</td><td id="_tr_510_1_1_8_1-2"  data-_i="18" data-_j="2"  class=" _centered" >42.61</td><td id="_tr_510_1_1_8_1-3"  data-_i="18" data-_j="3"  class=" _centered" >44.58</td><td id="_tr_510_1_1_8_1-4"  data-_i="18" data-_j="4"  class=" _centered" >14.13</td><td id="_tr_510_1_1_8_1-5"  data-_i="18" data-_j="5"  class=" _centered" >34.57</td><td id="_tr_510_1_1_8_1-6"  data-_i="18" data-_j="6"  class=" _centered" >0.00</td><td id="_tr_510_1_1_8_1-7"  data-_i="18" data-_j="7"  class=" _centered" >5.91</td><td id="_tr_510_1_1_8_1-8"  data-_i="18" data-_j="8"  class=" _centered" >0.07</td><td id="_tr_510_1_1_8_1-9"  data-_i="18" data-_j="9"  class=" _centered" >0.02</td><td id="_tr_510_1_1_8_1-10"  data-_i="18" data-_j="10"  class=" _centered" >0.00</td><td id="_tr_510_1_1_8_1-11"  data-_i="18" data-_j="11"  class=" _centered" >0.04</td><td id="_tr_510_1_1_8_1-12"  data-_i="18" data-_j="12"  class=" _centered" >0.36</td><td id="_tr_510_1_1_8_1-13"  data-_i="18" data-_j="13"  class=" _centered" >0.32</td></tr>
+</table></div>
+</div>
+<script>
+function _action_406 (obj, i, j, p){open(""+p+"");}
+</script>
+</div></div>
+<div id="panel_fct_tps" class="td_app_selected">
+<div><h3 class="selected_panel_h3">Detailed Function Times</h3>
+<span style="text-align:center; width:100%; display:inline-block;"><select id="select_fct_tps_run" style="cursor:pointer;" size="1" onchange="__load_fct_tps (select_fct_tps);" autocomplete="off">
+<option value="1">run_0</option>
+</select></span>
+<div id="__div_chart_1" style="display: none;">
+<div style="margin: 10px; overflow-x:auto; overflow-y:hidden;"><div id="chart_cat_3757" style="height:500px" ></div><div style="text-align:center;"><span class="zoom_legend_block tooltip-maqao" title="" tooltip_id="4"><div class="zoom_legend_color" style="background:#333399;"></div>MPIDI_Bcast_intra_co...</span>
+<span class="zoom_legend_block tooltip-maqao" title="" tooltip_id="5"><div class="zoom_legend_color" style="background:#cc00cc;"></div>__kmpc_atomic_float8...</span>
+<span class="zoom_legend_block"><div class="zoom_legend_color" style="background:#ffcc00;"></div>nnp_calc_ang</span>
+<span class="zoom_legend_block"><div class="zoom_legend_color" style="background:#339966;"></div>nnp_calc_acsf</span>
+<span class="zoom_legend_block"><div class="zoom_legend_color" style="background:#80ccff;"></div>hermite_spline_value</span>
+<span class="zoom_legend_block"><div class="zoom_legend_color" style="background:#80ffcc;"></div>__powr8i4</span>
+<span class="zoom_legend_block tooltip-maqao" title="" tooltip_id="6"><div class="zoom_legend_color" style="background:#7979d2;"></div>nnp_compute_neighbor...</span>
+<span class="zoom_legend_block"><div class="zoom_legend_color" style="background:#ff4dff;"></div>nnp_scale_acsf</span>
+<span class="zoom_legend_block tooltip-maqao" title="" tooltip_id="7"><div class="zoom_legend_color" style="background:#ffe066;"></div>__kmpc_atomic_float8...</span>
+<span class="zoom_legend_block tooltip-maqao" title="" tooltip_id="8"><div class="zoom_legend_color" style="background:#66cc99;"></div>_INTERNAL92a63c0c::_...</span>
+<span class="zoom_legend_block"><div class="zoom_legend_color" style="background:#ccebff;"></div>Other Functions</span>
+</div></div>
+<script class="code">
+</script>
+</div>
+</div>
+</div>
+<div id="panel_fct_prof" class="td_app_selected">
+<div><h3 class="selected_panel_h3">Function Based Profile</h3>
+<div style="margin-top: 10px; margin-bottom: 10px; background-color: var(--chart_background); overflow-x:auto; overflow-y:hidden; "><div id="chart_cat_3758" style="height:500px;margin-top:20px;" ></div>
+</div>
+<script class="code" >
+  function __generate_chart_3758(){
+    document.getElementById('chart_cat_3758').innerHTML = '';
+  var plot3758_data = [[4,1,1,6,0,2,8,359,],[76.28,5.98,3.92,7.32,0,0.92,1.4,4.18,],[76.28,82.26,86.18,93.5,93.5,94.42,95.82,100,],];
+  var plot3758_ticks = ['> 8%','4% to 8%','2% to 4%','1% to 2%','0.5% to 1%','0.25% to 0.5%','0.125% to 0.25%','< 0.125%',];
+  var plot3758 = jQuery.jqplot ('chart_cat_3758', plot3758_data, {
+    seriesDefaults: {
+      renderer: jQuery.jqplot.BarRenderer,
+      rendererOptions: {},
+      pointLabels: {show: true      },
+    },
+    axes: {
+      xaxis: {
+        renderer: $.jqplot.CategoryAxisRenderer,ticks: plot3758_ticks,label: 'Coverage Range',labelRenderer: $.jqplot.CanvasAxisLabelRenderer,},
+      yaxis: {label: 'Number of Functions',labelRenderer: $.jqplot.CanvasAxisLabelRenderer,autoscale:true,min:0,},
+      y2axis: {label: 'Coverage (%)',labelRenderer: $.jqplot.CanvasAxisLabelRenderer,autoscale:true,min:0,}
+    },
+    highlighter: {tooltipContentEditor: function (str, seriesIndex, pointIndex) {return plot3758_ticks[pointIndex]+' - '+plot3758_data[seriesIndex][pointIndex];},show: true,showTooltip: true,sizeAdjust: 10,formatString: '%s',tooltipLocation: 'n',useAxesFormatters: false,},
+    legend: {renderer: $.jqplot.EnhancedLegendRenderer, show: true,location: 's',placement: 'outsideGrid',rendererOptions: {numberRows: '1',},},
+    series: [{label:'Number of Functions', yaxis:'yaxis', },{label:'Coverage over Range (%)', yaxis:'y2axis', },{label:'Cumulated Coverage (%)', renderer: $.jqplot.LineRenderer, yaxis:'y2axis', },],
+  });
+  }
+</script></div>
+</div>
+<div id="panel_libraries" class="td_app_selected">
+<div><h3 class="selected_panel_h3">Libraries</h3>
+<div><ul><li><span class="_green_cell">green cell</span>: the library has been found during the run profiling</li>
+<li><span class="_red_cell">red cell</span>: the library does not appear in the run profiling</li></ul></div>
+<table><tr><th>Library</th><th>run_0</th></tr><tr><td>/home/crm98/cp2k_master/tools/toolchain/install/gmp-6.3.0/lib/libgmp.so.10.5.0</td><td class="_green_cell"></td></tr><tr><td>/home/crm98/cp2k_master/tools/toolchain/install/gmp-6.3.0/lib/libgmpxx.so.4.7.0</td><td class="_green_cell"></td></tr><tr><td>/home/crm98/cp2k_master/tools/toolchain/install/greenX-2.2/lib/libGXCommon.so.0.0.1</td><td class="_green_cell"></td></tr><tr><td>/home/crm98/cp2k_master/tools/toolchain/install/greenX-2.2/lib/libgx_ac.so.0.0.1</td><td class="_green_cell"></td></tr><tr><td>/home/crm98/cp2k_master/tools/toolchain/install/greenX-2.2/lib/libgx_minimax.so.0.0.1</td><td class="_green_cell"></td></tr><tr><td>/home/crm98/cp2k_master/tools/toolchain/install/hdf5-1.14.6/lib/libhdf5.so.310.5.1</td><td class="_green_cell"></td></tr><tr><td>/home/crm98/cp2k_master/tools/toolchain/install/hdf5-1.14.6/lib/libhdf5_f90cstub.so.310.3.2</td><td class="_green_cell"></td></tr><tr><td>/home/crm98/cp2k_master/tools/toolchain/install/hdf5-1.14.6/lib/libhdf5_fortran.so.310.3.2</td><td class="_green_cell"></td></tr><tr><td>/home/crm98/cp2k_master/tools/toolchain/install/hdf5-1.14.6/lib/libifcoremt.so.5</td><td class="_green_cell"></td></tr><tr><td>/home/crm98/cp2k_master/tools/toolchain/install/hdf5-1.14.6/lib/libifport.so.5</td><td class="_green_cell"></td></tr><tr><td>/home/crm98/cp2k_master/tools/toolchain/install/hdf5-1.14.6/lib/libimf.so</td><td class="_green_cell"></td></tr><tr><td>/home/crm98/cp2k_master/tools/toolchain/install/hdf5-1.14.6/lib/libintlc.so.5</td><td class="_green_cell"></td></tr><tr><td>/home/crm98/cp2k_master/tools/toolchain/install/hdf5-1.14.6/lib/libirng.so</td><td class="_green_cell"></td></tr><tr><td>/home/crm98/cp2k_master/tools/toolchain/install/hdf5-1.14.6/lib/libsvml.so</td><td class="_green_cell"></td></tr><tr><td>/home/crm98/cp2k_master/tools/toolchain/install/plumed-2.9.3/lib/libplumed.so</td><td class="_green_cell"></td></tr><tr><td>/home/crm98/cp2k_master/tools/toolchain/install/plumed-2.9.3/lib/libplumedKernel.so</td><td class="_green_cell"></td></tr><tr><td>/home/crm98/cp2k_master/tools/toolchain/install/trexio-2.6.0/lib/libtrexio.so.0.0.0</td><td class="_green_cell"></td></tr><tr><td>/usr/lib64/ld-2.28.so</td><td class="_green_cell"></td></tr><tr><td>/usr/lib64/libaec.so.0.0.8</td><td class="_green_cell"></td></tr><tr><td>/usr/lib64/libc-2.28.so</td><td class="_green_cell"></td></tr><tr><td>/usr/lib64/libdl-2.28.so</td><td class="_green_cell"></td></tr><tr><td>/usr/lib64/libefa.so.1.3.58.0</td><td class="_green_cell"></td></tr><tr><td>/usr/lib64/libhdf5.so.103.1.0</td><td class="_green_cell"></td></tr><tr><td>/usr/lib64/libibverbs.so.1.14.58.0</td><td class="_green_cell"></td></tr><tr><td>/usr/lib64/libm-2.28.so</td><td class="_green_cell"></td></tr><tr><td>/usr/lib64/libmlx5.so.1.25.58.0</td><td class="_green_cell"></td></tr><tr><td>/usr/lib64/libnl-3.so.200.26.0</td><td class="_green_cell"></td></tr><tr><td>/usr/lib64/libnl-route-3.so.200.26.0</td><td class="_green_cell"></td></tr><tr><td>/usr/lib64/libnuma.so.1.0.0</td><td class="_green_cell"></td></tr><tr><td>/usr/lib64/libpsm2.so.2.2</td><td class="_green_cell"></td></tr><tr><td>/usr/lib64/libpthread-2.28.so</td><td class="_green_cell"></td></tr><tr><td>/usr/lib64/librdmacm.so.1.3.58.0</td><td class="_green_cell"></td></tr><tr><td>/usr/lib64/libresolv-2.28.so</td><td class="_green_cell"></td></tr><tr><td>/usr/lib64/librt-2.28.so</td><td class="_green_cell"></td></tr><tr><td>/usr/lib64/libsz.so.2.0.1</td><td class="_green_cell"></td></tr><tr><td>/usr/lib64/libuuid.so.1.3.0</td><td class="_green_cell"></td></tr><tr><td>/usr/lib64/libxpmem.so.0.0.0</td><td class="_green_cell"></td></tr><tr><td>/usr/lib64/libze_loader.so.1.8.1</td><td class="_green_cell"></td></tr><tr><td>/usr/local/software/slurm/slurm-23.11.10-rhel8/lib/libpmi2.so.0.0.0</td><td class="_green_cell"></td></tr><tr><td>/usr/local/software/spack/archive2/linux-scientific7-skylake_avx512/gcc-9.3.0/gcc-11.2.0-do3vmb6iub2hwfop75wwnhbsk3s2ucpi/lib64/libgcc_s.so.1</td><td class="_green_cell"></td></tr><tr><td>/usr/local/software/spack/archive2/linux-scientific7-skylake_avx512/gcc-9.3.0/gcc-11.2.0-do3vmb6iub2hwfop75wwnhbsk3s2ucpi/lib64/libstdc++.so.6.0.29</td><td class="_green_cell"></td></tr><tr><td>/usr/local/software/spack/archive2/linux-scientific7-skylake_avx512/gcc-9.3.0/zlib-1.2.11-kovg27m3uqs5u3ebabbvn5wmhpnxmx2y/lib/libz.so.1.2.11</td><td class="_green_cell"></td></tr><tr><td>/usr/local/software/spack/csd3/opt-2024-06-01/linux-rocky8-x86_64_v4/gcc-8.5.0/ucx-1.15.0-3odtpik4wnhzdj6fgnc5ujwcmmnx4yjl/lib/libucm.so.0.0.0</td><td class="_green_cell"></td></tr><tr><td>/usr/local/software/spack/csd3/opt-2024-06-01/linux-rocky8-x86_64_v4/gcc-8.5.0/ucx-1.15.0-3odtpik4wnhzdj6fgnc5ujwcmmnx4yjl/lib/libucs.so.0.0.0</td><td class="_green_cell"></td></tr><tr><td>/usr/local/software/spack/csd3/opt-2024-06-01/linux-rocky8-x86_64_v4/gcc-8.5.0/ucx-1.15.0-3odtpik4wnhzdj6fgnc5ujwcmmnx4yjl/lib/libuct.so.0.0.0</td><td class="_green_cell"></td></tr><tr><td>/usr/local/software/spack/csd3/opt-2024-06-01/linux-rocky8-x86_64_v4/gcc-8.5.0/ucx-1.15.0-3odtpik4wnhzdj6fgnc5ujwcmmnx4yjl/lib/ucx/libuct_cma.so.0.0.0</td><td class="_green_cell"></td></tr><tr><td>/usr/local/software/spack/csd3/opt-2024-06-01/linux-rocky8-x86_64_v4/gcc-8.5.0/ucx-1.15.0-3odtpik4wnhzdj6fgnc5ujwcmmnx4yjl/lib/ucx/libuct_ib.so.0.0.0</td><td class="_green_cell"></td></tr><tr><td>/usr/local/software/spack/csd3/opt-2024-06-01/linux-rocky8-x86_64_v4/gcc-8.5.0/ucx-1.15.0-3odtpik4wnhzdj6fgnc5ujwcmmnx4yjl/lib/ucx/libuct_knem.so.0.0.0</td><td class="_green_cell"></td></tr><tr><td>/usr/local/software/spack/csd3/opt-2024-06-01/linux-rocky8-x86_64_v4/gcc-8.5.0/ucx-1.15.0-3odtpik4wnhzdj6fgnc5ujwcmmnx4yjl/lib/ucx/libuct_rdmacm.so.0.0.0</td><td class="_green_cell"></td></tr><tr><td>/usr/local/software/spack/csd3/opt-2024-06-01/linux-rocky8-x86_64_v4/gcc-8.5.0/ucx-1.15.0-3odtpik4wnhzdj6fgnc5ujwcmmnx4yjl/lib/ucx/libuct_xpmem.so.0.0.0</td><td class="_green_cell"></td></tr><tr><td>/usr/local/software/spack/csd3/spack-views/._ucx-2024-08-19/dka6rwp4j6wd3vl6oflbjnyj4r6sojmb/ucx-1.15.0/gcc-8.5.0/3odtpik4wnhzdj6fgnc5ujwcmmnx4yjl/lib/libucp.so.0.0.0</td><td class="_green_cell"></td></tr><tr><td>/usr/local/software/spack/spack-views/._rocky8-icelake-20220710/vdcqmdfi2lxsqy6qm3npptgktlrkt37k/intel-oneapi-compilers-2022.1.0/gcc-11.3.0/b6zld2mz7cid27yloxznoidymd7vywwz/compiler/2022.1.0/linux/compiler/lib/intel64_lin/libiomp5.so</td><td class="_green_cell"></td></tr><tr><td>/usr/local/software/spack/spack-views/._rocky8-icelake-20220710/vdcqmdfi2lxsqy6qm3npptgktlrkt37k/intel-oneapi-mkl-2022.1.0/intel-2021.6.0/intel-oneapi-mpi-2021.6.0/qqwrrcxwfr2kgjjjwkayuaxo7n5r2nbe/mkl/2022.1.0/lib/intel64/libmkl_avx512.so.2</td><td class="_green_cell"></td></tr><tr><td>/usr/local/software/spack/spack-views/._rocky8-icelake-20220710/vdcqmdfi2lxsqy6qm3npptgktlrkt37k/intel-oneapi-mkl-2022.1.0/intel-2021.6.0/intel-oneapi-mpi-2021.6.0/qqwrrcxwfr2kgjjjwkayuaxo7n5r2nbe/mkl/2022.1.0/lib/intel64/libmkl_blacs_intelmpi_lp64.so.2</td><td class="_green_cell"></td></tr><tr><td>/usr/local/software/spack/spack-views/._rocky8-icelake-20220710/vdcqmdfi2lxsqy6qm3npptgktlrkt37k/intel-oneapi-mkl-2022.1.0/intel-2021.6.0/intel-oneapi-mpi-2021.6.0/qqwrrcxwfr2kgjjjwkayuaxo7n5r2nbe/mkl/2022.1.0/lib/intel64/libmkl_core.so.2</td><td class="_green_cell"></td></tr><tr><td>/usr/local/software/spack/spack-views/._rocky8-icelake-20220710/vdcqmdfi2lxsqy6qm3npptgktlrkt37k/intel-oneapi-mkl-2022.1.0/intel-2021.6.0/intel-oneapi-mpi-2021.6.0/qqwrrcxwfr2kgjjjwkayuaxo7n5r2nbe/mkl/2022.1.0/lib/intel64/libmkl_gf_lp64.so.2</td><td class="_green_cell"></td></tr><tr><td>/usr/local/software/spack/spack-views/._rocky8-icelake-20220710/vdcqmdfi2lxsqy6qm3npptgktlrkt37k/intel-oneapi-mkl-2022.1.0/intel-2021.6.0/intel-oneapi-mpi-2021.6.0/qqwrrcxwfr2kgjjjwkayuaxo7n5r2nbe/mkl/2022.1.0/lib/intel64/libmkl_intel_lp64.so.2</td><td class="_green_cell"></td></tr><tr><td>/usr/local/software/spack/spack-views/._rocky8-icelake-20220710/vdcqmdfi2lxsqy6qm3npptgktlrkt37k/intel-oneapi-mkl-2022.1.0/intel-2021.6.0/intel-oneapi-mpi-2021.6.0/qqwrrcxwfr2kgjjjwkayuaxo7n5r2nbe/mkl/2022.1.0/lib/intel64/libmkl_intel_thread.so.2</td><td class="_green_cell"></td></tr><tr><td>/usr/local/software/spack/spack-views/._rocky8-icelake-20220710/vdcqmdfi2lxsqy6qm3npptgktlrkt37k/intel-oneapi-mkl-2022.1.0/intel-2021.6.0/intel-oneapi-mpi-2021.6.0/qqwrrcxwfr2kgjjjwkayuaxo7n5r2nbe/mkl/2022.1.0/lib/intel64/libmkl_scalapack_lp64.so.2</td><td class="_green_cell"></td></tr><tr><td>/usr/local/software/spack/spack-views/._rocky8-icelake-20220710/vdcqmdfi2lxsqy6qm3npptgktlrkt37k/intel-oneapi-mkl-2022.1.0/intel-2021.6.0/intel-oneapi-mpi-2021.6.0/qqwrrcxwfr2kgjjjwkayuaxo7n5r2nbe/mkl/2022.1.0/lib/intel64/libmkl_sequential.so.2</td><td class="_green_cell"></td></tr><tr><td>/usr/local/software/spack/spack-views/._rocky8-icelake-20220710/vdcqmdfi2lxsqy6qm3npptgktlrkt37k/intel-oneapi-mkl-2022.1.0/intel-2021.6.0/intel-oneapi-mpi-2021.6.0/qqwrrcxwfr2kgjjjwkayuaxo7n5r2nbe/mkl/2022.1.0/lib/intel64/libmkl_vml_avx512.so.2</td><td class="_green_cell"></td></tr><tr><td>/usr/local/software/spack/spack-views/._rocky8-icelake-20220710/vdcqmdfi2lxsqy6qm3npptgktlrkt37k/intel-oneapi-mpi-2021.6.0/intel-2021.6.0/guxuvcpmykplbrr2e3af2yd7njqhau5e/mpi/2021.6.0/lib/libmpicxx.so.12.0.0</td><td class="_green_cell"></td></tr><tr><td>/usr/local/software/spack/spack-views/._rocky8-icelake-20220710/vdcqmdfi2lxsqy6qm3npptgktlrkt37k/intel-oneapi-mpi-2021.6.0/intel-2021.6.0/guxuvcpmykplbrr2e3af2yd7njqhau5e/mpi/2021.6.0/lib/libmpifort.so.12.0.0</td><td class="_green_cell"></td></tr><tr><td>/usr/local/software/spack/spack-views/._rocky8-icelake-20220710/vdcqmdfi2lxsqy6qm3npptgktlrkt37k/intel-oneapi-mpi-2021.6.0/intel-2021.6.0/guxuvcpmykplbrr2e3af2yd7njqhau5e/mpi/2021.6.0/lib/release/libmpi.so.12.0.0</td><td class="_green_cell"></td></tr><tr><td>/usr/local/software/spack/spack-views/._rocky8-icelake-20220710/vdcqmdfi2lxsqy6qm3npptgktlrkt37k/intel-oneapi-mpi-2021.6.0/intel-2021.6.0/guxuvcpmykplbrr2e3af2yd7njqhau5e/mpi/2021.6.0/libfabric/lib/libfabric.so.1</td><td class="_green_cell"></td></tr><tr><td>/usr/local/software/spack/spack-views/._rocky8-icelake-20220710/vdcqmdfi2lxsqy6qm3npptgktlrkt37k/intel-oneapi-mpi-2021.6.0/intel-2021.6.0/guxuvcpmykplbrr2e3af2yd7njqhau5e/mpi/2021.6.0/libfabric/lib/prov/libefa-fi.so</td><td class="_green_cell"></td></tr><tr><td>/usr/local/software/spack/spack-views/._rocky8-icelake-20220710/vdcqmdfi2lxsqy6qm3npptgktlrkt37k/intel-oneapi-mpi-2021.6.0/intel-2021.6.0/guxuvcpmykplbrr2e3af2yd7njqhau5e/mpi/2021.6.0/libfabric/lib/prov/libmlx-fi.so</td><td class="_green_cell"></td></tr><tr><td>/usr/local/software/spack/spack-views/._rocky8-icelake-20220710/vdcqmdfi2lxsqy6qm3npptgktlrkt37k/intel-oneapi-mpi-2021.6.0/intel-2021.6.0/guxuvcpmykplbrr2e3af2yd7njqhau5e/mpi/2021.6.0/libfabric/lib/prov/libpsm3-fi.so</td><td class="_green_cell"></td></tr><tr><td>/usr/local/software/spack/spack-views/._rocky8-icelake-20220710/vdcqmdfi2lxsqy6qm3npptgktlrkt37k/intel-oneapi-mpi-2021.6.0/intel-2021.6.0/guxuvcpmykplbrr2e3af2yd7njqhau5e/mpi/2021.6.0/libfabric/lib/prov/libpsmx2-fi.so</td><td class="_green_cell"></td></tr><tr><td>/usr/local/software/spack/spack-views/._rocky8-icelake-20220710/vdcqmdfi2lxsqy6qm3npptgktlrkt37k/intel-oneapi-mpi-2021.6.0/intel-2021.6.0/guxuvcpmykplbrr2e3af2yd7njqhau5e/mpi/2021.6.0/libfabric/lib/prov/librxm-fi.so</td><td class="_green_cell"></td></tr><tr><td>/usr/local/software/spack/spack-views/._rocky8-icelake-20220710/vdcqmdfi2lxsqy6qm3npptgktlrkt37k/intel-oneapi-mpi-2021.6.0/intel-2021.6.0/guxuvcpmykplbrr2e3af2yd7njqhau5e/mpi/2021.6.0/libfabric/lib/prov/libshm-fi.so</td><td class="_green_cell"></td></tr><tr><td>/usr/local/software/spack/spack-views/._rocky8-icelake-20220710/vdcqmdfi2lxsqy6qm3npptgktlrkt37k/intel-oneapi-mpi-2021.6.0/intel-2021.6.0/guxuvcpmykplbrr2e3af2yd7njqhau5e/mpi/2021.6.0/libfabric/lib/prov/libsockets-fi.so</td><td class="_green_cell"></td></tr><tr><td>/usr/local/software/spack/spack-views/._rocky8-icelake-20220710/vdcqmdfi2lxsqy6qm3npptgktlrkt37k/intel-oneapi-mpi-2021.6.0/intel-2021.6.0/guxuvcpmykplbrr2e3af2yd7njqhau5e/mpi/2021.6.0/libfabric/lib/prov/libtcp-fi.so</td><td class="_green_cell"></td></tr><tr><td>/usr/local/software/spack/spack-views/._rocky8-icelake-20220710/vdcqmdfi2lxsqy6qm3npptgktlrkt37k/intel-oneapi-mpi-2021.6.0/intel-2021.6.0/guxuvcpmykplbrr2e3af2yd7njqhau5e/mpi/2021.6.0/libfabric/lib/prov/libverbs-1.1-fi.so</td><td class="_green_cell"></td></tr><tr><td>/usr/local/software/spack/spack-views/._rocky8-icelake-20220710/vdcqmdfi2lxsqy6qm3npptgktlrkt37k/intel-oneapi-mpi-2021.6.0/intel-2021.6.0/guxuvcpmykplbrr2e3af2yd7njqhau5e/mpi/2021.6.0/libfabric/lib/prov/libverbs-1.12-fi.so</td><td class="_green_cell"></td></tr></table></div>
+</div>
+</div>
+</div>
+</div>
+<script>
+function __reset_current_selector (sel) {
+  var objs = document.getElementsByClassName("td_app_selector");
+  for (var i = 0; i < objs.length; ++i) {
+    objs[i].classList.remove ("current");
+  }
+  sel.classList.add ("current");
+}
+function __reset_current_selected () {
+  var objs = document.getElementsByClassName("td_app_selected");
+  for (var i = 0; i < objs.length; ++i) {
+    objs[i].style.display = "none";
+  }
+}
+function __load_det_app_cat (sel) {
+  __reset_current_selector (sel);
+  __reset_current_selected ();
+  panel_det_app_cat.style.display = "";
+  var winwidth = window.outerWidth;
+  var rpos = getPos (document.getElementById ("selected_table")).x;
+  var _width = winwidth - rpos - 20;
+  document.getElementById ("det_cat_table").style.width = (winwidth - rpos - 19)+"px";
+  document.getElementById('chart_cat_3756').innerHTML = '';
+        $(document).ready(function(){
+          var data = [
+            ['Binary',37.16],['MPI',27.5],['OMP',29.55],['Math',4.41],['System',0.1],['Pthread',0.03],['IO',0.01],['String',0.04],['Memory',0.41],['Others',0.79],
+          ];
+          var __background_color = getComputedStyle(document.body).getPropertyValue('--background');
+          var plot3756 = jQuery.jqplot ('chart_cat_3756', [data],
+                      {
+                        grid: {
+                          drawBorder: false,
+                          drawGridlines: false,
+                          background: __background_color,
+                          shadow:false
+                        },
+                        seriesColors:['#4bb2c5','#EAA228','#c5b47f','#579575','#839557','#958c12','#953579','#4b5de4','#d8b83f','#ff5800',],
+                        seriesDefaults: {
+                          renderer: jQuery.jqplot.PieRenderer,
+                          rendererOptions: {
+                            showDataLabels: true
+                          }
+                        },
+                        legend: { show:true, location: 'e' }
+                      }
+          );
+          $("#chart_cat_3756").bind('jqplotDataHighlight', function(ev, seriesIndex, pointIndex, data) {
+            var $this = $(this);
+            $this.attr('title', data[0] + ": " + data[1]);
+          });
+          $("#chart_cat_3756").bind('jqplotDataUnhighlight', function(ev, seriesIndex, pointIndex, data) {
+            var $this = $(this);
+            $this.attr('title',"");
+          });
+        });
+}
+function __load_fct_tps (sel) {
+  __reset_current_selector (sel);
+  __reset_current_selected ();
+  panel_fct_tps.style.display = "";
+  var selected_value = document.getElementById("select_fct_tps_run").value;
+  var winwidth = window.outerWidth;
+  var rpos = getPos (document.getElementById ("selected_table")).x;
+  var _width = winwidth - rpos - 20;
+  document.getElementById('__div_chart_1').style.display = 'none';
+  document.getElementById('chart_cat_3757').innerHTML = '';
+  if (selected_value == 1) {
+  document.getElementById('__div_chart_1').style.display = '';
+$(document).ready(function(){
+  var ordinals = ['1','2','3','4','5','6','7','8'];
+  var data = [{value:9.64,offset:0, i:0,color:"#333399"},{value:15.25,offset:0, i:1,color:"#333399"},{value:9.7,offset:0, i:2,color:"#333399"},{value:15.19,offset:0, i:3,color:"#333399"},{value:6.41,offset:0, i:4,color:"#333399"},{value:14.73,offset:0, i:5,color:"#333399"},{value:15.33,offset:0, i:6,color:"#333399"},{value:5.95,offset:0, i:7,color:"#333399"},{value:0,offset:9.64, i:0,color:"#cc00cc"},{value:9.83,offset:15.25, i:1,color:"#cc00cc"},{value:11.97,offset:9.7, i:2,color:"#cc00cc"},{value:9.56,offset:15.19, i:3,color:"#cc00cc"},{value:12.86,offset:6.41, i:4,color:"#cc00cc"},{value:10.36,offset:14.73, i:5,color:"#cc00cc"},{value:9.8,offset:15.33, i:6,color:"#cc00cc"},{value:12.92,offset:5.95, i:7,color:"#cc00cc"},{value:5.43,offset:9.64, i:0,color:"#ffcc00"},{value:5.39,offset:25.08, i:1,color:"#ffcc00"},{value:6.6,offset:21.67, i:2,color:"#ffcc00"},{value:5.7,offset:24.75, i:3,color:"#ffcc00"},{value:7.62,offset:19.27, i:4,color:"#ffcc00"},{value:5.47,offset:25.09, i:5,color:"#ffcc00"},{value:5.69,offset:25.13, i:6,color:"#ffcc00"},{value:7.91,offset:18.87, i:7,color:"#ffcc00"},{value:3.42,offset:15.07, i:0,color:"#339966"},{value:3.52,offset:30.47, i:1,color:"#339966"},{value:4.09,offset:28.27, i:2,color:"#339966"},{value:3.37,offset:30.45, i:3,color:"#339966"},{value:4.37,offset:26.89, i:4,color:"#339966"},{value:3.38,offset:30.56, i:5,color:"#339966"},{value:3.05,offset:30.82, i:6,color:"#339966"},{value:4.22,offset:26.78, i:7,color:"#339966"},{value:2.17,offset:18.49, i:0,color:"#80ccff"},{value:2.12,offset:33.99, i:1,color:"#80ccff"},{value:2.85,offset:32.36, i:2,color:"#80ccff"},{value:2.09,offset:33.82, i:3,color:"#80ccff"},{value:3.09,offset:31.26, i:4,color:"#80ccff"},{value:2.26,offset:33.94, i:5,color:"#80ccff"},{value:2.13,offset:33.87, i:6,color:"#80ccff"},{value:3.55,offset:31, i:7,color:"#80ccff"},{value:1.47,offset:20.66, i:0,color:"#80ffcc"},{value:1.36,offset:36.11, i:1,color:"#80ffcc"},{value:1.97,offset:35.21, i:2,color:"#80ffcc"},{value:1.28,offset:35.91, i:3,color:"#80ffcc"},{value:2.19,offset:34.35, i:4,color:"#80ffcc"},{value:1.4,offset:36.2, i:5,color:"#80ffcc"},{value:1.39,offset:36, i:6,color:"#80ffcc"},{value:2.23,offset:34.55, i:7,color:"#80ffcc"},{value:0.64,offset:22.13, i:0,color:"#7979d2"},{value:0.71,offset:37.47, i:1,color:"#7979d2"},{value:0.73,offset:37.18, i:2,color:"#7979d2"},{value:0.6,offset:37.19, i:3,color:"#7979d2"},{value:0.53,offset:36.54, i:4,color:"#7979d2"},{value:0.58,offset:37.6, i:5,color:"#7979d2"},{value:0.68,offset:37.39, i:6,color:"#7979d2"},{value:0.61,offset:36.78, i:7,color:"#7979d2"},{value:0.54,offset:22.77, i:0,color:"#ff4dff"},{value:0.61,offset:38.18, i:1,color:"#ff4dff"},{value:0.5,offset:37.91, i:2,color:"#ff4dff"},{value:0.64,offset:37.79, i:3,color:"#ff4dff"},{value:0.61,offset:37.07, i:4,color:"#ff4dff"},{value:0.6,offset:38.18, i:5,color:"#ff4dff"},{value:0.55,offset:38.07, i:6,color:"#ff4dff"},{value:0.58,offset:37.39, i:7,color:"#ff4dff"},{value:0.58,offset:23.31, i:0,color:"#ffe066"},{value:0.58,offset:38.79, i:1,color:"#ffe066"},{value:0.44,offset:38.41, i:2,color:"#ffe066"},{value:0.54,offset:38.43, i:3,color:"#ffe066"},{value:0.51,offset:37.68, i:4,color:"#ffe066"},{value:0.57,offset:38.78, i:5,color:"#ffe066"},{value:0.57,offset:38.62, i:6,color:"#ffe066"},{value:0.45,offset:37.97, i:7,color:"#ffe066"},{value:0.22,offset:23.89, i:0,color:"#66cc99"},{value:0.37,offset:39.37, i:1,color:"#66cc99"},{value:0.59,offset:38.85, i:2,color:"#66cc99"},{value:0.39,offset:38.97, i:3,color:"#66cc99"},{value:0.8,offset:38.19, i:4,color:"#66cc99"},{value:0.34,offset:39.35, i:5,color:"#66cc99"},{value:0.29,offset:39.19, i:6,color:"#66cc99"},{value:0.71,offset:38.42, i:7,color:"#66cc99"},{value:6.64,offset:24.11, i:0,color:"#ccebff"},{value:2.49,offset:39.74, i:1,color:"#ccebff"},{value:2.67,offset:39.44, i:2,color:"#ccebff"},{value:2.87,offset:39.36, i:3,color:"#ccebff"},{value:3.1,offset:38.99, i:4,color:"#ccebff"},{value:2.88,offset:39.69, i:5,color:"#ccebff"},{value:3.12,offset:39.48, i:6,color:"#ccebff"},{value:3.01,offset:39.13, i:7,color:"#ccebff"}];
+  var widthgl  = _width;
+  var widthin  = _width;
+  var heightgl = 480;
+  var heightin = 495;
+  let margin = {top:10,right:30,bottom:30,left:50},
+  width = widthgl - margin.left - margin.right,
+  height = heightgl - margin.top - margin.bottom,
+  radius = (Math.min(width, height) / 2) - 10,
+  node;
+  const svg = d3.select('#chart_cat_3757')
+      .append('svg')
+      .attr('width', widthin)
+      .attr('height', heightin)
+      .append('g')
+      .attr('transform', `translate(${margin.left}, ${margin.top})`)
+      .call(
+        d3.zoom()
+          .translateExtent([[0,0], [width, height] ])
+          .extent([[0, 0], [width, height] ])
+        .on('zoom', zoom)
+      ).on("dblclick.zoom", null);
+  let x = d3.scaleLinear().range([0, width])
+  let y = d3.scaleLinear().range([height, 0])
+  let color = d3.scaleOrdinal(d3.schemeCategory10)
+  let xScale = x.domain([-1, ordinals.length])
+  let yScale = y.domain([0, d3.max(data, function(d){return d.value + d.offset})])
+  let xBand = d3.scaleBand().domain(d3.range(-1, ordinals.length)).range([0, width])
+  svg.append('rect')
+    .attr('class', 'zoom-panel')
+    .attr('width', width)
+    .attr('height', height)
+    .style('fill', 'var(--background)')
+  let xAxis = svg.append('g')
+    .attr('class', 'xAxis')
+    .attr('transform', `translate(0, ${height})`)
+    .call(
+      d3.axisBottom(xScale).tickFormat((d, e) => {
+        return ordinals[d]
+      })
+    );
+  svg.append("text")
+    .attr("transform",
+          "translate(" + (width/2) + " ," + (height + margin.top + 30) + ")")
+    .style("text-anchor", "middle")
+    .style("fill", "var(--font)")
+    .text("MAQAO thread rank");
+  let yAxis = svg.append('g')
+    .attr('class', 'yAxis')
+    .call(d3.axisLeft(yScale));
+  yAxis.selectAll(".tick text").attr("fill","var(--font)");
+  yAxis.selectAll(".tick line").attr("stroke","var(--font)");
+  yAxis.selectAll(".domain").attr("stroke","var(--font)");
+  xAxis.selectAll(".tick text").attr("fill","var(--font)");
+  xAxis.selectAll(".tick line").attr("stroke","var(--font)");
+  xAxis.selectAll(".domain").attr("stroke","var(--font)");
+  svg.append("text")
+    .attr("transform", "rotate(-90)")
+    .attr("y", 0 - margin.left)
+    .attr("x",0 - (height / 2))
+    .attr("dy", "1em")
+    .style("text-anchor", "middle")
+    .style("fill", "var(--font)")
+    .text("Time (s)");
+  let tooltip = d3.select("body").append("div").attr("class", "D3tooltip");
+  let bars = svg.append('g')
+    .attr('clip-path','url(#my-clip-path)')
+    .attr('id', 'zoom_chart_3757')
+    .selectAll('.bar')
+    .data(data)
+    .enter()
+    .append('rect')
+    .attr('class', 'bar')
+    .attr('id', function (d, i) {return 'zoom_chart_3757_'+i;})
+    .attr('x',  function (d, i) {return xScale(d.i) - xBand.bandwidth()*0.9/2})
+    .attr('y',  function (d, i) {return yScale (d.value + d.offset)})
+    .attr('width', xBand.bandwidth()*0.9)
+    .attr('height',  function(d) {return height - yScale(d.value)})
+    .style("fill", function(d) {return d.color})
+    .on("mousemove", function(d){
+      tooltip
+        .style("left", d3.event.pageX - 50 + "px")
+        .style("top", d3.event.pageY - 50 + "px")
+        .style("display", "inline-block")
+        .html(Number.parseFloat(d.value).toFixed (2));
+    })
+    .on("mouseout", function(d) {tooltip.style("display", "none");});
+  let defs = svg.append('defs')
+    defs.append('clipPath')
+      .attr('id', 'my-clip-path')
+      .append('rect')
+      .attr('width', width)
+      .attr('height', height)
+    let hideTicksWithoutLabel = function() {
+      d3.selectAll('.xAxis .tick text').each(function(d){
+        if(this.innerHTML === '') {
+          this.parentNode.style.display = 'none';
+        }
+      })
+    }
+    function zoom() {
+      if (d3.event.transform.k < 0.9) {
+        d3.event.transform.k = 1;
+        return;
+      }
+      if (d3.event.transform.k < 1) {
+        d3.event.transform.k = 1;
+      }
+    xAxis.call(
+      d3.axisBottom(d3.event.transform.rescaleX(xScale)).tickFormat((d, e, target) => {
+        if (Math.floor(d) === d3.format(".1f")(d)) return ordinals[Math.floor(d)]
+          return ordinals[d];
+      })
+    )
+    hideTicksWithoutLabel()
+      bars.attr("transform", "translate(" + d3.event.transform.x+",0)scale(" + d3.event.transform.k + ",1)")
+  }
+});
+  }
+}
+function __load_flops (sel) {
+  __reset_current_selector (sel);
+  __reset_current_selected ();
+  panel_flops.style.display = "";
+  var winwidth = window.outerWidth;
+  var rpos = getPos (document.getElementById ("selected_table")).x;
+  var _width = winwidth - rpos - 20;
+  document.getElementById ("flops_table").style.width = (winwidth - rpos - 19)+"px";
+}
+function __load_scala_cov_cat (sel) {
+  __reset_current_selector (sel);
+  __reset_current_selected ();
+  panel_scala_cov_cat.style.display = "";
+  var winwidth = window.outerWidth;
+  var rpos = getPos (document.getElementById ("selected_table")).x;
+  var _width = winwidth - rpos - 20;
+  document.getElementById ("scala_cov_cat_table").style.width = (winwidth - rpos - 19)+"px";
+}
+function __load_scala_tps_cat (sel) {
+  __reset_current_selector (sel);
+  __reset_current_selected ();
+  panel_scala_tps_cat.style.display = "";
+  var winwidth = window.outerWidth;
+  var rpos = getPos (document.getElementById ("selected_table")).x;
+  var _width = winwidth - rpos - 20;
+  document.getElementById ("scala_tps_cat_table").style.width = (winwidth - rpos - 19)+"px";
+}
+function __load_scala_eff (sel) {
+  __reset_current_selector (sel);
+  __reset_current_selected ();
+  panel_scala_eff.style.display = "";
+  var winwidth = window.outerWidth;
+  var rpos = getPos (document.getElementById ("selected_table")).x;
+  var _width = winwidth - rpos - 20;
+  document.getElementById ("scala_eff_table").style.width = (winwidth - rpos - 19)+"px";
+}
+function __load_fct_prof (sel) {
+  __reset_current_selector (sel);
+  __reset_current_selected ();
+  panel_fct_prof.style.display = "";
+  document.getElementById('chart_cat_3758').innerHTML = '';
+  $(document).ready(function(){
+     __generate_chart_3758()
+  });
+}
+function __load_scala_para_eff (sel) {
+  __reset_current_selector (sel);
+  __reset_current_selected ();
+  panel_scala_para_eff.style.display = "";
+  var winwidth = window.outerWidth;
+  var rpos = getPos (document.getElementById ("selected_table")).x;
+  var _width = winwidth - rpos - 20;
+  document.getElementById ("scala_para_eff_table").style.width = (winwidth - rpos - 19)+"px";
+}
+function __load_scala_para_spd (sel) {
+  __reset_current_selector (sel);
+  __reset_current_selected ();
+  panel_scala_para_spd.style.display = "";
+  var winwidth = window.outerWidth;
+  var rpos = getPos (document.getElementById ("selected_table")).x;
+  var _width = winwidth - rpos - 20;
+  document.getElementById ("scala_para_spd_table").style.width = (winwidth - rpos - 19)+"px";
+}
+function __load_prompt_para_eff (sel) {
+  __reset_current_selector (sel);
+  __reset_current_selected ();
+  panel_prompt_para_eff.style.display = "";
+  var winwidth = window.outerWidth;
+  var rpos = getPos (document.getElementById ("selected_table")).x;
+  var _width = winwidth - rpos - 20;
+  document.getElementById ("prompt_para_eff_table").style.width = (winwidth - rpos - 19)+"px";
+}
+function __load_prompt_para_spd (sel) {
+  __reset_current_selector (sel);
+  __reset_current_selected ();
+  panel_prompt_para_spd.style.display = "";
+  var winwidth = window.outerWidth;
+  var rpos = getPos (document.getElementById ("selected_table")).x;
+  var _width = winwidth - rpos - 20;
+  document.getElementById ("prompt_para_spd_table").style.width = (winwidth - rpos - 19)+"px";
+}
+function __load_pop (sel) {
+  __reset_current_selector (sel);
+  __reset_current_selected ();
+  panel_pop.style.display = "";
+}
+function __load_libraries (sel) {
+  __reset_current_selector (sel);
+  __reset_current_selected ();
+  panel_libraries.style.display = "";
+}
+function getPos(el) {
+  for (var lx=0, ly=0;
+      el != null;
+      lx += el.offsetLeft, ly += el.offsetTop, el = el.offsetParent);
+  return {x: lx,y: ly};
+}
+function _onresize () {
+  __maqao_legacy_onresize ();
+  var d = document.getElementById ("main_div");
+  d.style.maxHeight = (window.innerHeight - getPos (d).y - 20)+"px";
+  d.style.height = (window.innerHeight - getPos (d).y - 20)+"px";
+  var objs = document.getElementsByClassName("current");
+  if (objs.length > 0 ) {
+    var sec = objs[0].id.substring (7);
+    eval ("if (typeof __load_"+sec+" === \"function\") {__load_"+sec+" ("+objs[0].id+")}");
+  }
+}
+window.onresize = _onresize;
+addLoadEvent(function(){
+  _onresize ();
+  __reset_current_selector (select_det_app_cat);
+  __load_det_app_cat (select_det_app_cat);
+});
+</script>
+<style>
+.td_app_selector {
+  padding-top: 0px;
+  padding-bottom: 5px;
+  padding-left: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  min-width: 385px;;
+}
+.td_app_selector:hover {
+  border-left: 4px solid var(--fixed_box_borders);
+  padding-left: 4px;
+}
+.td_app_selector.current {
+  background: var(--fixed_box_borders);
+}
+.td_app_selected {
+  overflow-y: auto;
+}
+.selected_panel_h3 {
+  text-align: left;
+  background-color: var(--fixed_box_header_background);
+  color: var(--fixed_box_header_font);
+  margin: 0px;
+  padding: 5px 0px 5px 10px;
+}
+._green_cell {background-color: #8cd98c;}
+._red_cell {background-color: #ff4d4d;}
+</style>
+
+  <div id="MaqaoModal" class="maqao_modal">
+    <div class="maqao_modal-content">
+      <div class="maqao_modal-header">
+        <span class="maqao_close">&times;</span>
+      </div>
+      <div id="maqao_modal-body" class="maqao_modal-body">
+      </div>
+    </div>
+  </div>
+</div><script>
+var tooltips_texts = ['Details how the time<br/>is spent between several categories: <i>System</i> (system calls), <i>Binary</i> (user code),<br/><i>MPI</i> (MPI runtime functions), <i>OMP</i> (OpenMP runtime functions),<i>Math</i><br/>(Math libraries), <i>Pthread</i> (Pthread runtime), <i>I/O</i> (I/O functions), <i>String</i><br/>(string manipulation functions), <i>Memory</i> (Memory management functions), user<br/>categories described in custom_categories table and finally <i>Others</i><br/>(everything not included in previous categories).<br/>Values are at the application level and are not affacted by <i>object_coverage_threshold</i> value.',
+'Details function execution times per thread',
+'Profiling of the application at the function level.',
+'Dynamically loaded shared libraries.',
+'MPIDI_Bcast_intra_composition_epsilon_check',
+'__kmpc_atomic_float8_add',
+'nnp_compute_neighbors',
+'__kmpc_atomic_float8_sub',
+'_INTERNAL92a63c0c::__kmp_hyper_barrier_gather(barrier_type, kmp_info*, int, int, void (*)(void*, void*), void*)'];
+var modal = document.getElementById('MaqaoModal');
+var span = document.getElementsByClassName("maqao_close")[0];
+span.onclick = function() {
+    modal.style.display = "none";
+}
+window.onclick = function(event) {
+    if (event.target == modal) {
+        modal.style.display = "none";
+    }
+}
+const getCellValue = (tr, idx) => tr.children[idx].innerText || tr.children[idx].textContent;
+const comparer = (idx, asc) => (a, b) => ((v1, v2) => 
+    v1 !== '' && v2 !== '' && !isNaN(v1) && !isNaN(v2) ? v2 - v1 : v1.toString().localeCompare(v2)
+    )(getCellValue(asc ? a : b, idx) === '' ? -1: (getCellValue(asc ? a : b, idx).replace(/\s/g,'')), 
+      getCellValue(asc ? b : a, idx) === '' ? -1: (getCellValue(asc ? b : a, idx).replace(/\s/g,'')));
+addLoadEvent(function(){
+  document.querySelectorAll('._fixed_table:not(._no_auto_sorting) th').forEach(th => th.addEventListener('click', (() => {
+    const table = th.closest('table');
+    // Remove all symbols in header
+    table.querySelectorAll('th').forEach(function (e) {
+      e.firstChild.textContent = "";
+    });
+    // Change the symbol on the clicked header
+    if (this.asc != true) {
+      th.firstChild.textContent = "\u25BC";
+    }
+    else {
+      th.firstChild.textContent = "\u25B2";
+    }
+    Array.from(table.querySelectorAll('tr:nth-child(n+2)'))
+        .sort(comparer(Array.from(th.parentNode.children).indexOf(th), this.asc = !this.asc))
+        .forEach(tr => table.appendChild(tr) );
+  })));
+});
+addLoadEvent(function(){
+  document.querySelectorAll('._tree_table:not(._no_auto_sorting) th').forEach(th => th.addEventListener('click', (() => {
+    const table = th.closest('table');
+    // Remove all symbols in header
+    table.querySelectorAll('th').forEach(function (e) {
+      e.firstChild.textContent = "";
+    });
+    // Change the symbol on the clicked header
+    if (this.asc != true) {
+      th.firstChild.textContent = "\u25BC";
+    }
+    else {
+      th.firstChild.textContent = "\u25B2";
+    }
+    let last_id = "";
+    const t_outermost = new Array ();
+    const t_children  = new Map ();
+    for (let i = 1, row; row = table.rows[i]; i++) {
+      if (row.classList.contains ("_outer_row")) {
+        t_outermost.push (row);
+        last_id = row.id;
+        t_children [last_id] = new Array ();
+      }
+      else {
+        t_children [last_id].push (row);
+      }
+    }
+    t_outermost.sort(comparer(Array.from(th.parentNode.children).indexOf(th), this.asc = !this.asc));
+    for (let i = 0, row; row = t_outermost[i]; i++) {
+      table.appendChild(row)
+      for (let j = 0, child; child = t_children[row.id][j]; j++) {
+        table.appendChild(child)
+      }
+    }
+  })));
+});
+function _check_all_checkbox_ (obj_id, opts_ids) {
+  var obj   = document.getElementById (obj_id);
+  var opts  = window[opts_ids];
+  var count = 0
+  for (i = 0; i < opts.length; i++) {
+    var obj_s = document.getElementById(opts[i]);
+    if (obj_s && obj_s.checked) {
+      count ++;
+    }
+  }
+  if (count == 0) {
+    obj.value = "Select all";
+  }
+  else if (count == opts.length) {
+    obj.value = "Select none";
+  }
+}
+// Fonction for table selector
+function click_table_menu (c, obj_id, opt_ids) {
+  var is_checked = document.getElementById (c).checked;
+  localStorage.setItem(c, is_checked);
+  $("."+c).each(function(index, element) {
+    if (is_checked) {
+      element.classList.remove("_tcol_hidden");
+    }
+    else {
+      element.classList.add("_tcol_hidden");
+    }
+  });
+  if (obj_id != undefined) {
+    _check_all_checkbox_ (obj_id, opt_ids)
+  }
+}
+function set_all_table_menu (obj, var_opt_ids) {
+  var opt_ids = window[var_opt_ids];
+  var is_selected = true
+  if (obj.value == "Select all") {
+    is_selected = false;
+  }
+  for (i = 0; i < opt_ids.length; i++) {
+    var obj_s = document.getElementById(opt_ids[i]);
+    if (obj_s && is_selected == obj_s.checked) {
+      obj_s.checked = !obj_s.checked;
+      click_table_menu (opt_ids[i]);
+    }
+  }
+  if (is_selected == false) {
+    obj.value = "Select none";
+  } else {
+    obj.value = "Select all";
+  }
+  localStorage.setItem(obj.id, obj.value);
+}
+// Script for accordion box
+function _click_accordion_header(obj) {
+  var content = obj.nextSibling;
+  content.classList.toggle('collapsed');
+  obj.classList.toggle('collapsed');
+  obj.parentNode.classList.toggle('collapsed');
+  // Check if the box must be openned ...
+  if (obj.classList.contains ('collapsed'))
+  {
+    obj.firstChild.textContent = "\u25B6";
+  }
+  // or closed.
+  else 
+  {
+    obj.firstChild.textContent = "\u25BC";
+  }
+  if (typeof _onresize === "function") {
+    _onresize ();
+  }
+}
+  // Script for paged table
+function _click_paged_prev(obj) {
+  var pages_content_id = '_paged_tables_page_' + obj.parentNode.parentNode.id.substr (obj.parentNode.parentNode.id.lastIndexOf('_') + 1);
+  var pages_content = document.getElementById(pages_content_id).innerHTML;
+  var max_pages = pages_content.substr (pages_content.lastIndexOf('/') + 1);
+  var cur_page  = pages_content.substring (pages_content.lastIndexOf(' ') + 1, pages_content.lastIndexOf('/'));
+  max_pages = Number (max_pages);
+  cur_page  = Number (cur_page);
+  if (cur_page > 1) {
+    var div_paged = obj.parentNode.parentNode.id;
+    var i;
+    var x = document.getElementsByClassName(div_paged + '_' + (cur_page - 1));
+    for (i = 0; i < x.length; i++) {
+      x[i].classList.toggle('_paged_hidden');
+    }
+    x = document.getElementsByClassName(div_paged + '_' + (cur_page - 2));
+    for (i = 0; i < x.length; i++) {
+      x[i].classList.toggle('_paged_hidden');
+    }
+  document.getElementById(pages_content_id).textContent = "Page " + (cur_page - 1) + "/" + max_pages;
+  }
+}
+function _click_paged_next(obj) {
+  var pages_content_id = '_paged_tables_page_' + obj.parentNode.parentNode.id.substr (obj.parentNode.parentNode.id.lastIndexOf('_') + 1);
+  var pages_content = document.getElementById(pages_content_id).innerHTML;
+  var max_pages = pages_content.substr (pages_content.lastIndexOf('/') + 1);
+  var cur_page  = pages_content.substring (pages_content.lastIndexOf(' ') + 1, pages_content.lastIndexOf('/'));
+  max_pages = Number (max_pages);
+  cur_page  = Number (cur_page);
+  if (cur_page < max_pages) {
+    var div_paged = obj.parentNode.parentNode.id;
+    var i;
+    var x = document.getElementsByClassName(div_paged + '_' + (cur_page - 1));
+    for (i = 0; i < x.length; i++) {
+      x[i].classList.toggle('_paged_hidden');
+    }
+    x = document.getElementsByClassName(div_paged + '_' + cur_page);
+    for (i = 0; i < x.length; i++) {
+      x[i].classList.toggle('_paged_hidden');
+    }
+    document.getElementById(pages_content_id).textContent = "Page " + (cur_page + 1) + "/" + max_pages;
+  }
+}
+// Function for tree table
+function _click_tree(obj) {
+  if (obj.innerHTML == "\u25BA") {
+    obj.textContent = "\u25BC";
+    // Open childs
+    var x = document.getElementsByClassName(obj.parentNode.parentNode.id);
+    for (var i = 0; i < x.length; i++) {
+      x[i].classList.toggle('_tree_hidden');
+    }
+  }
+  else if (obj.innerHTML == "\u25BC") {
+    obj.textContent = "\u25BA";
+    // Close all childs
+    var trs = document.getElementsByTagName('tr');
+    var r   = obj.parentNode.parentNode.id+'_';
+    var re  = new RegExp (r, "g");
+    for (var i = 0; i < trs.length; i++) {
+      var s = trs[i].id+""
+      if (s.match(re)) {
+        var o = document.getElementById(s);
+        if (! o.classList.contains('_tree_hidden')) {
+          o.classList.toggle('_tree_hidden');
+        }
+        if (o.firstChild.firstChild.textContent == "\u25BC") {
+          o.firstChild.firstChild.textContent = "\u25BA";
+        }
+        if (o.firstChild.childNodes.length == 3) {
+          o.firstChild.childNodes[2].textContent = '+';
+        }
+      }
+    }
+    if (obj.parentNode.childNodes.length == 3) {
+      obj.parentNode.childNodes[2].textContent = '+';
+    }
+  }
+}
+function _click_expand (obj) {
+  var trs = document.getElementsByTagName('tr');
+  var r   = obj.parentNode.parentNode.id+'_';
+  var re  = new RegExp (r, "g");
+  // Symbole + => expand all
+  if (obj.textContent == "+") {
+    for (var i = 0; i < trs.length; i++) {
+      var s = trs[i].id+"";
+      if (s.match(re)) {
+        var o = document.getElementById(s);
+        if (o.classList.contains('_tree_hidden')) {
+           o.classList.toggle('_tree_hidden');
+        }
+        if (o.firstChild.firstChild.textContent == "\u25BA") {
+          o.firstChild.firstChild.textContent = "\u25BC";
+        }
+        if (o.firstChild.childNodes.length == 3) {
+          o.firstChild.childNodes[2].textContent = '\u2010';
+        }
+      }
+    }
+    var o = obj.parentNode.parentNode;
+    if (o.firstChild.firstChild.textContent == "\u25BA") {
+      o.firstChild.firstChild.textContent = "\u25BC";
+    }
+    obj.textContent = "\u2010";
+  }
+  // Symbole - => collapse all
+  else {
+    for (var i = 0; i < trs.length; i++) {
+      var s = trs[i].id+"";
+      if (s.match(re)) {
+        var o = document.getElementById(s);
+        if (! o.classList.contains('_tree_hidden')) {
+           o.classList.toggle('_tree_hidden');
+        }
+        if (o.firstChild.firstChild.textContent == "\u25BC") {
+          o.firstChild.firstChild.textContent = "\u25BA";
+        }
+        if (o.firstChild.childNodes.length == 3) {
+          o.firstChild.childNodes[2].textContent = '+';
+        }
+      }
+    }
+    var o = obj.parentNode.parentNode;
+    if (o.firstChild.firstChild.textContent == "\u25BC") {
+      o.firstChild.firstChild.textContent = "\u25BA";
+    }
+    obj.textContent = "+";
+  }
+}
+// Hide unselected tabs
+addLoadEvent(function(){
+  var x = document.getElementsByClassName("_tab_header_li");
+  for (var i = 0; i < x.length; i++) {
+    if (x[i].classList.contains("selected_tab") == false) {
+      var e = document.getElementById (x[i].dataset.tab);
+      e.style.display = "none";
+    }
+  }
+});
+// Change tab
+function change_tab (e, baseId) {
+  // Handle tabs
+  var i = 1;
+  while (true) {
+    var id = baseId + i;
+    var t = document.getElementById (id);
+    if (t == null) {
+      break;
+    }
+    if (id == e.dataset.tab) {
+      t.style.removeProperty("display");
+    }
+    else {
+      t.style.display = "none";
+    }
+    i = i + 1;
+  }
+  // Handle headers
+  $(e).siblings().each( function () {
+    this.classList.remove("selected_tab");
+  });
+  e.classList.add("selected_tab");
+}
+function __maqao_legacy_onresize () {
+  var obj = document.getElementById("spacer_page_title");
+  if (obj) {
+    obj.style.height = (document.getElementById("page_title").clientHeight + 20)+"px";
+  }
+  var obj = document.getElementById("page_title");
+  if (obj) {
+    var elems = document.getElementsByClassName ("_first_menu_level")
+    if (obj.clientHeight < 90) {
+      for (var i = 0; i < elems.length; i++) {
+        elems.item(i).style.borderBottomLeftRadius = "";
+        elems.item(i).style.borderBottomRightRadius = "";
+      }
+    }
+    else {
+      for (var i = 0; i < elems.length; i++) {
+        elems.item(i).style.borderBottomLeftRadius = "10px";
+        elems.item(i).style.borderBottomRightRadius = "10px";
+      }
+    }
+  }
+}
+</script>
+</body>
+</html>

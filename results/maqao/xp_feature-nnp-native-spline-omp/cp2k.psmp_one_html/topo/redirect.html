@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html translate="no" lang="en-US"><head><title>OV - threads redirect</title>
+<meta charset="utf-8" />
+</head>
+<body onload="__redirect ()">
+<div id="err_div"></div>
+<script>
+function __redirect (){
+  const redirect_table = [
+    {cpu-q-154_1519090_1519090: "cpu-q-154_1519092_1519092", cpu-q-154_1519091_1519091: "cpu-q-154_1519089_1519089", cpu-q-154_1519095_1519095: "cpu-q-154_1519092_1519092", cpu-q-154_1519096_1519096: "cpu-q-154_1519096_1519096", cpu-q-154_1519094_1519094: "cpu-q-154_1519092_1519092", cpu-q-154_1519093_1519093: "cpu-q-154_1519096_1519096", cpu-q-154_1519092_1519092: "cpu-q-154_1519092_1519092", cpu-q-154_1519089_1519089: "cpu-q-154_1519089_1519089", },
+];
+  const queryString = window.location.search;
+  const params = new URLSearchParams(queryString);
+  let thread = params.get("thread");
+  if (thread) {
+    let elems = thread.split ("_");
+    let run_id = elems[0];
+    let key    = elems[1];
+    for (let i = 2; i < elems.length; i++) {
+      key += "_" + elems[i];
+    }
+    window.location.replace("/rds/user/crm98/hpc-work/cp2k-benchmarks/maqao/xp_feature-nnp-native-spline-omp/RESULTS/cp2k.psmp_one_html/topo/run_"+run_id+"_"+redirect_table[run_id][key]+".html?origin="+key);
+  }
+  else {
+    let d = document.getElementById ("err_div");
+    if (d) {
+      d.innerHTML = "Missing parameter <i>thread</i>";
+    }
+  }
+}
+</script>
+</body>
+</html>

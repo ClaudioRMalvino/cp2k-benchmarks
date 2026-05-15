@@ -1,0 +1,35 @@
+{
+  "config": {
+    "#": "==================================================================",
+    "#": " MAQAO ONE View config -- cp2k_optimized, native-spline-omp (hybrid)",
+    "#": "==================================================================",
+    "#": "Optimised HYBRID MPI+OpenMP fork: same algorithmic optimisations as",
+    "#": "feature/nnp-native-spline plus thread-private local-reduction OpenMP",
+    "#": "in nnp_calc_acsf / nnp_scale_acsf.",
+    "#": "Run as 8 MPI ranks x 2 OpenMP threads = 16 cores, matching the core",
+    "#": "count of the two pure-MPI configs. LProf then reports per-thread",
+    "#": "activity so the OpenMP load balance is visible.",
+
+    "experiment_name": "cp2k-optimized-native-spline-omp-NNP-H2O64",
+    "comments": "cp2k_optimized feature/nnp-native-spline-omp -- optimised hybrid MPI+OpenMP NNP path. Profiled at 8 MPI x 2 OMP.",
+
+    "executable": "/rds/user/crm98/hpc-work/cp2k_binaries/csd3/feature-nnp-native-spline-omp/cp2k.psmp",
+    "keep_executable_location": true,
+
+    "run_command": "<executable> -i run.inp",
+    "mpi_command": "srun -n <number_processes> --cpus-per-task=2 --hint=nomultithread",
+    "number_processes": 8,
+    "number_nodes": 1,
+    "number_threads_per_process": 2,
+
+    "dataset": "/home/crm98/cp2k-benchmarks/scripts/maqao_scripts/dataset",
+    "dataset_handler": "link",
+    "run_directory": "<dataset>",
+
+    "envv_OMP_NUM_THREADS": "2",
+
+    "filter": { "type": "number", "value": 15 },
+    "optimizer_loop_count": 15,
+    "maximal_path_number": 4
+  }
+}
