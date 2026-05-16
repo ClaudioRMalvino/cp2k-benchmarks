@@ -1,0 +1,14 @@
+Power-law fit of time-per-step vs system size
+  Model:   t(N) = a * N^b   (N = number of atoms)
+  Method:  weighted log-log linear regression, weights = (yerr / y)
+
+           branch    exponent (b) prefactor (a, sec)  n_points
+  upstream master 1.909 +/- 0.173           4.60e-08         6
+    native-spline 0.421 +/- 0.055           3.73e-03         6
+native-spline-omp 0.929 +/- 0.064           4.87e-05         6
+
+
+Interpretation:
+  b = 1.0  -> O(N) linear scaling  (cell-list neighbour search)
+  b = 2.0  -> O(N^2) pair enumeration
+  b between 1 and 2 -> mixed regime (e.g. communication overhead masking O(N))

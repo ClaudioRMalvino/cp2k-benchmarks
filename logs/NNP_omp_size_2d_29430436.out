@@ -59,3 +59,5 @@ OMP=8   N=1024   : reps=5   t/step=0.664760+/-0.001463 s  wall=13.338600+/-0.023
 OMP=8   N=2048   : reps=5   t/step=1.393370+/-0.004104 s  wall=27.915000+/-0.082592 s
 Wrote /rds/user/crm98/hpc-work/cp2k-benchmarks/results/cp2k_feature_native_spline_omp/NNP/NNP_omp_size_scaling_feature-nnp-native-spline-omp_16-05_10-50/results_omp_size_scaling_feature-nnp-native-spline-omp_16-05_10-50.csv
       /rds/user/crm98/hpc-work/cp2k-benchmarks/results/cp2k_feature_native_spline_omp/NNP/NNP_omp_size_scaling_feature-nnp-native-spline-omp_16-05_10-50/results_omp_size_scaling_feature-nnp-native-spline-omp_16-05_10-50_raw.csv
+
+CSVs synced to /home/crm98/cp2k-benchmarks/results

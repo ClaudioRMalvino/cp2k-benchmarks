@@ -1,0 +1,4 @@
+branch,decomposition,t_step_mean_s,t_step_std_s,walltime_s_for_100_steps,speedup_over_master
+upstream master,76 MPI x 1 OMP,0.1903,0.0012,19.26,1.00x
+native-spline,76 MPI x 1 OMP,0.0721,0.0040,7.42,2.64x
+native-spline-omp,38 MPI x 2 OMP,0.0895,0.0136,9.05,2.13x

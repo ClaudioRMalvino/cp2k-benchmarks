@@ -1,0 +1,20 @@
+MAQAO CQA -- per-hot-loop vectorisation analysis (N = 64 H2O, 16 cores)
+
+                         loop                   branch  coverage_pct  cqa_cycles_per_iter  vec_ratio_pct speedup_if_fully_vectorised
+      nnp_calc_ang inner loop                   master          13.8                   52              8                       8.40x
+      nnp_calc_ang inner loop native-spline (pre-port)          21.1                   75             26                       6.68x
+      nnp_calc_ang inner loop        native-spline-omp          13.1                   75             26                       6.68x
+nnp_calc_acsf (rad fctn body)                   master           5.8                   28              1                       9.58x
+nnp_calc_acsf (rad fctn body) native-spline (pre-port)           4.1                   31              0                       8.00x
+nnp_calc_acsf (rad fctn body)        native-spline-omp           3.8                   17              0                       8.00x
+               nnp_scale_acsf                   master           3.2                    8            100                       1.00x
+               nnp_scale_acsf native-spline (pre-port)           2.0                    8            100                       1.00x
+               nnp_scale_acsf        native-spline-omp           0.5                    1              0                       8.00x
+
+
+Notes
+  * coverage_pct: percent of total application time spent inside the loop
+  * cqa_cycles_per_iter: minimum cycles per loop iteration the assembly can achieve
+  * vec_ratio_pct: percentage of arithmetic instructions issued as SIMD
+  * speedup_if_fully_vectorised: optimistic upper-bound speedup if ALL
+    arithmetic were vectorised; large value -> compiler left vec opportunity on the table

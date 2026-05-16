@@ -92,3 +92,9 @@ Currently Loaded Modulefiles:
 13) python/3.11.0-icl                                          
 Starting NNP strong scaling (N=256 H2O) on branch: feature-nnp-native-spline-omp  (5 reps)
 ------------------------------------------------------------------------
+1    MPI x 2  OMP = 2   cores : reps=5   t/step=0.393552+/-0.001309 s  speedup=1.000x  eff=100.0%
+2    MPI x 2  OMP = 4   cores : reps=5   t/step=0.219830+/-0.000621 s  speedup=1.790x  eff=89.5%
+4    MPI x 2  OMP = 8   cores : reps=5   t/step=0.121612+/-0.000412 s  speedup=3.236x  eff=80.9%
+8    MPI x 2  OMP = 16  cores : reps=5   t/step=0.064000+/-0.000095 s  speedup=6.149x  eff=76.9%
+16   MPI x 2  OMP = 32  cores : reps=5   t/step=0.035504+/-0.000094 s  speedup=11.085x  eff=69.3%
+slurmstepd: error: *** JOB 29430434 ON cpu-q-157 CANCELLED AT 2026-05-16T12:51:05 DUE TO TIME LIMIT ***

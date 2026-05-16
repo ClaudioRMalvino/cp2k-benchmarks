@@ -1,0 +1,21 @@
+MAQAO global metrics  (N = 64 H2O, 16 cores: 16 MPI for master/native-spline; 8 MPI x 2 OMP for omp)
+
+                  branch  application_time_s  array_access_efficiency_pct  vec_headroom_speedup  runtime_overhead_speedup  user_time_pct
+                  master               31.74                        52.92                  1.50                      1.29          50.83
+native-spline (pre-port)               28.21                        52.52                  1.45                      1.32          55.01
+       native-spline-omp               43.54                        78.17                  1.30                      1.95          37.16
+
+
+Columns
+  array_access_efficiency_pct : MAQAO static stride-friendliness metric
+                                (proxy for cache locality, no PMU needed)
+  vec_headroom_speedup        : 'speedup_if_fully_vectorised' -- lower = closer to peak
+  runtime_overhead_speedup    : 'speedup_if_perfect_MPI_OMP' -- higher = more runtime cost
+  user_time_pct               : percent of time in user code (vs MPI / OMP / libm)
+
+Headline finding
+  array-access efficiency jumps from 52.9% (master) to 78.2% (omp) due to the
+  cache-conscious optimisations (precomputed scale_factor, sorted active_atoms,
+  heap sort).  Pure-MPI native-spline at the May-14 measurement did NOT yet
+  contain the cache opts (subsequently ported in commit 7cbc8b3008), so its
+  53% number reflects only the cell-list + native-spline subset.
