@@ -43,7 +43,10 @@ source "$BIN_ROOT/setup"
 set -u
 
 TARGET_BRANCH=${1:-master}
-TIMESTAMP=$(date +%d-%m_%H-%M)
+# Seconds + job id avoids the dir-collision that hit when two strong-scaling
+# jobs (different N_MOLECULES) launched in the same minute and wrote to the
+# same OUTDIR, overwriting each other's CSVs.
+TIMESTAMP=$(date +%d-%m_%H-%M-%S)${SLURM_JOB_ID:+_${SLURM_JOB_ID}}
 
 case "$TARGET_BRANCH" in
   feature-nnp-native-spline)
