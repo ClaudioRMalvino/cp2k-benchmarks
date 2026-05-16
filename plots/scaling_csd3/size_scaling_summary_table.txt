@@ -1,10 +1,16 @@
 Headline-workload comparison: N = 1024 H2O (3072 atoms), one Peta4-IceLake node
 
-           branch  decomposition t_step_mean_s t_step_std_s walltime_s_for_100_steps speedup_over_master
-  upstream master 76 MPI x 1 OMP        0.1903       0.0012                    19.26               1.00x
-    native-spline 76 MPI x 1 OMP        0.0721       0.0040                     7.42               2.64x
-native-spline-omp 38 MPI x 2 OMP        0.0895       0.0136                     9.05               2.13x
+           branch  decomposition t_step_mean_s t_step_std_s t_step_ci95_s walltime_s_for_100_steps speedup_over_master
+  upstream master 76 MPI x 1 OMP        0.1903       0.0012     +/-0.0015                    19.26               1.00x
+    native-spline 76 MPI x 1 OMP        0.0721       0.0040     +/-0.0050                     7.42               2.64x
+native-spline-omp 38 MPI x 2 OMP        0.0895       0.0136     +/-0.0168                     9.05               2.13x
 
 
-Note: this is from the size-scaling sweep (fixed full-node parallelism).
-The strong-scaling table will follow once those jobs complete.
+Column key:
+  t_step_mean_s            : sample mean of 5 timed reps (warm-up discarded)
+  t_step_std_s             : sample std deviation of those 5 reps
+  t_step_ci95_s            : 95% confidence interval half-width via Student-t,
+                             df = n - 1 = 4, t(4, 0.025) = 2.776 (Hoefler & Belli SC'15 Rule 5)
+  walltime_s_for_100_steps : end-to-end run wall time for 100 MD steps (mean)
+  speedup_over_master      : ratio of master mean / branch mean (cf. Rule 1, also see
+                             statistical_comparison_N1024 for significance testing)

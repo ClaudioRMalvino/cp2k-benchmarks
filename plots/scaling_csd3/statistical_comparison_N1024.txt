@@ -1,0 +1,30 @@
+Inter-branch statistical comparison at N = 1024 H2O on one full Ice Lake node
+(5 timed reps per branch; warm-up discarded)
+
+                                  pair  mean_a  mean_b mean_diff_pct shapiro_p_a shapiro_p_b welch_t  welch_p mannwhitney_p cohens_d     effect sig_at_5pct
+    upstream master  vs  native-spline 0.19034 0.07215        +163.8       0.614       0.854 +62.910 4.81e-08      7.94e-03   +39.79 very large         YES
+upstream master  vs  native-spline-omp 0.19034 0.08948        +112.7       0.614       0.224 +16.566 6.99e-05      7.94e-03   +10.48 very large         YES
+  native-spline  vs  native-spline-omp 0.07215 0.08948         -19.4       0.854       0.224  -2.739 4.36e-02      5.56e-02    -1.73 very large         YES
+
+
+Column key:
+  mean_a, mean_b   : sample mean of branch A / B (s per MD step)
+  mean_diff_pct    : (mean_a - mean_b) / mean_b * 100
+  shapiro_p_a/b    : Shapiro-Wilk p-value for normality of each sample.
+                     p < 0.05 -> reject normality, prefer Mann-Whitney over Welch's t.
+                     With only n=5, the Shapiro-Wilk test has low power; results are
+                     reported for transparency, not as definitive evidence of normality.
+  welch_t          : Welch's two-sample t-statistic (unequal variances allowed)
+  welch_p          : two-sided p-value of Welch's test (parametric, assumes ~normal)
+  mannwhitney_p    : two-sided Mann-Whitney U p-value (non-parametric backup)
+  cohens_d         : standardised effect size, (mean_a - mean_b) / pooled_std
+  effect           : Cohen's conventional bin: small (0.2), medium (0.5), large (0.8),
+                     very large (1.2). All inter-branch effects here are 'very large'
+                     because the per-rep std is on the order of 10^-3 s while branch
+                     differences are 10^-2 s.
+  sig_at_5pct      : Welch test rejects equal-means null at alpha = 0.05
+
+Method (Hoefler & Belli SC'15 Rule 7): for each pair of branches we test the
+null hypothesis 'mean time per step is equal' using Welch's t-test (parametric,
+robust to unequal variances), with a non-parametric Mann-Whitney U as a fallback
+in case the per-rep data is non-normal.  Effect size reported via Cohen's d.
