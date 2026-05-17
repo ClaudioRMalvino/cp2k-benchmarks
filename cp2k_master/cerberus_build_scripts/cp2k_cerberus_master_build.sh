@@ -8,8 +8,7 @@ SCRATCH_USER="crm98"
 SCRATCH_ROOT="${SCRATCH_ROOT:-/local/data/public}"
 SCRATCH_REPO="${SCRATCH_ROOT}/${SCRATCH_USER}/cp2k-buildtree"
 SRC_HOME="/home/raid/crm98/cp2k-upstream-master"
-# Reuse the feature-branch toolchain — avoids a separate multi-hour toolchain install
-# and guarantees DBCSR and all other libraries are present on this node.
+# Reuse the feature-branch toolchain to avoid a second multi-hour install.
 TOOLCHAIN_REPO="${SCRATCH_ROOT}/${SCRATCH_USER}/original_cp2k"
 JOBS="${JOBS:-32}"
 
@@ -25,7 +24,6 @@ echo "TOOLCHAIN:     $TOOLCHAIN_REPO"
 echo "JOBS:          $JOBS"
 echo
 
-# Clone source if scratch doesn't exist yet (toolchain install is separate)
 if [ ! -d "$SCRATCH_REPO" ]; then
   echo "Cloning upstream-master source to scratch..."
   git clone "$SRC_HOME" "$SCRATCH_REPO"
@@ -49,8 +47,7 @@ export CPATH="$TOOLCHAIN_REPO/tools/toolchain/install/include:${CPATH:-}"
 
 rm -rf build install
 
-# Locate DBCSRConfig.cmake explicitly — CMake 4.x case-sensitive search misses
-# the lowercase 'dbcsr' directory name under CMAKE_PREFIX_PATH on some systems.
+# CMake 4.x case-sensitive search misses the lowercase 'dbcsr' directory, so locate DBCSRConfig.cmake explicitly.
 DBCSR_CMAKE_DIR=""
 for d in "$TOOLCHAIN_REPO/tools/toolchain/install"/dbcsr-*/lib/cmake/dbcsr; do
   [ -f "$d/DBCSRConfig.cmake" ] && DBCSR_CMAKE_DIR="$d" && break

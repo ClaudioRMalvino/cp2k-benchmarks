@@ -1,34 +1,17 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# OMP THREAD SCALING for feature/nnp-native-spline-omp.
-# Fixes the system size and MPI rank count, sweeps OMP_NUM_THREADS, and
-# records time-per-MD-step, speedup and parallel efficiency relative to
-# OMP=1.  With MPI_RANKS=1 (default) all parallelism comes from OpenMP, so
-# this is a direct measurement of the threaded nnp_calc_acsf layer.
-#
-# time-per-step is taken from the qs_mol_dyn_low row of the CP2K timing
-# table (= MD-loop total / steps), so it is independent of SCF-init and
-# shutdown overhead.
-#
-# Each OMP point is measured N_REPS+1 times: the first run is a discarded
-# warm-up, the remaining N_REPS are timed.  Two CSVs are written:
-#   results_omp_thread_scaling_<label>_<ts>_raw.csv  every individual repeat
-#   results_omp_thread_scaling_<label>_<ts>.csv      mean / std / min per OMP
-#
-# Tunables (all overridable by exporting before the call):
-#   MPI_RANKS   fixed rank count            (default 1 — pure-OMP isolation)
-#   N_MOLECULES fixed system size in H2O    (default 64)
-#   STEPS       MD steps per run            (default 100)
-#   N_REPS      timed repeats per point     (default 5, +1 discarded warm-up)
-#   OMP_LIST    OMP thread counts to sweep  (default 1 2 4 8 16 32 76)
+# OMP thread scaling for feature/nnp-native-spline-omp at fixed system size
+# and MPI rank count; reports time-per-MD-step, speedup and efficiency
+# relative to OMP=1. time-per-step comes from the qs_mol_dyn_low row, so it
+# is independent of SCF-init/shutdown overhead.
 
 CORES_PER_NODE=76
 BIN_ROOT=/rds/user/$USER/hpc-work/cp2k_binaries/csd3
 BENCHMARK_ROOT=/home/crm98/cp2k-benchmarks
 
 # Strict mode relaxed across the sourcing: cp2k_CSD3_env.sh pulls in the
-# toolchain 'setup', which references unbound vars (CP_DFLAGS) -> trips `set -u`.
+# toolchain 'setup' which references unbound CP_DFLAGS - trips `set -u`.
 . /etc/profile.d/modules.sh
 set +u
 source /home/crm98/cp2k-benchmarks/scripts/CSD3_benchmark_scripts/cp2k_CSD3_env.sh
@@ -56,7 +39,6 @@ export LD_LIBRARY_PATH="$INSTALL_LIB:${LD_LIBRARY_PATH:-}"
 BASE_INP="${BENCHMARK_ROOT}/H2O-64_NNP_MD.inp"
 NNP_DATA="${PROJECT_ROOT}/data/NNP"
 
-# System size -> MULTIPLE_UNIT_CELL multipliers (each cell = 64 H2O).
 declare -A MULT
 MULT[64]="1 1 1"
 MULT[256]="2 2 1"
@@ -83,8 +65,6 @@ done
 echo "# omp_threads,mpi_ranks,total_cores,rep,time_per_step_s,walltime_s" >>"$RAW_CSV"
 echo "# omp_threads,mpi_ranks,total_cores,n_reps,time_per_step_mean_s,time_per_step_std_s,time_per_step_min_s,walltime_mean_s,walltime_std_s,walltime_min_s,speedup,parallel_efficiency" >>"$CSV_FILE"
 
-# --- helpers ----------------------------------------------------------------
-# stats <num>... -> "mean sample_std min n"  (n=0 and NAs if no valid input)
 stats() {
    printf '%s\n' "$@" | awk '
       /^[0-9.eE+-]+$/ { x[++n]=$1; s+=$1; if (n==1 || $1<mn) mn=$1 }
@@ -94,15 +74,11 @@ stats() {
             printf "%.6f %.6f %.6f %d\n", m, sd, mn, n }'
 }
 
-# bench_point <rundir> <mpi> <omp> : run a warm-up + N_REPS timed reps of
-# run.inp in <rundir>, append per-rep rows to $RAW_CSV (prefixed with the
-# caller-set $RAW_PREFIX), and echo:
-#   "tps_mean tps_std tps_min wt_mean wt_std wt_min n_ok"
 bench_point() {
    local rundir=$1 mpi=$2 omp=$3
    local r out wt md tps tps_list="" wt_list=""
    export OMP_NUM_THREADS=$omp
-   for r in $(seq 0 "$N_REPS"); do                      # r=0 is the warm-up
+   for r in $(seq 0 "$N_REPS"); do
       out="$rundir/cp2k_rep${r}.out"
       ( cd "$rundir" && srun --ntasks="$mpi" --cpus-per-task="$omp" --hint=nomultithread \
            "$CP2K_EXE" -i run.inp >"$out" 2>&1 ) || true
@@ -113,7 +89,7 @@ bench_point() {
       wt=$(grep -E "^ CP2K +[0-9]" "$out" 2>/dev/null | awk '{print $NF}' | tail -1 || true)
       md=$(awk '/^ qs_mol_dyn_low/ {print $(NF-1)}' "$out" 2>/dev/null | tail -1 || true)
       tps=$(awk -v t="${md:-0}" -v s="$STEPS" 'BEGIN{ if (s>0) printf "%.6f", t/s; else print "NA" }')
-      [[ $r -eq 0 ]] && continue                        # discard the warm-up
+      [[ $r -eq 0 ]] && continue
       tps_list+="$tps "
       wt_list+="$wt "
       echo "${RAW_PREFIX},${r},${tps},${wt}" >>"$RAW_CSV"
@@ -124,7 +100,7 @@ bench_point() {
    echo "$tm $tsd $tmin $wm $wsd $wmin $tn"
 }
 
-echo "OMP thread scaling — $LABEL  (N=$N_MOLECULES H2O, $MPI_RANKS MPI rank(s), $N_REPS reps)"
+echo "OMP thread scaling - $LABEL  (N=$N_MOLECULES H2O, $MPI_RANKS MPI rank(s), $N_REPS reps)"
 echo "-----------------------------------------------------------------------"
 
 BASELINE_TPS=""
@@ -149,13 +125,10 @@ steps = os.environ['STEPS']
 with open(base, "r") as f:
     txt = f.read()
 
-# Fix step count, strip per-step trajectory/energy/force I/O.
 txt = re.sub(r'STEPS\s+\d+', f'STEPS {steps}', txt, count=1)
-# Performance benchmark: switch OFF all per-step file I/O so the timing
-# reflects compute, not disk.  Deleting a print-key section does NOT disable
-# it -- &TRAJECTORY / &RESTART_HISTORY are low-print-level keys that revert to
-# their (on) defaults at PRINT_LEVEL LOW -- so set the section parameter to
-# OFF explicitly (also covers &RESTART, which is on by default at any level).
+# &TRAJECTORY / &RESTART_HISTORY are low-print-level keys: deleting the
+# section reverts to on-default at PRINT_LEVEL LOW. Set the section param
+# to OFF (also covers &RESTART, on by default at any level).
 txt = re.sub(r'&TRAJECTORY\b[\s\S]*?&END TRAJECTORY',
              '&TRAJECTORY OFF\n    &END TRAJECTORY\n'
              '    &RESTART OFF\n    &END RESTART\n'

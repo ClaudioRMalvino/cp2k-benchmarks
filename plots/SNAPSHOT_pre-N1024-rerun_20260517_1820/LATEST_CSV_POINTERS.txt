@@ -1,0 +1,13 @@
+At time of snapshot, thesis_figures._latest() selected these CSVs (mtime-newest):
+  master:        NNP_size_scaling_upstream-master_15-05_16-24
+                 NNP_core_scaling_upstream-master_16-05_10-50-51_29430434
+  native-spline: NNP_size_scaling_feature-nnp-native-spline_15-05_17-37
+                 NNP_core_scaling_feature-nnp-native-spline_16-05_11-37-23_29430434
+  omp:           NNP_size_scaling_feature-nnp-native-spline-omp_15-05_17-52
+                 NNP_core_scaling_feature-nnp-native-spline-omp_16-05_12-33-23_29430434
+  omp 2D:        NNP_omp_size_scaling_feature-nnp-native-spline-omp_16-05_10-50
+  omp threads:   NNP_omp_thread_scaling_feature-nnp-native-spline-omp_14-05_23-15
+
+If new strong-scaling runs need to be discarded, set the mtimes of these dirs
+to be more recent than the new ones with:
+  touch -m <DIR>

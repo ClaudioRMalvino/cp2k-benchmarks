@@ -1,38 +1,11 @@
 #!/usr/bin/env python3
-"""
-maqao_data_analysis.py
-======================
+"""Consolidated MAQAO-derived analysis for the thesis report.
 
-Consolidated MAQAO-derived analysis for the thesis report.  Produces every
-MAQAO-based figure and table in one place so the data definitions and plot
-styling stay in sync.
+Numbers are from the MAQAO ONE View run of 2026-05-14; subsequent re-runs were
+blocked by the CSD3 ptrace mitigation applied on 2026-05-15 (the
+feature/nnp-native-spline May-14 measurement predates cache-port commit
+7cbc8b3008 and is labelled "(pre-port)" throughout).
 
-Outputs (all in plots/scaling_csd3/enhancements/):
-  maqao_hotspot_stackbar.png            - plot 4: hotspot decomposition (3 branches)
-  maqao_vectorisation_table.{txt,csv}   - plot 5: per-hot-loop CQA
-  maqao_global_metrics_table.{txt,csv}  - global-metrics companion table
-  array_access_efficiency_focused.png   - 2-branch cache-locality bar (master vs omp)
-  array_access_efficiency_focused.txt   - companion 2-branch text table
-  array_access_efficiency_disclaimer.md - thesis-ready disclaimer paragraph
-
-----------------------------------------------------------------------------
-DATA SOURCE & CAVEAT (the same one that applies to the disclaimer file):
-
-All numbers below were lifted from the MAQAO ONE View run of 2026-05-14
-(lprof_functions.csv, expert_loops.csv, global_metrics.csv) BEFORE the
-2026-05-15 re-run was destroyed by a CSD3 kernel-level ptrace mitigation
-applied in response to a Red Hat / Rocky Linux zero-day CVE.  MAQAO's LProf
-sampler uses ptrace(PTRACE_ATTACH), which the mitigation blocks; no fresh
-MAQAO data could be acquired on the post-port binaries, and the original
-CSVs were destroyed when the 2026-05-15 job used --replace before failing.
-
-The May-14 measurement of feature/nnp-native-spline predates the cache-port
-commit (7cbc8b3008), so it is labelled "(pre-port)" throughout.  The omp
-branch's May-14 measurement already contained the cache opts.  See the
-generated array_access_efficiency_disclaimer.md for the language used in
-the report itself.
-
-----------------------------------------------------------------------------
 Usage:
   python3 maqao_data_analysis.py            # produce everything (default)
   python3 maqao_data_analysis.py --only N   # produce only one section (1..5)
@@ -47,18 +20,10 @@ import numpy as np
 import pandas as pd
 
 
-# ============================================================================
-# Output location + branch identifiers
-# ============================================================================
 OUTDIR = "/home/crm98/cp2k-benchmarks/plots/maqao_plots"
 THREE_BRANCHES = ["master", "native-spline (pre-port)", "native-spline-omp"]
 
 
-# ============================================================================
-# May-14 MAQAO data (extracted before --replace wiped the raw CSVs)
-# ============================================================================
-
-# Global metrics, full three-branch view
 GLOBAL_METRICS = pd.DataFrame([
     dict(branch="master",                   application_time_s=31.74,
          array_access_efficiency_pct=52.92, vec_headroom_speedup=1.50,
@@ -71,8 +36,6 @@ GLOBAL_METRICS = pd.DataFrame([
          runtime_overhead_speedup=1.95,     user_time_pct=37.16),
 ])
 
-# Hotspot percentages per top-15 leaf function, grouped into reader-friendly
-# categories so the 3-branch story (where time moves to/from) is visible.
 HOTSPOTS = {
     "master": {
         "MPI broadcast":                33.25,
@@ -108,8 +71,6 @@ HOTSPOTS = {
     },
 }
 
-# Per-hot-loop CQA: coverage %, CQA cycles/iteration, vectorisation ratio,
-# optimistic speedup if all FP were vectorised.  Three loops x three branches.
 CQA_LOOPS = pd.DataFrame([
     dict(loop="nnp_calc_ang inner loop", branch="master",
          coverage_pct=13.8, cqa_cycles_per_iter=52, vec_ratio_pct=8,
@@ -141,9 +102,6 @@ CQA_LOOPS = pd.DataFrame([
 ])
 
 
-# ============================================================================
-# Helpers
-# ============================================================================
 def _ensure_outdir():
     os.makedirs(OUTDIR, exist_ok=True)
 
@@ -167,9 +125,6 @@ def _save_table(df_or_text, basename, header=None):
     return txt_path, None
 
 
-# ============================================================================
-# Plot 4 -- Hotspot time-fraction stacked bar (three branches)
-# ============================================================================
 def plot_hotspot_stackbar():
     print("\n[4] hotspot time-fraction stacked bar chart")
     categories = list(next(iter(HOTSPOTS.values())).keys())
@@ -204,9 +159,6 @@ def plot_hotspot_stackbar():
     print(f"  saved {path}")
 
 
-# ============================================================================
-# Plot 5 -- Per-hot-loop CQA vectorisation table
-# ============================================================================
 def write_vectorisation_table():
     print("\n[5] per-loop CQA vectorisation table")
     print()
@@ -223,15 +175,11 @@ def write_vectorisation_table():
         CQA_LOOPS, "maqao_vectorisation_table",
         header="MAQAO CQA -- per-hot-loop vectorisation analysis (N = 64 H2O, 16 cores)\n\n",
     )
-    # Append notes to the txt version
     with open(txt, "a") as f:
         f.write(notes)
     print(f"  saved {txt}\n         {csv}")
 
 
-# ============================================================================
-# Global metrics companion table (three branches, all key MAQAO scores)
-# ============================================================================
 def write_global_metrics_table():
     print("\n[global] MAQAO global-metrics summary")
     print()
@@ -260,9 +208,6 @@ def write_global_metrics_table():
     print(f"  saved {txt}\n         {csv}")
 
 
-# ============================================================================
-# Focused 2-branch array-access-efficiency comparison (thesis figure)
-# ============================================================================
 def plot_array_access_focused():
     print("\n[focused] array-access-efficiency, master vs native-spline-omp")
     labels = ["upstream master\n(pure MPI, no cache opts)",
@@ -292,7 +237,7 @@ def plot_array_access_focused():
     ax.set_ylim(0, 100)
     ax.axhline(100, color="grey", ls=":", lw=1, alpha=0.6)
     ax.text(1.5, 99, "theoretical max", color="grey", fontsize=9,
-            ha="right", va="top", style="italic")
+            ha="left", va="top", style="italic")
     ax.set_title("Cache locality of the optimised NNP code path\n"
                  "(MAQAO static stride-friendliness metric, N = 64 H$_2$O on 16 cores)")
     ax.grid(axis="y", ls="--", alpha=0.35)
@@ -310,7 +255,6 @@ def plot_array_access_focused():
     plt.close(fig)
     print(f"  saved {path}")
 
-    # Companion text table
     relative = delta / values[0] * 100
     table = (
         "MAQAO array-access-efficiency comparison\n"
@@ -333,9 +277,6 @@ def plot_array_access_focused():
     print(f"  saved {txt}")
 
 
-# ============================================================================
-# Thesis-ready disclaimer (Markdown, drop straight into the report)
-# ============================================================================
 def write_disclaimer():
     print("\n[disclaimer] thesis-ready ptrace-mitigation disclaimer paragraph")
     disclaimer = (
@@ -366,9 +307,6 @@ def write_disclaimer():
     print(f"  saved {path}")
 
 
-# ============================================================================
-# Driver
-# ============================================================================
 SECTIONS = [
     ("4",          "Hotspot stacked bar (3 branches)",          plot_hotspot_stackbar),
     ("5",          "Per-loop vectorisation table",              write_vectorisation_table),

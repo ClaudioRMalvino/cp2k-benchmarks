@@ -1,19 +1,6 @@
 #!/usr/bin/env bash
-#! Cachegrind comparison: master  vs  feature/nnp-native-spline  (post-port).
-#!
-#! Cachegrind (Valgrind) uses dynamic binary translation, NOT ptrace -- so the
-#! CSD3 ptrace mitigation that broke MAQAO does NOT affect this.  We get exact
-#! simulated L1d / L1i / LLd / LLi miss counts per function, per source line.
-#!
-#! Each binary runs through 5 MD steps of N=64 H2O NNP-MD on 1 MPI rank.
-#! Cachegrind's slowdown is ~30-50x compared to native execution.  Per-step
-#! wall time on master is normally ~0.15s on 1 core, so 5 steps under
-#! cachegrind is ~30s of compute; plus a slower MPI_Init + model load it's
-#! about 5-10 minutes per binary.  1 hour walltime is generous.
-#!
-#! The report we extract (per-function L1 and LL miss counts) is the closest
-#! we can get on CSD3 today to the cache-locality numbers MAQAO would have
-#! given us if the ptrace mitigation were not in place.
+# Cachegrind uses dynamic binary translation (not ptrace), so the CSD3
+# ptrace mitigation that broke MAQAO does not affect it.
 
 #SBATCH -J NNP_cachegrind
 #SBATCH -A MPHIL-NIKIFORAKIS-CRM98-SL2-CPU
@@ -40,9 +27,8 @@ TIMESTAMP=$(date +%d-%m_%H-%M)
 RUNDIR=$OUT_ROOT/run_$TIMESTAMP
 mkdir -p "$RUNDIR"
 
-# --- 1. small dataset (H2O-64, 5 steps, all I/O off) ---------------------
 STEPS=5
-echo "==> Preparing tiny dataset: H2O-64, STEPS=$STEPS"
+echo "==> Preparing dataset: H2O-64, STEPS=$STEPS"
 export base_inp="$BENCHMARK_ROOT/H2O-64_NNP_MD.inp" \
        target_file="$RUNDIR/run.inp" STEPS
 python3 - <<'PYEOF'
@@ -58,10 +44,8 @@ txt = re.sub(r'&ENERGIES\b', '&ENERGIES OFF', txt, count=1)
 txt = re.sub(r'&FORCES\b',   '&FORCES OFF',   txt, count=1)
 open(os.environ['target_file'], 'w').write(txt)
 PYEOF
-# Self-contained NNP data
 cp -rL /home/crm98/cp2k_optimized/data/NNP "$RUNDIR/NNP"
 
-# --- 2. run cachegrind for each branch ------------------------------------
 run_branch() {
    local label=$1
    local exe="$BIN_ROOT/$label/cp2k.psmp"
@@ -70,9 +54,7 @@ run_branch() {
    mkdir -p "$bdir"
 
    echo
-   echo "================================================================="
    echo "==> CACHEGRIND : $label"
-   echo "================================================================="
    if [[ ! -x "$exe" ]]; then
       echo "!! missing binary $exe"; return 1
    fi
@@ -81,8 +63,6 @@ run_branch() {
    export LD_LIBRARY_PATH="$lib:${LD_LIBRARY_PATH:-}"
    local cg_out="$bdir/cachegrind.out"
 
-   # --cache-sim=yes (default) gives I1/D1/LL miss counts
-   # 1 MPI rank: cachegrind under srun for a single process is fine
    cd "$bdir"
    ln -sfn "$RUNDIR/NNP" NNP
    cp "$RUNDIR/run.inp" run.inp
@@ -100,17 +80,14 @@ run_branch() {
 
    if [[ -f "$cg_out" ]]; then
       echo "    cachegrind output: $cg_out ($(stat -c %s "$cg_out") bytes)"
-      # cg_annotate gives a function-level table; default sorts by Ir (I-refs)
       cg_annotate "$cg_out" > "$bdir/cg_annotate.report.txt" 2>&1
       echo "    cg_annotate report: $bdir/cg_annotate.report.txt"
       head -60 "$bdir/cg_annotate.report.txt"
-      # Extract just the NNP-related function rows
       grep -nE 'nnp_|cp2k.psmp' "$bdir/cg_annotate.report.txt" | head -30 > "$bdir/cg_nnp_rows.txt" || true
    else
       echo "    !! no cachegrind output produced"
       tail -30 "$bdir/valgrind.err"
    fi
-   # restore LD_LIBRARY_PATH for the next branch
    unset LD_LIBRARY_PATH
 }
 
@@ -120,7 +97,6 @@ export LD_LIBRARY_PATH="$ORIG_LD"
 run_branch feature-nnp-native-spline
 export LD_LIBRARY_PATH="$ORIG_LD"
 
-# --- 3. sync results to home for plotting ---------------------------------
 HOME_OUT=$BENCHMARK_ROOT/results/cachegrind/$TIMESTAMP
 mkdir -p "$HOME_OUT"
 for b in master feature-nnp-native-spline; do
@@ -128,7 +104,7 @@ for b in master feature-nnp-native-spline; do
       mkdir -p "$HOME_OUT/$b"
       cp "$RUNDIR/$b/cg_annotate.report.txt" "$HOME_OUT/$b/" 2>/dev/null
       cp "$RUNDIR/$b/cg_nnp_rows.txt"        "$HOME_OUT/$b/" 2>/dev/null
-      # Don't copy the raw cachegrind.out (it's huge); keep on /rds
+      # Raw cachegrind.out kept on /rds only due to size.
    fi
 done
 echo

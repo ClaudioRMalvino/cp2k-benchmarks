@@ -37,7 +37,6 @@ if [ ! -f "$SCRATCH_REPO/tools/toolchain/install/setup" ]; then
   exit 1
 fi
 
-# --- Incremental rsync (checksum-based to avoid mtime issues) ---
 SYNC_LOG="$(mktemp)"
 trap 'rm -f "$SYNC_LOG"' EXIT
 
@@ -54,7 +53,6 @@ rsync -aci --checksum --delete \
 
 cd "$SCRATCH_REPO"
 
-# --- Source the toolchain environment ---
 cp2k_source_toolchain_setup "$SCRATCH_REPO"
 
 export PKG_CONFIG_PATH="$SCRATCH_REPO/tools/toolchain/install/lib/pkgconfig:${PKG_CONFIG_PATH:-}"
@@ -63,8 +61,7 @@ export LD_LIBRARY_PATH="$SCRATCH_REPO/tools/toolchain/install/lib:${LD_LIBRARY_P
 export LIBRARY_PATH="$SCRATCH_REPO/tools/toolchain/install/lib:${LIBRARY_PATH:-}"
 export CPATH="$SCRATCH_REPO/tools/toolchain/install/include:${CPATH:-}"
 
-# Locate DBCSRConfig.cmake explicitly — CMake 4.x case-sensitive search misses
-# the lowercase 'dbcsr' directory name under CMAKE_PREFIX_PATH on some systems.
+# CMake 4.x case-sensitive search misses the lowercase 'dbcsr' directory, so locate DBCSRConfig.cmake explicitly.
 DBCSR_CMAKE_DIR=""
 for d in "$SCRATCH_REPO/tools/toolchain/install"/dbcsr-*/lib/cmake/dbcsr; do
   [ -f "$d/DBCSRConfig.cmake" ] && DBCSR_CMAKE_DIR="$d" && break
@@ -80,7 +77,6 @@ if [ -z "$CMAKE_OPTS" ]; then
   CMAKE_OPTS="-DCP2K_DATA_DIR=$SCRATCH_REPO/data -DCP2K_USE_EVERYTHING=ON -DCP2K_USE_LIBXSMM=OFF -DCP2K_USE_DLAF=OFF -DCP2K_USE_PEXSI=OFF -DCP2K_USE_DFTD4=OFF -DCP2K_USE_DBCSR_CONFIG=ON -DDBCSR_DIR=$DBCSR_CMAKE_DIR"
 fi
 
-# --- Decide whether to reconfigure ---
 NEED_CONFIGURE=0
 
 if [ ! -f "$BUILD_DIR/CMakeCache.txt" ]; then
@@ -102,7 +98,6 @@ mkdir -p "$BUILD_DIR" "$INSTALL_DIR"
 
 if [ "$NEED_CONFIGURE" -eq 1 ]; then
   echo "Configuring build tree..."
-  # Remove stale cache so CMake doesn't reject a source-path mismatch
   rm -f "$BUILD_DIR/CMakeCache.txt"
   rm -rf "$BUILD_DIR/CMakeFiles"
   cmake -S . -B "$BUILD_DIR" \
@@ -124,7 +119,6 @@ echo "CP2K rebuild complete."
 echo "Installed under: $INSTALL_DIR"
 echo
 
-# --- Run NNP Regression Tests ---
 echo "Starting NNP regression tests..."
 WORK_BASE_DIR="${SCRATCH_ROOT}/${SCRATCH_USER}/regtesting"
 mkdir -p "$WORK_BASE_DIR"

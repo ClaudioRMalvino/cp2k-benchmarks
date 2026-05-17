@@ -1,42 +1,15 @@
 #!/usr/bin/env python3
-"""
-plot_csd3_scaling.py
-====================
+"""Consolidated CSD3 / Peta4-IceLake scaling benchmark plotting & analysis.
 
-Consolidated CSD3 / Peta4-IceLake scaling benchmark plotting & analysis.
-
-Outputs (all under plots/scaling_csd3/):
-
-  Main scaling figures (7)
-    size_scaling_time_per_step.pdf    t / MD step vs N_atoms, three branches
-    size_scaling_speedup.pdf          optimised branches' speedup over master
-    core_scaling_time_per_step.pdf    strong scaling: t/step vs cores (master + native-spline)
-    core_scaling_speedup.pdf          strong-scaling speedup + ideal-linear ref
-    core_scaling_efficiency.pdf       strong-scaling parallel efficiency
-    omp_thread_scaling.pdf            OMP=1..76 at MPI=1, N=64
-    omp_size_scaling_2d.pdf           t/step vs N_atoms, one line per OMP count
-
-  Enhancement figures + tables (4)
-    size_scaling_with_complexity_refs.pdf  size scaling + O(N) and O(N^2) reference lines
-    size_scaling_per_atom_per_step.pdf     t / atom / step vs N (flat curve = O(N) algorithm)
-    power_law_fits.{txt,csv}               weighted log-log fits: t = a * N^b per branch
-    size_scaling_summary_table.{txt,csv}   headline workload (N=1024 H2O, full node)
-
-  Statistical-rigour additions (2) -- per Hoefler & Belli (SC'15)
-    headline_distribution_N1024.pdf        box+violin of raw 5 reps, all 3 branches
-    statistical_comparison_N1024.{txt,csv} Welch's t-test (+ Mann-Whitney U fallback)
-                                           between branch pairs, with Cohen's d effect size
-
-  All error bars are reported as 95% confidence intervals derived from the
-  per-rep standard deviation via Student's t-distribution (df = n_reps - 1),
-  not raw standard deviation (Hoefler & Belli SC'15, Rule 5).
+Error bars are 95% CIs from the per-rep std via Student-t (df = n_reps - 1),
+following Hoefler & Belli SC'15 Rule 5.
 
 Usage:
   python3 plot_csd3_scaling.py                     # produce everything (default)
-  python3 plot_csd3_scaling.py --only main         # just the 7 base scaling figures
-  python3 plot_csd3_scaling.py --only enhanced     # just the 4 enhancement outputs
-  python3 plot_csd3_scaling.py --only stats        # just the 2 statistical-rigour outputs
-  python3 plot_csd3_scaling.py --only <section>    # a single section by id (see SECTIONS)
+  python3 plot_csd3_scaling.py --only main         # 7 base scaling figures
+  python3 plot_csd3_scaling.py --only enhanced     # 4 enhancement outputs
+  python3 plot_csd3_scaling.py --only stats        # 2 statistical-rigour outputs
+  python3 plot_csd3_scaling.py --only <section>    # a single section by id
 """
 import argparse
 import glob
@@ -51,9 +24,6 @@ import pandas as pd
 from scipy import stats as sstats
 
 
-# ============================================================================
-# Configuration
-# ============================================================================
 RESULTS_ROOT  = "/home/crm98/rds/hpc-work/cp2k-benchmarks/results"
 PLOT_DIR      = "/home/crm98/cp2k-benchmarks/plots/scaling_csd3"
 ATOMS_PER_MOL = 3   # H2O
@@ -91,16 +61,12 @@ OMP_2D_COLS     = ["omp_threads", "n_molecules", "mpi_ranks", "total_cores", "n_
 N_CORES_TICKS = [1, 2, 4, 8, 16, 32, 64, 76]
 
 
-# ============================================================================
-# Helpers
-# ============================================================================
 def _ensure_dirs():
     os.makedirs(PLOT_DIR, exist_ok=True)
 
 
 def latest(pattern):
-    # Filter out the per-rep *_raw.csv files -- they share the same directory
-    # and the same prefix as the summary CSV, so a naive glob picks them up.
+    # *_raw.csv shares the prefix; exclude it so glob only picks the summary CSV.
     matches = [m for m in glob.glob(pattern) if not m.endswith("_raw.csv")]
     return max(matches, key=os.path.getmtime) if matches else None
 
@@ -132,16 +98,14 @@ def atoms(n_mol):
     return n_mol * ATOMS_PER_MOL
 
 
-# 95% confidence interval half-width from the sample std + n_reps, using the
-# Student-t distribution.  CI = t(n-1, 0.025) * s / sqrt(n).  Required by
-# Hoefler & Belli SC'15 Rule 5: report CIs, not bare std, for nondeterministic
-# measurements.  Adds a 'tps_ci95' column to a loaded summary DataFrame.
+# 95% CI half-width via Student-t: t(n-1, 0.025) * s / sqrt(n).
+# Hoefler & Belli SC'15 Rule 5.
 def add_ci95(df, std_col="tps_std", n_col="n_reps", out_col="tps_ci95"):
     if df is None or std_col not in df.columns or n_col not in df.columns:
         return df
     n = df[n_col].astype(float)
     s = df[std_col].astype(float)
-    # t.ppf(0.975, df) is undefined for df <= 0; mask those rows
+    # t.ppf is undefined for df <= 0; mask those rows.
     tcrit = np.where(n > 1, sstats.t.ppf(0.975, np.maximum(n - 1, 1)), np.nan)
     df = df.copy()
     df[out_col] = tcrit * s / np.sqrt(np.maximum(n, 1))
@@ -149,7 +113,6 @@ def add_ci95(df, std_col="tps_std", n_col="n_reps", out_col="tps_ci95"):
 
 
 def save_fig(fig, name):
-    """Save figure as PDF into PLOT_DIR."""
     os.makedirs(PLOT_DIR, exist_ok=True)
     path = os.path.join(PLOT_DIR, name + ".pdf")
     fig.savefig(path, dpi=300, bbox_inches="tight")
@@ -159,8 +122,7 @@ def save_fig(fig, name):
 
 
 def save_table(df_or_text, basename, header=None):
-    """Save a DataFrame as .txt + .csv into PLOT_DIR. If passed a string,
-    only .txt is written."""
+    """Save DataFrame as .txt + .csv (string: .txt only)."""
     os.makedirs(PLOT_DIR, exist_ok=True)
     txt = os.path.join(PLOT_DIR, basename + ".txt")
     csv = os.path.join(PLOT_DIR, basename + ".csv")
@@ -181,9 +143,6 @@ def save_table(df_or_text, basename, header=None):
     return txt, None
 
 
-# ============================================================================
-# Data loader (single pass; shared across every section)
-# ============================================================================
 def load_all_data():
     print(f"Reading CSVs from {RESULTS_ROOT}")
     data = {}
@@ -199,7 +158,7 @@ def load_all_data():
         data[name] = {
             "size":      size_df,
             "size_meta": parse_header(size),
-            "size_path": size,                # kept for raw-rep loading in stats sections
+            "size_path": size,
             "core":      core_df,
             "core_meta": parse_header(core),
             "core_path": core,
@@ -219,9 +178,6 @@ def load_all_data():
     return data, omp
 
 
-# ============================================================================
-# MAIN FIGURES (7) -- same plots that were in plot_csd3_scaling.py originally
-# ============================================================================
 def fig_size_scaling(data, omp):
     print("\n[main 1/7] size scaling -- time per MD step vs N_atoms")
     fig, ax = plt.subplots(figsize=(8, 5.5))
@@ -424,9 +380,6 @@ def fig_omp_size_scaling_2d(data, omp):
     save_fig(fig, "omp_size_scaling_2d")
 
 
-# ============================================================================
-# ENHANCEMENT FIGURES + TABLES (4) -- from the retired plot_enhancements.py
-# ============================================================================
 def fig_size_scaling_with_complexity_refs(data, omp):
     """Size scaling with O(N) and O(N^2) reference lines anchored to master."""
     print("\n[enhanced 1/4] size scaling with complexity reference overlays")
@@ -498,12 +451,11 @@ def write_power_law_fits(data, omp):
     txt, _ = save_table(display, "power_law_fits", header=header)
     with open(txt, "a") as f:
         f.write(footer)
-    # also save the unformatted numeric DataFrame as the .csv companion
     fit_df.to_csv(os.path.join(PLOT_DIR, "power_law_fits.csv"), index=False)
 
 
 def fig_size_scaling_per_atom(data, omp):
-    """Time per atom per MD step vs N -- visually flat for O(N) algorithms."""
+    """Time per atom per MD step vs N (flat curve = O(N))."""
     print("\n[enhanced 3/4] time per atom per MD step vs N")
     fig, ax = plt.subplots(figsize=(9, 6))
     for name, d in data.items():
@@ -530,7 +482,7 @@ def fig_size_scaling_per_atom(data, omp):
 
 
 def write_summary_table(data, omp):
-    """Headline workload summary at N = 1024 H2O from the size sweep."""
+    """Headline workload summary at N = 1024 H2O."""
     print("\n[enhanced 4/4] headline-workload summary table (N = 1024 H2O, full node)")
     m_t1024 = data["upstream master"]["size"][
         data["upstream master"]["size"]["n_molecules"] == 1024]["tps_mean"].iloc[0]
@@ -569,16 +521,12 @@ def write_summary_table(data, omp):
         f.write(footer)
 
 
-# ============================================================================
-# STATISTICAL-RIGOUR SECTIONS (2) -- Hoefler & Belli SC'15
-# Operate on per-rep raw CSVs (..._raw.csv) rather than the summary tables, so
-# we can see distributions and run inter-branch significance tests.
-# ============================================================================
-HEADLINE_N = 1024   # H2O molecules used as the "headline" workload throughout
+# Statistical-rigour sections operate on per-rep raw CSVs (..._raw.csv) rather
+# than summary tables, to surface distributions and run significance tests.
+HEADLINE_N = 1024
 
 
 def _raw_path_from_summary(summary_path):
-    """Turn 'results_size_scaling_X.csv' into 'results_size_scaling_X_raw.csv'."""
     if summary_path is None:
         return None
     base, ext = os.path.splitext(summary_path)
@@ -587,7 +535,6 @@ def _raw_path_from_summary(summary_path):
 
 
 def load_raw_size_reps(summary_path, n_molecules):
-    """Load the per-rep time/step values for one (branch, N) cell."""
     raw_path = _raw_path_from_summary(summary_path)
     if raw_path is None:
         return None
@@ -599,8 +546,7 @@ def load_raw_size_reps(summary_path, n_molecules):
 
 
 def fig_headline_distribution(data, omp):
-    """Box + violin plot of the raw 5 reps at the headline N for each branch.
-    Shows distribution shape rather than just mean +/- CI -- Hoefler Rule 8/12."""
+    """Box + violin of the raw reps at the headline N (Hoefler Rule 8/12)."""
     print(f"\n[stats 1/2] headline-workload raw-rep distribution (box+violin, N = {HEADLINE_N})")
     reps_per_branch = {}
     for name, d in data.items():
@@ -621,13 +567,11 @@ def fig_headline_distribution(data, omp):
     colors  = [data[k]["color"] for k in labels]
     positions = np.arange(len(labels)) + 1
 
-    # Violin first (gives the kernel-density silhouette)
     parts = ax.violinplot(samples, positions=positions, widths=0.6,
                           showmeans=False, showmedians=False, showextrema=False)
     for pc, col in zip(parts['bodies'], colors):
         pc.set_facecolor(col); pc.set_alpha(0.30); pc.set_edgecolor(col); pc.set_linewidth(1.2)
 
-    # Box on top (gives the quartiles, median, whiskers)
     bp = ax.boxplot(samples, positions=positions, widths=0.25, patch_artist=True,
                     showfliers=True,
                     boxprops=dict(linewidth=1.0),
@@ -637,7 +581,6 @@ def fig_headline_distribution(data, omp):
     for patch, col in zip(bp['boxes'], colors):
         patch.set_facecolor(col); patch.set_alpha(0.55); patch.set_edgecolor('black')
 
-    # Scatter the individual rep observations on top of each violin
     for pos, samp, col in zip(positions, samples, colors):
         jitter = np.random.RandomState(42).uniform(-0.08, 0.08, size=len(samp))
         ax.scatter(pos + jitter, samp, s=28, color=col, edgecolor='black',
@@ -654,12 +597,7 @@ def fig_headline_distribution(data, omp):
 
 
 def write_statistical_comparison(data, omp):
-    """Pairwise inter-branch hypothesis tests at the headline N.
-    Welch's two-sample t-test (does not assume equal variances) -- the standard
-    parametric test for comparing two means with small samples (n = 5 here).
-    Mann-Whitney U as a non-parametric backup that does not assume normality.
-    Cohen's d gives the standardised effect size (large > 0.8 is conventionally
-    "very large"); also reports CIs.  Hoefler & Belli SC'15 Rule 7."""
+    """Pairwise inter-branch hypothesis tests at the headline N (Hoefler Rule 7)."""
     print(f"\n[stats 2/2] inter-branch significance test (N = {HEADLINE_N})")
     samples = {}
     for name, d in data.items():
@@ -679,18 +617,13 @@ def write_statistical_comparison(data, omp):
             std_a,  std_b  = xa.std(ddof=1), xb.std(ddof=1)
             n_a,   n_b    = len(xa), len(xb)
 
-            # Welch's t-test (does not assume equal variances)
             t_stat, p_t = sstats.ttest_ind(xa, xb, equal_var=False)
-            # Mann-Whitney U as a non-parametric backup
             u_stat, p_u = sstats.mannwhitneyu(xa, xb, alternative='two-sided')
-            # Shapiro-Wilk normality on each sample (informs which test to trust)
             _, p_norm_a = sstats.shapiro(xa) if n_a >= 3 else (np.nan, np.nan)
             _, p_norm_b = sstats.shapiro(xb) if n_b >= 3 else (np.nan, np.nan)
 
-            # Cohen's d (pooled std)
             pooled = np.sqrt(((n_a - 1)*std_a**2 + (n_b - 1)*std_b**2) / (n_a + n_b - 2))
             cohens_d = (mean_a - mean_b) / pooled if pooled > 0 else np.nan
-            # Conventional interpretation
             mag = abs(cohens_d)
             interp = ("negligible" if mag < 0.2 else
                       "small"      if mag < 0.5 else
@@ -743,9 +676,6 @@ def write_statistical_comparison(data, omp):
         f.write(footer)
 
 
-# ============================================================================
-# Driver
-# ============================================================================
 MAIN_SECTIONS = [
     ("size",         "size scaling -- t/step vs N_atoms",            fig_size_scaling),
     ("size_speedup", "size scaling -- speedup over master",          fig_size_scaling_speedup),

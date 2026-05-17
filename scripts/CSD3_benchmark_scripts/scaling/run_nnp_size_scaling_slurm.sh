@@ -1,31 +1,17 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# CSD3 / Peta4-IceLake size-scaling sweep — reproduction of the cerberus
-# run_nnp_size_scaling_slurm.sh.  Fixes parallelism at one full node and
-# sweeps the H2O system size 64 -> 4096 via MULTIPLE_UNIT_CELL.
-#
-# Each size point is measured N_REPS+1 times: the first run is a discarded
-# warm-up (cold caches / first MPI init), the remaining N_REPS are timed.
-# Two CSVs are written into the run directory:
-#   results_size_scaling_<label>_<ts>_raw.csv  every individual repeat
-#   results_size_scaling_<label>_<ts>.csv      mean / std / min per size
-# A single snapshot can land on a slow node or a noisy moment; the repeats
-# give an honest error bar on the master-vs-native-spline comparison.
-#
-# Differences from cerberus: srun launcher, intel-oneapi-mkl module load,
-# /rds scratch paths, per-step trajectory/energy/force printing stripped.
+# Size-scaling sweep at full-node parallelism, system size 64 -> 4096 H2O
+# via MULTIPLE_UNIT_CELL. N_REPS+1 measurements per point (first discarded
+# as warm-up).
 
-# Cores per Peta4-IceLake node — change here if your allocation differs.
 CORES_PER_NODE=76
 
 BIN_ROOT=/rds/user/$USER/hpc-work/cp2k_binaries/csd3
 BENCHMARK_ROOT=/home/crm98/cp2k-benchmarks
 
-# Self-sufficient module environment (idempotent if the driver already loaded
-# them) so this script also works when invoked standalone.  Strict mode is
-# relaxed across the sourcing: cp2k_CSD3_env.sh pulls in the toolchain 'setup',
-# which references unbound vars (CP_DFLAGS) that would otherwise trip `set -u`.
+# Strict mode relaxed across the sourcing: cp2k_CSD3_env.sh pulls in the
+# toolchain 'setup' which references unbound CP_DFLAGS - trips `set -u`.
 . /etc/profile.d/modules.sh
 set +u
 source /home/crm98/cp2k-benchmarks/scripts/CSD3_benchmark_scripts/cp2k_CSD3_env.sh
@@ -62,12 +48,10 @@ case "$TARGET_BRANCH" in
       ;;
 esac
 
-# One full node of parallelism.  OMP branch uses OMP=2, so MPI ranks are
-# halved to keep total cores = CORES_PER_NODE.
+# OMP branch uses OMP=2, so MPI ranks are halved to keep total cores =
+# CORES_PER_NODE.
 MPI_RANKS=$(( CORES_PER_NODE / OMP_THREADS ))
 
-# Number of TIMED repeats per size (a warm-up run is always done first and
-# discarded).  Override with e.g. N_REPS=3 for a quicker, coarser sweep.
 N_REPS=${N_REPS:-5}
 
 OUTDIR="/rds/user/$USER/hpc-work/cp2k-benchmarks/results/${OUTDIR_PARENT}/NNP/NNP_size_scaling_${LABEL}_${TIMESTAMP}"
@@ -96,8 +80,6 @@ done
 echo "# n_molecules,rep,time_per_step_s,walltime_s" >>"$RAW_CSV"
 echo "# n_molecules,n_reps,time_per_step_mean_s,time_per_step_std_s,time_per_step_min_s,walltime_mean_s,walltime_std_s,walltime_min_s" >>"$CSV_FILE"
 
-# --- helpers ----------------------------------------------------------------
-# stats <num>... -> "mean sample_std min n"  (n=0 and NAs if no valid input)
 stats() {
    printf '%s\n' "$@" | awk '
       /^[0-9.eE+-]+$/ { x[++n]=$1; s+=$1; if (n==1 || $1<mn) mn=$1 }
@@ -107,15 +89,11 @@ stats() {
             printf "%.6f %.6f %.6f %d\n", m, sd, mn, n }'
 }
 
-# bench_point <rundir> <mpi> <omp> : run a warm-up + N_REPS timed reps of
-# run.inp in <rundir>, append per-rep rows to $RAW_CSV (prefixed with the
-# caller-set $RAW_PREFIX), and echo:
-#   "tps_mean tps_std tps_min wt_mean wt_std wt_min n_ok"
 bench_point() {
    local rundir=$1 mpi=$2 omp=$3
    local r out wt md tps tps_list="" wt_list=""
    export OMP_NUM_THREADS=$omp
-   for r in $(seq 0 "$N_REPS"); do                      # r=0 is the warm-up
+   for r in $(seq 0 "$N_REPS"); do
       out="$rundir/cp2k_rep${r}.out"
       ( cd "$rundir" && srun --ntasks="$mpi" --cpus-per-task="$omp" --hint=nomultithread \
            "$CP2K_EXE" -i run.inp >"$out" 2>&1 ) || true
@@ -126,7 +104,7 @@ bench_point() {
       wt=$(grep -E "^ CP2K +[0-9]" "$out" 2>/dev/null | awk '{print $NF}' | tail -1 || true)
       md=$(awk '/^ qs_mol_dyn_low/ {print $(NF-1)}' "$out" 2>/dev/null | tail -1 || true)
       tps=$(awk -v t="${md:-0}" -v s="$STEPS" 'BEGIN{ if (s>0) printf "%.6f", t/s; else print "NA" }')
-      [[ $r -eq 0 ]] && continue                        # discard the warm-up
+      [[ $r -eq 0 ]] && continue
       tps_list+="$tps "
       wt_list+="$wt "
       echo "${RAW_PREFIX},${r},${tps},${wt}" >>"$RAW_CSV"
@@ -172,14 +150,10 @@ steps = os.environ['STEPS']
 with open(base, "r") as f:
     txt = f.read()
 
-# Fix the step count, and strip per-step trajectory/energy/force printing —
-# a size-scaling benchmark should measure compute, not file I/O.
 txt = re.sub(r'STEPS\s+\d+', f'STEPS {steps}', txt, count=1)
-# Performance benchmark: switch OFF all per-step file I/O so the timing
-# reflects compute, not disk.  Deleting a print-key section does NOT disable
-# it -- &TRAJECTORY / &RESTART_HISTORY are low-print-level keys that revert to
-# their (on) defaults at PRINT_LEVEL LOW -- so set the section parameter to
-# OFF explicitly (also covers &RESTART, which is on by default at any level).
+# &TRAJECTORY / &RESTART_HISTORY are low-print-level keys: deleting the
+# section reverts to on-default at PRINT_LEVEL LOW. Set the section param
+# to OFF (also covers &RESTART, on by default at any level).
 txt = re.sub(r'&TRAJECTORY\b[\s\S]*?&END TRAJECTORY',
              '&TRAJECTORY OFF\n    &END TRAJECTORY\n'
              '    &RESTART OFF\n    &END RESTART\n'

@@ -1,6 +1,8 @@
 # Results directory
 results/ 
-logs
+logs/
+diffusion/
+
 # Ignore massive CP2K trajectory and restart files
 *.xyz
 *.restart

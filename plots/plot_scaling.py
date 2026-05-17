@@ -9,9 +9,9 @@ import matplotlib.ticker as ticker
 import pandas as pd
 
 RESULTS_ROOT = "/home/raid/crm98/cp2k-benchmarks/results"
-# Plots are written to local scratch (no per-user quota).
-# After the job syncs CSVs to home, run this script from cerberus1/athena;
-# retrieve PNGs with: scp athena:/local/data/public/crm98/cp2k-benchmarks/plots/*.png .
+# Plots are written to local scratch (no per-user quota). Run from
+# cerberus1/athena; retrieve with:
+#   scp athena:/local/data/public/crm98/cp2k-benchmarks/plots/*.png .
 PLOT_DIR     = "/local/data/public/crm98/cp2k-benchmarks/plots"
 os.makedirs(PLOT_DIR, exist_ok=True)
 
@@ -57,9 +57,8 @@ def load_csv(path, columns):
 
 
 def parse_header(path):
-    # The run scripts emit `# key: value` lines before the data rows.  Pull
-    # them into a dict so titles can show the actual run parameters instead
-    # of hardcoded values that drift if STEPS/MPI_RANKS are overridden.
+    # Run scripts emit `# key: value` lines before the data rows; parse them
+    # so titles reflect actual run parameters rather than hardcoded defaults.
     if path is None:
         return {}
     meta = {}
@@ -74,7 +73,6 @@ def parse_header(path):
     return meta
 
 
-# ── Discover and load data ────────────────────────────────────────────────────
 data = {}
 for name, info in BRANCHES.items():
     d, lbl = info["dir"], info["label"]
@@ -93,10 +91,9 @@ for name, info in BRANCHES.items():
 
 
 def consensus(kind, key, fallback="?"):
-    # Return the value of `key` from `<kind>_meta` across branches.  Warn if
-    # branches disagree (meaning runs were launched with different params and
-    # shouldn't really be plotted on the same axes) but proceed with the
-    # first non-empty value so plotting still works.
+    # Returns `key` from `<kind>_meta` across branches; warns on disagreement
+    # (runs were launched with different params) but proceeds with the first
+    # non-empty value.
     seen = {}
     for branch, d in data.items():
         v = d[f"{kind}_meta"].get(key)
@@ -108,7 +105,7 @@ def consensus(kind, key, fallback="?"):
         print(f"  WARNING: {kind} '{key}' differs across branches: {seen}")
     return next(iter(seen))
 
-# H₂O: 3 atoms per molecule
+# H2O: 3 atoms per molecule
 N_ATOMS   = [64*3, 256*3, 512*3, 1024*3, 2048*3, 4096*3]
 N_CORES   = [1, 2, 4, 8, 16, 32]
 
@@ -116,7 +113,6 @@ exact_int  = ticker.FuncFormatter(lambda x, _: f"{int(x):,}")
 exact_core = ticker.FixedFormatter([str(c) for c in N_CORES])
 
 
-# ── Plot 1: Size Scaling — Walltime vs Number of Atoms ────────────────────────
 print("\nPlotting size scaling (walltime vs atoms)...")
 fig, ax = plt.subplots(figsize=(9, 6))
 
@@ -149,7 +145,6 @@ print(f"  Saved: {out}")
 plt.close(fig)
 
 
-# ── Plot 2: Core Scaling — Walltime vs Cores ─────────────────────────────────
 print("\nPlotting core scaling (walltime vs cores)...")
 fig, ax = plt.subplots(figsize=(9, 6))
 
@@ -181,7 +176,6 @@ print(f"  Saved: {out}")
 plt.close(fig)
 
 
-# ── Plot 3: Core Scaling — Speedup vs Cores ──────────────────────────────────
 print("\nPlotting core scaling (speedup vs cores)...")
 fig, ax = plt.subplots(figsize=(9, 6))
 

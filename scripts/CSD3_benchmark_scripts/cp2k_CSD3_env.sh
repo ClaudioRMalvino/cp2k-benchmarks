@@ -1,7 +1,6 @@
 #!/bin/bash
 set -e
 
-
 module load rhel8/default-icl 2>/dev/null
 module load intel-oneapi-mkl/2022.1.0/intel/intel-oneapi-mpi/qqwrrcxw 2>/dev/null
 module load gcc/11 2>/dev/null

@@ -1,10 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Per-branch sweep over (system_size, total_cores).  Replicates Figure 2a of
-# the CP2K review paper: log-log plot of time-per-MD-step vs. core count, one
-# curve per system size.  For each (size, cores) pair we run a 200-step NVT MD
-# and read the average per-step time from CP2K's timing table.
+# Per-branch sweep over (system_size, total_cores) for Figure 2a:
+# time-per-MD-step vs. core count, one curve per system size.
 
 BIN_ROOT=/rds/user/$USER/hpc-work/cp2k_binaries/csd3
 BENCHMARK_ROOT=/home/crm98/cp2k-benchmarks
@@ -55,7 +53,7 @@ STEPS=200
 
 CSV_FILE="${OUTDIR}/fig2a_${LABEL}_${TIMESTAMP}.csv"
 cat <<EOF >"$CSV_FILE"
-# Figure 2a — wall-time per MD step
+# Figure 2a wall-time per MD step
 # branch: $LABEL
 # exe:    $CP2K_EXE
 # steps:  $STEPS
@@ -63,16 +61,12 @@ cat <<EOF >"$CSV_FILE"
 n_molecules,mpi_ranks,omp_threads,total_cores,time_per_step_s,total_walltime_s
 EOF
 
-# System size → MULTIPLE_UNIT_CELL multipliers (each cell = 64 H2O).
 declare -A MULT
 MULT[64]="1 1 1"
 MULT[512]="2 2 2"
 MULT[4096]="4 4 4"
 
-# Total-core counts to sweep.  The OMP branch uses OMP=2 throughout, so MPI
-# ranks are total_cores/2; pure-MPI branches use total_cores ranks.  Sweep
-# spans 1 → 288 cores for every system size, matching the paper's full
-# x-axis range.
+# OMP branch uses OMP=2; pure-MPI branches use total_cores ranks.
 CORE_LIST="2 4 8 16 32 64 72 144 288"
 if [[ "$OMP_THREADS" -eq 1 ]]; then
    CORE_LIST="1 $CORE_LIST"
@@ -90,14 +84,11 @@ for size in 64 512 4096; do
    for total_cores in $CORE_LIST; do
       mpi=$(( total_cores / OMP_THREADS ))
       [[ $mpi -lt 1 ]] && continue
-      [[ $((mpi * OMP_THREADS)) -ne $total_cores ]] && continue   # skip non-divisible
+      [[ $((mpi * OMP_THREADS)) -ne $total_cores ]] && continue
 
       rundir="${OUTDIR}/N${size}_c${total_cores}"
       mkdir -p "$rundir"
 
-      # Generate input: set system-size multipliers, increase STEPS to 200,
-      # disable trajectory printing (otherwise I/O dominates per-step time at
-      # high core counts).
       export current_size=$size mx my mz target_file="${rundir}/run.inp" base_inp=$BASE_INP STEPS
       python3 - <<'PYEOF'
 import os, re
@@ -111,15 +102,12 @@ steps = os.environ['STEPS']
 with open(base, "r") as f:
     txt = f.read()
 
-# Set step count
 txt = re.sub(r'STEPS\s+\d+', f'STEPS {steps}', txt, count=1)
 
-# Disable per-step trajectory / energy / force printing — pure benchmark mode
 txt = re.sub(r'&TRAJECTORY[\s\S]*?&END TRAJECTORY', '', txt)
 txt = re.sub(r'&ENERGIES[\s\S]*?&END ENERGIES', '', txt)
 txt = re.sub(r'&FORCES[\s\S]*?&END FORCES', '', txt)
 
-# Multi-cell replication for the larger system sizes
 if size != "64":
     txt = re.sub(r'(&CELL\s*\n)', rf'\g<1>      MULTIPLE_UNIT_CELL {mx} {my} {mz}\n', txt, flags=re.IGNORECASE)
     if "&TOPOLOGY" in txt:
@@ -133,16 +121,14 @@ PYEOF
 
       ln -sfn "$NNP_DATA" "${rundir}/NNP"
 
-      # Run.  --bind-to core for stable timings; --map-by ppr keeps OMP
-      # threads on cores adjacent to their MPI rank.
       (cd "$rundir" && \
          srun --ntasks=$mpi --cpus-per-task=$OMP_THREADS --hint=nomultithread \
               "$CP2K_EXE" -i run.inp >cp2k.out 2>&1) || true
 
       if grep -q "PROGRAM ENDED" "${rundir}/cp2k.out" 2>/dev/null; then
          total_wt=$(grep -E "^ CP2K +[0-9]" "${rundir}/cp2k.out" | awk '{print $NF}' | tail -1)
-         # Per-step time = qs_mol_dyn_low total / steps.  This drops the SCF
-         # init / shutdown overhead from the per-step number.
+         # Per-step time = qs_mol_dyn_low total / steps, which drops the SCF
+         # init/shutdown overhead.
          md_loop=$(awk '/^ qs_mol_dyn_low/ {print $(NF-1)}' "${rundir}/cp2k.out" | tail -1)
          time_per_step=$(awk -v t="$md_loop" -v s="$STEPS" 'BEGIN{printf "%.6f", t/s}')
          printf "%-12s %-10s %-12s %-15s\n" "$size" "$total_cores" "$time_per_step" "$total_wt"

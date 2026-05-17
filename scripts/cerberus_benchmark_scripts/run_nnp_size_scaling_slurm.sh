@@ -1,21 +1,18 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Per-branch binary cache populated by benchmark_slurm.sh.  Each branch has
-# its own cp2k.psmp + lib/, so LD_LIBRARY_PATH cannot accidentally pick up
-# another branch's libcp2k.so.  Lives on scratch (/local/data/public) — too
-# big for /home (libcp2k.so.* alone is hundreds of MB per branch).
+# Per-branch binary cache populated by benchmark_slurm.sh - each branch has its
+# own cp2k.psmp + lib/ so LD_LIBRARY_PATH cannot pick up another branch's
+# libcp2k.so. Lives on scratch (/local/data/public) - too big for /home
+# (libcp2k.so.* alone is hundreds of MB per branch).
 BIN_ROOT=/local/data/public/crm98/cp2k_binaries/phy-cerberus
 
 BENCHMARK_ROOT=/home/raid/crm98/cp2k-benchmarks
 
 set +u
-# --- Load the Toolchain Environment ---
 source "$BIN_ROOT/setup"
 set -u
 
-# --- Pass the branch as an argument (defaults to master) ---
-# Accepted values: master, feature-nnp-verlet-cells, feature-nnp-native-spline
 TARGET_BRANCH=${1:-master}
 TIMESTAMP=$(date +%d-%m_%H-%M)
 
@@ -52,13 +49,12 @@ esac
 
 OUTDIR="/local/data/public/crm98/cp2k-benchmarks/results/${OUTDIR_PARENT}/NNP/NNP_size_scaling_${LABEL}_${TIMESTAMP}"
 
-# Ensure this branch's libcp2k.so.2026.1 is loaded, not another branch's.
+# Ensures this branch's libcp2k.so.2026.1 is loaded, not another branch's.
 export LD_LIBRARY_PATH="$INSTALL_LIB:${LD_LIBRARY_PATH:-}"
 
 BASE_INP="${BENCHMARK_ROOT}/H2O-64_NNP_MD.inp"
 NNP_DATA="${PROJECT_ROOT}/data/NNP"
 
-# --- Variables ---
 if [[ "$TARGET_BRANCH" == "feature-nnp-native-spline-omp" ]]; then
   MPI_RANKS=18
   export OMP_NUM_THREADS=2
@@ -130,7 +126,6 @@ PYEOF
 
   ln -sfn "$NNP_DATA" "${rundir}/NNP"
 
-  # Execute CP2K inside the run directory
   (cd "$rundir" && mpiexec -n "$MPI_RANKS" --bind-to core "$CP2K_EXE" -i run.inp > cp2k_${size}.out 2>&1) || true
 
   if grep -q "PROGRAM ENDED" "${rundir}/cp2k_${size}.out" 2>/dev/null; then

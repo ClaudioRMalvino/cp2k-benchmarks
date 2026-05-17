@@ -1,30 +1,11 @@
 #!/usr/bin/env python3
-"""
-Self-diffusion coefficient from a CP2K MD position trajectory, with the
-Yeh-Hummer finite-size correction -- Fig. S4 D of Morawietz et al., PNAS 113
-(2016) 8368.
+"""Self-diffusion coefficient from a CP2K MD position trajectory with
+Yeh-Hummer finite-size correction (Fig. S4 D of Morawietz et al., PNAS 113
+(2016) 8368).
 
-    D_PBC = lim_{t->inf} (1/6) d/dt <|r(t) - r(0)|^2>                (SI Eq. 14)
-    D_0   = D_PBC + kB T xi / (6 pi eta L),   xi = 2.837297          (SI Eq. 15)
-
-D_PBC is obtained from a linear fit to the oxygen mean-squared displacement in
-its diffusive regime; D_0 removes the periodic-boundary hydrodynamic self-
-interaction using the segment's own Green-Kubo viscosity.
-
-The MSD uses the O(N log N) FFT estimator (Calandrini et al.) over all time
-origins.  Coordinates are unwrapped defensively via minimum-image frame-to-
-frame deltas, so the result is correct whether or not CP2K wrapped the
-trajectory (frame spacing is ~5 fs, far below any half-box jump).
-
-NOTE: for the non-cubic tiled cells (128/256/1024) the Yeh-Hummer L is taken
-as V^(1/3); the correction's xi=2.837297 is strictly the cubic value, so D_0
-at those sizes carries a small box-shape approximation.  The master vs
-native-spline comparison is unaffected (identical cells for both branches).
-
-Usage:
-    compute_diffusion.py <project-pos-1.xyz> --cell-ang ax ay az \
-        --viscosity-mpa-s ETA --out diff.csv [--fit-frac 0.2 0.8]
-        [--species O] [--timestep-fs 0.5] [--traj-every 10]
+For non-cubic tiled cells (128/256/1024) the Yeh-Hummer L is taken as V^(1/3);
+xi=2.837297 is strictly the cubic value, so D_0 at those sizes carries a small
+box-shape approximation.
 """
 import argparse
 import re
@@ -32,15 +13,13 @@ import sys
 
 import numpy as np
 
-KB = 1.380649e-23          # J/K
-XI = 2.837297              # Yeh-Hummer constant (cubic box)
+KB = 1.380649e-23
+XI = 2.837297
 
 _TIME_RE = re.compile(r"time\s*=\s*([-\d.Ee+]+)")
 
 
 def parse_xyz(path, species):
-    """Stream frames; return (times_fs, positions) with positions shape
-    (nframes, n_species_atoms, 3).  times_fs is None if not parseable."""
     times, frames = [], []
     with open(path) as f:
         while True:
@@ -67,7 +46,6 @@ def parse_xyz(path, species):
 
 
 def unwrap(pos, cell):
-    """Unwrap (nframes, natoms, 3) coords via minimum-image frame deltas."""
     d = np.diff(pos, axis=0)
     d -= cell * np.round(d / cell)
     out = np.empty_like(pos)
@@ -77,7 +55,7 @@ def unwrap(pos, cell):
 
 
 def msd_fft(r):
-    """FFT MSD estimator (Calandrini 2011) for one atom, r shape (nframes,3)."""
+    """FFT MSD estimator for one atom, r shape (nframes,3)."""
     n = len(r)
     d = np.sum(r ** 2, axis=1)
     d = np.append(d, 0.0)
@@ -123,23 +101,20 @@ def main():
     else:
         dt_ps = args.timestep_fs * args.traj_every / 1000.0
 
-    # unwrap then accumulate MSD over all atoms
     pos = unwrap(pos, cell)
     msd = np.mean([msd_fft(pos[:, i, :]) for i in range(natoms)], axis=0)
     lag_ps = np.arange(nframes) * dt_ps
 
-    # linear fit in the diffusive regime -> D_PBC = slope / 6   (Ang^2/ps)
     lo = int(args.fit_frac[0] * nframes)
     hi = int(args.fit_frac[1] * nframes)
     slope, intercept = np.polyfit(lag_ps[lo:hi], msd[lo:hi], 1)
-    d_pbc = slope / 6.0                                   # Ang^2/ps
+    d_pbc = slope / 6.0
 
-    # Yeh-Hummer correction (compute in SI, report in Ang^2/ps)
-    L_m = (np.prod(cell)) ** (1.0 / 3.0) * 1.0e-10        # V^(1/3) in m
-    eta = args.viscosity_mpa_s * 1.0e-3                   # Pa.s
+    L_m = (np.prod(cell)) ** (1.0 / 3.0) * 1.0e-10
+    eta = args.viscosity_mpa_s * 1.0e-3
     kT = KB * 300.0
-    correction_si = kT * XI / (6.0 * np.pi * eta * L_m)   # m^2/s
-    correction = correction_si * 1.0e8                    # -> Ang^2/ps
+    correction_si = kT * XI / (6.0 * np.pi * eta * L_m)
+    correction = correction_si * 1.0e8
     d_0 = d_pbc + correction
 
     with open(args.out, "w") as f:

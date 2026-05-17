@@ -1,12 +1,7 @@
 #!/usr/bin/env bash
-#! Smoke test for the reconstructed RPBE-vdW (Morawietz 2016) NNP.
-#! Runs a single-point ENERGY_FORCE on the 64-H2O box with BOTH branch
-#! binaries (upstream master, feature/nnp-native-spline) and checks:
-#!   1. the reconstructed input.nn parses and CP2K completes
-#!   2. the total energy / forces / stress are finite and physically sane
-#!   3. master and native-spline agree to ~machine precision
-#! This validates the input.nn reconstruction + the optimisation's correctness
-#! BEFORE committing to the full Fig. S4 production campaign.
+# Smoke test: single-point ENERGY_FORCE on 64-H2O with both branch binaries,
+# checks completion, finite energy/forces/stress, and master vs native-spline
+# agreement to machine precision.
 
 #SBATCH -J figS4_smoke
 #SBATCH -A MPHIL-NIKIFORAKIS-CRM98-SL2-CPU
@@ -17,8 +12,8 @@
 #SBATCH --mail-type=NONE
 #SBATCH --output=/home/crm98/cp2k-benchmarks/logs/figS4_smoke_%j.out
 
-# Source the toolchain environment BEFORE enabling strict mode: the toolchain
-# 'setup' script references unbound vars (CP_DFLAGS) that trip `set -u`.
+# Source toolchain env BEFORE strict mode: 'setup' references unbound
+# CP_DFLAGS that would trip `set -u`.
 . /etc/profile.d/modules.sh
 module purge
 source /home/crm98/cp2k-benchmarks/scripts/CSD3_benchmark_scripts/cp2k_CSD3_env.sh
@@ -38,7 +33,6 @@ run_branch() {
    local rundir="$OUTDIR/$label"
    mkdir -p "$rundir"
    cp "$OUTDIR/smoke_RPBE-vdW.inp" "$rundir/run.inp"
-   # The input references NNP/RPBE-vdW-2016/... ; point NNP at the potentials dir.
    ln -sfn "$BENCH/potentials" "$rundir/NNP"
    export LD_LIBRARY_PATH="$lib:${LD_LIBRARY_PATH:-}"
    export OMP_NUM_THREADS=1
@@ -65,16 +59,13 @@ branches = ["master", "feature-nnp-native-spline"]
 
 def parse(out):
     txt = open(out).read()
-    # total NNP energy (Hartree): "ENERGY| Total FORCE_EVAL ( NNP ) energy [hartree]  -45.159..."
     m = re.search(r'ENERGY\|\s*Total FORCE_EVAL.*?energy\s*\[\w+\]\s+([-\d.E+]+)', txt)
     energy = float(m.group(1)) if m else None
-    # atomic forces: "FORCES|  <atom>  fx  fy  fz  |f|"
     forces = []
     for ln in txt.splitlines():
         p = ln.split()
         if len(p) == 6 and p[0] == "FORCES|" and p[1].isdigit():
             forces.append((float(p[2]), float(p[3]), float(p[4])))
-    # 1/3 trace of the analytical stress tensor [bar], as a pressure sanity check
     st = re.search(r'STRESS\|\s*1/3 Trace\s+([-\d.E+]+)', txt)
     return energy, forces, (st.group(1) if st else None)
 
@@ -109,7 +100,6 @@ if len(res) == 2:
         print(f"  max |dF| master vs native-spline = {dmax:.3e} a.u.")
         ok_f = dmax < 1e-6
     print()
-    print("  RESULT:", "PASS - branches agree, input.nn parses" if (ok_e and ok_f)
-          else "CHECK - see numbers above")
+    print("  RESULT:", "PASS" if (ok_e and ok_f) else "CHECK - see numbers above")
 PYEOF
 echo "Outputs in: $OUTDIR"

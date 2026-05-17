@@ -1,9 +1,7 @@
 #!/bin/bash
 set -e
 
-# Source the project env first — defines GCC11_LIB (needed by the C++ link line
-# below) and loads the rhel8/icl + MKL + gcc/11 modules.  The toolchain setup is
-# sourced inside cp2k_CSD3_env.sh, so we don't re-source it here.
+# cp2k_CSD3_env.sh defines GCC11_LIB (required by the C++ link line) and sources the toolchain setup.
 source /home/crm98/cp2k-benchmarks/scripts/CSD3_benchmark_scripts/cp2k_CSD3_env.sh
 
 cd ~/cp2k_master
@@ -53,5 +51,5 @@ if [[ "${SKIP_REGTEST:-0}" != "1" ]]; then
 
    echo "NNP regression tests complete."
 else
-   echo "SKIP_REGTEST=1 — skipping NNP regression tests."
+   echo "SKIP_REGTEST=1 - skipping NNP regression tests."
 fi

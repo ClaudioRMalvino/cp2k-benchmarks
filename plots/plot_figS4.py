@@ -1,19 +1,9 @@
 #!/usr/bin/env python3
-"""
-Plot the Fig. S4 replication (Morawietz et al., PNAS 2016) -- system-size
-dependence of the shear viscosity and self-diffusion coefficient of liquid
-water, comparing two CP2K builds (upstream master vs feature/nnp-native-spline)
-over a 64 -> 1024 H2O size sweep with the reconstructed RPBE-vdW NNP.
+"""Plot the Fig. S4 replication (Morawietz et al., PNAS 2016).
 
-Reads the aggregated CSVs from aggregate_figS4.py and writes:
-  figS4_replication.png  4 panels: A stress ACF, B running Green-Kubo
-                         viscosity, C eta vs 1/L, D D_PBC & Yeh-Hummer D_0
-                         vs 1/L -- both branches overlaid.
-  figS4_performance.png  master vs native-spline: wall-time per MD step,
-                         wall-time per production segment, and the speedup.
-  figS4_accuracy.png     eta and D_0 master vs native-spline side by side --
-                         the "do the two branches give comparable physics?"
-                         check (they share identical NVE starting configs).
+System-size dependence of shear viscosity and self-diffusion of liquid water,
+comparing CP2K upstream master vs feature/nnp-native-spline over a 64 -> 1024
+H2O size sweep with the reconstructed RPBE-vdW NNP.
 
 Usage:
   plot_figS4.py [--analysis-dir DIR] [--plot-dir DIR]
@@ -38,13 +28,12 @@ BRANCHES = {
 
 
 def inv_L(size):
-    """1/L with L = V^(1/3); V from the tiled cell."""
+    """1/L with L = V^(1/3) from the tiled cell."""
     cell = [BASE_L * m for m in MULT[size]]
     return 1.0 / (np.prod(cell) ** (1.0 / 3.0))
 
 
 def load_summary(path):
-    """figS4_summary.csv -> {branch: {size: row-dict}}."""
     out = {}
     with open(path) as f:
         header = f.readline().strip().split(",")
@@ -77,15 +66,11 @@ def main():
 
     summ = load_summary(os.path.join(A, "figS4_summary.csv"))
 
-    # =====================================================================
-    # Figure 1 -- the Fig. S4 replication (4 panels), both branches overlaid
-    # =====================================================================
     fig, ax = plt.subplots(2, 2, figsize=(12, 9))
     fig.suptitle("Fig. S4 replication -- size dependence of viscosity & diffusion\n"
                  "RPBE-vdW NNP (Morawietz 2016), CP2K master vs nnp-native-spline",
                  fontsize=12)
 
-    # -- Panel A: normalised stress ACF, N = 64 ---------------------------
     axA = ax[0, 0]
     for b, st in BRANCHES.items():
         c = load_curve(os.path.join(A, f"acf_{b}_N64.csv"))
@@ -99,7 +84,6 @@ def main():
     axA.set_title("A  stress autocorrelation (N = 64)")
     axA.legend(fontsize=8)
 
-    # -- Panel B: running viscosity, N = 64/512/1024 (branch=colour, size=line)
     axB = ax[0, 1]
     for size, ls in zip((64, 512, 1024), ("-", "--", ":")):
         for b, st in BRANCHES.items():
@@ -114,7 +98,6 @@ def main():
     axB.set_title("B  running Green-Kubo viscosity")
     axB.legend(fontsize=7)
 
-    # -- Panel C: eta vs 1/L ----------------------------------------------
     axC = ax[1, 0]
     for b, st in BRANCHES.items():
         if b not in summ:
@@ -130,7 +113,6 @@ def main():
     axC.set_title("C  viscosity vs system size")
     axC.legend(fontsize=8)
 
-    # -- Panel D: D_PBC and D_0 vs 1/L ------------------------------------
     axD = ax[1, 1]
     for b, st in BRANCHES.items():
         if b not in summ:
@@ -158,10 +140,6 @@ def main():
     plt.close(fig)
     print(f"  saved {out}")
 
-    # =====================================================================
-    # Figure 2 -- performance: master vs native-spline
-    #   wall-time per MD step | wall-time per production segment | speedup
-    # =====================================================================
     fig, (axp, axw, axr) = plt.subplots(1, 3, figsize=(15, 4.5))
     for b, st in BRANCHES.items():
         if b not in summ:
@@ -190,7 +168,6 @@ def main():
         a.grid(True, which="both", ls="--", alpha=0.4)
         a.legend(fontsize=8)
 
-    # speedup = master time-per-step / native-spline time-per-step, per size
     m = summ.get("master", {})
     o = summ.get("feature-nnp-native-spline", {})
     ss = [s for s in SIZES if s in m and s in o]
@@ -215,11 +192,8 @@ def main():
     plt.close(fig)
     print(f"  saved {out}")
 
-    # =====================================================================
-    # Figure 3 -- accuracy: do the two branches give comparable physics?
-    # eta and D_0 side by side; bars should agree within error bars since the
-    # two branches run from identical NVE starting configurations.
-    # =====================================================================
+    # Accuracy cross-check: eta and D_0 should agree within error bars since
+    # the two branches run from identical NVE starting configurations.
     fig, (axe, axd) = plt.subplots(1, 2, figsize=(12, 4.5))
     width = 0.38
     ss_common = [s for s in SIZES if all(s in summ.get(b, {}) for b in BRANCHES)]

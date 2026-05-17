@@ -1,11 +1,7 @@
 #!/usr/bin/env bash
-#! CSD3 / Peta4-IceLake OpenMP-scaling benchmark for feature/nnp-native-spline-omp.
-#! Two single-node sweeps, both isolating the OpenMP layer added in
-#! nnp_calc_acsf (MPI_RANKS=1 by default, so all parallelism is OMP):
-#!   * thread scaling — fixed system size, sweep OMP_NUM_THREADS
-#!   * size scaling   — sweep system size at several fixed OMP_NUM_THREADS
-#! Only native-spline-omp is benchmarked; master and native-spline are pure
-#! MPI and ignore OMP_NUM_THREADS entirely.
+# CSD3 OpenMP-scaling benchmark for feature/nnp-native-spline-omp:
+# thread-scaling sweep, size-scaling sweep, and the MPI:OMP decomposition
+# sweep, all on a single node.
 
 #SBATCH -J NNP_omp_scaling
 #SBATCH -A MPHIL-NIKIFORAKIS-CRM98-SL2-CPU
@@ -21,10 +17,6 @@ mkdir -p /home/crm98/cp2k-benchmarks/logs/
 . /etc/profile.d/modules.sh
 source /home/crm98/cp2k-benchmarks/scripts/CSD3_benchmark_scripts/cp2k_CSD3_env.sh
 
-# ---------------------------------------------------------------------------
-# Binary cache.  Only feature-nnp-native-spline-omp is needed here.  REBUILD=1
-# forces a rebuild from the cp2k_optimized clone; default reuses the cache.
-# ---------------------------------------------------------------------------
 BIN_ROOT=/rds/user/$USER/hpc-work/cp2k_binaries/csd3
 mkdir -p "$BIN_ROOT/feature-nnp-native-spline-omp/lib"
 REBUILD=${REBUILD:-0}
@@ -39,7 +31,7 @@ if [[ "$REBUILD" -eq 1 || ! -x "$CACHE" ]]; then
    if [[ -x /home/crm98/cp2k_optimized/install/bin/cp2k.psmp ]]; then
       cp /home/crm98/cp2k_optimized/install/bin/cp2k.psmp "$CACHE"
    else
-      echo "!! build did not produce cp2k.psmp — aborting"; exit 1
+      echo "!! build did not produce cp2k.psmp - aborting"; exit 1
    fi
 else
    echo "==> Using cached binary: $CACHE"
@@ -64,9 +56,6 @@ echo ""
 echo "=== MPI:OMP DECOMPOSITION SWEEP ==="
 ./run_nnp_decomposition_sweep_slurm.sh
 
-# ---------------------------------------------------------------------------
-# Sync CSVs to home for plotting; full run dirs stay on /rds scratch.
-# ---------------------------------------------------------------------------
 SCRATCH_RESULTS=/rds/user/$USER/hpc-work/cp2k-benchmarks/results
 HOME_RESULTS=/home/crm98/cp2k-benchmarks/results
 mkdir -p "$HOME_RESULTS"

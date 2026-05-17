@@ -1,20 +1,17 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Per-branch binary cache populated by benchmark_slurm.sh.  Each branch has
-# its own cp2k.psmp + lib/, so LD_LIBRARY_PATH cannot accidentally pick up
-# another branch's libcp2k.so.
+# Per-branch binary cache populated by benchmark_slurm.sh - each branch has its
+# own cp2k.psmp + lib/ so LD_LIBRARY_PATH cannot pick up another branch's
+# libcp2k.so.
 BIN_ROOT=/local/data/public/crm98/cp2k_binaries/phy-cerberus
 
 BENCHMARK_ROOT=/home/raid/crm98/cp2k-benchmarks
 
 set +u
-# --- Load the Toolchain Environment ---
 source "$BIN_ROOT/setup"
 set -u
 
-# --- Pass the branch as an argument (defaults to master) ---
-# Accepted values: master, feature-nnp-verlet-cells, feature-nnp-native-spline
 TARGET_BRANCH=${1:-master}
 TIMESTAMP=$(date +%d-%m_%H-%M)
 
@@ -51,13 +48,12 @@ esac
 
 OUTDIR="/local/data/public/crm98/cp2k-benchmarks/results/${OUTDIR_PARENT}/NNP/NNP_core_scaling_${LABEL}_${TIMESTAMP}"
 
-# Ensure this branch's libcp2k.so.2026.1 is loaded, not another branch's.
+# Ensures this branch's libcp2k.so.2026.1 is loaded, not another branch's.
 export LD_LIBRARY_PATH="$INSTALL_LIB:${LD_LIBRARY_PATH:-}"
 
 BASE_INP="${BENCHMARK_ROOT}/H2O-64_NNP_MD.inp"
 NNP_DATA="${PROJECT_ROOT}/data/NNP"
 
-# --- Variables ---
 N_MOLECULES=${N_MOLECULES:-64}
 STEPS=${STEPS:-100}
 

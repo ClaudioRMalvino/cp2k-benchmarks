@@ -2,9 +2,7 @@
 set -euo pipefail
 
 # Per-branch 64-H2O NVT trajectory at 300 K for RDF computation (Figure 2b).
-# 10,000 steps × 0.5 fs = 5 ps simulation time, trajectory printed every 10
-# steps → 1000 frames.  Single-node run on 72 cores.  RDFs are post-processed
-# by compute_rdf.py from the SBATCH driver.
+# 10,000 steps x 0.5 fs = 5 ps, trajectory printed every 10 steps.
 
 BIN_ROOT=/rds/user/$USER/hpc-work/cp2k_binaries/csd3
 BENCHMARK_ROOT=/home/crm98/cp2k-benchmarks
@@ -43,9 +41,6 @@ case "$TARGET_BRANCH" in
       ;;
 esac
 
-# All three branches write into the same per-branch dir under fig2b_rdf/<label>/
-# so the SBATCH driver can pick the trajectory up afterward without timestamp
-# matching.
 OUTDIR="/rds/user/$USER/hpc-work/cp2k-benchmarks/results/paper_fig2/fig2b_rdf/${TARGET_BRANCH}"
 mkdir -p "$OUTDIR"
 
@@ -57,7 +52,6 @@ NNP_DATA="${PROJECT_ROOT}/data/NNP"
 STEPS=10000
 TRAJ_EVERY=10
 
-# Generate input: 10k steps, trajectory every 10 steps, no force/energy spam
 export base_inp=$BASE_INP target_file="${OUTDIR}/run.inp" STEPS TRAJ_EVERY
 python3 - <<'PYEOF'
 import os, re
@@ -70,9 +64,7 @@ with open(base, "r") as f:
     txt = f.read()
 
 txt = re.sub(r'STEPS\s+\d+', f'STEPS {steps}', txt, count=1)
-# trajectory every TRAJ_EVERY steps
 txt = re.sub(r'(&TRAJECTORY\s*\n\s*&EACH\s*\n\s*MD\s+)\d+', rf'\g<1>{each}', txt)
-# silence the per-step force/energy printing inside &NNP — pure RDF run
 txt = re.sub(r'&ENERGIES[\s\S]*?&END ENERGIES', '', txt)
 txt = re.sub(r'&FORCES[\s\S]*?&END FORCES', '', txt)
 
@@ -94,6 +86,6 @@ if grep -q "PROGRAM ENDED" "${OUTDIR}/cp2k.out" 2>/dev/null; then
    total_wt=$(grep -E "^ CP2K +[0-9]" "${OUTDIR}/cp2k.out" | awk '{print $NF}' | tail -1)
    echo "Done.  Total wall-time: ${total_wt}s.  Trajectory: ${OUTDIR}/H2O-64_NNP_MD-pos-1.xyz"
 else
-   echo "FAILED — see ${OUTDIR}/cp2k.out"
+   echo "FAILED - see ${OUTDIR}/cp2k.out"
    exit 1
 fi

@@ -48,5 +48,5 @@ if [[ "${SKIP_REGTEST:-0}" != "1" ]]; then
 
    echo "NNP regression tests complete."
 else
-   echo "SKIP_REGTEST=1 — skipping NNP regression tests."
+   echo "SKIP_REGTEST=1 - skipping NNP regression tests."
 fi

@@ -1,21 +1,10 @@
 #!/usr/bin/env python3
 """
 Compute O-O / O-H / H-H radial distribution functions from a CP2K NVT
-trajectory of liquid water in a cubic periodic box.  Produces a CSV with
-columns: r_angstrom, gOO, gOH, gHH — directly plottable to replicate Fig 2b
-of Iannuzzi et al., J. Phys. Chem. B 2026, 130, 1237.
+trajectory of liquid water in a cubic periodic box.
 
 Usage:
     python3 compute_rdf.py <trajectory.xyz> --box <length_angstrom> --out <rdf.csv>
-
-Single-frame XYZ format (CP2K default):
-    <n_atoms>
-    i = <step>, ... <comment>
-    <element> <x> <y> <z>
-    ...
-
-Distances use minimum-image convention.  Bins are 0..6 Å in 200 steps to match
-the resolution of the published figure.
 """
 import argparse
 import sys
@@ -24,8 +13,7 @@ import numpy as np
 
 
 def parse_xyz_frames(path):
-    """Generator yielding (atom_symbols, positions) for each frame.  Reads in a
-    streaming fashion so trajectories of any length fit in memory."""
+    """Generator yielding (atom_symbols, positions) for each frame."""
     with open(path, "r") as f:
         while True:
             header = f.readline()
@@ -35,7 +23,7 @@ def parse_xyz_frames(path):
                 n_atoms = int(header.strip())
             except ValueError:
                 return
-            f.readline()                                       # comment line
+            f.readline()
             symbols = []
             positions = np.empty((n_atoms, 3), dtype=np.float64)
             for i in range(n_atoms):
@@ -46,8 +34,7 @@ def parse_xyz_frames(path):
 
 
 def pair_distances_pbc(pos_a, pos_b, box, same_set):
-    """All pairwise distances between two atom subsets under cubic PBC.
-    same_set=True drops self-pairs and double-counting (i<j only)."""
+    """Pairwise distances under cubic PBC; same_set=True keeps only i<j."""
     dr = pos_a[:, None, :] - pos_b[None, :, :]
     dr -= box * np.round(dr / box)
     d = np.sqrt(np.sum(dr * dr, axis=-1))
@@ -76,17 +63,14 @@ def accumulate_rdf(trajectory_path, box, n_bins=200, r_max=6.0):
         if n_frames == 0:
             n_O, n_H = len(idx_O), len(idx_H)
 
-        # O-O (same set)
         d = pair_distances_pbc(positions[idx_O], positions[idx_O], box, same_set=True)
         h, _ = np.histogram(d[d < r_max], bins=edges)
         hist_oo += h
 
-        # O-H (different sets)
         d = pair_distances_pbc(positions[idx_O], positions[idx_H], box, same_set=False)
         h, _ = np.histogram(d[d < r_max], bins=edges)
         hist_oh += h
 
-        # H-H (same set)
         d = pair_distances_pbc(positions[idx_H], positions[idx_H], box, same_set=True)
         h, _ = np.histogram(d[d < r_max], bins=edges)
         hist_hh += h
@@ -99,8 +83,6 @@ def accumulate_rdf(trajectory_path, box, n_bins=200, r_max=6.0):
     volume = box ** 3
     shell_vol = 4.0 * np.pi * centers ** 2 * dr
 
-    # g_AB(r) = N_pairs(r) / [n_frames * shell_vol * rho_B * (effective N_A)]
-    # For same-species AA (i<j only): rho_A * (N_A - 1) / 2 effective pair count per atom
     rho_O = n_O / volume
     rho_H = n_H / volume
     g_oo = hist_oo / (n_frames * shell_vol * rho_O * (n_O - 1) / 2.0)

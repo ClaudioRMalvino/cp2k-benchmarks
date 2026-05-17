@@ -1,43 +1,23 @@
 #!/usr/bin/env python3
-"""
-Green-Kubo shear viscosity from a CP2K MD .stress file.
+"""Green-Kubo shear viscosity from a CP2K MD .stress file (Morawietz et al.,
+PNAS 113 (2016) 8368, SI section B / Fig. S4 A,B,C).
 
-Replicates the viscosity analysis of Morawietz et al., PNAS 113 (2016) 8368,
-SI section B / Fig. S4 A,B,C:
-
-    eta = V / (kB T) * integral_0^inf <P_ab(t) P_ab(0)> dt          (SI Eq. 13)
-
-The autocorrelation is averaged over the five independent off-diagonal /
-traceless components used in the paper:
-    Pxy, Pxz, Pyz, (Pxx-Pyy)/2, (Pyy-Pzz)/2
-and the GK integral is truncated at --int-limit ps (paper: 3 ps).
-
-Input  : CP2K '<project>-1.stress' file written by &MOTION/&PRINT/&STRESS.
-         Columns: Step  Time[fs]  xx xy xz yx yy yz zx zy zz   (stress in bar)
-Outputs: <out> CSV with the normalised stress ACF (panel A) and the running
-         viscosity eta(t) (panel B); the converged eta (panel C) and metadata
-         go in the header comment and to stdout.
-
-Usage:
-    compute_viscosity.py <project-1.stress> --n-molecules 64 --out visc.csv
-        [--volume-ang3 V] [--temperature 300] [--timestep-fs 0.5]
-        [--discard-ps 10] [--int-limit-ps 3.0]
+ACF is averaged over the five independent off-diagonal / traceless components
+(Pxy, Pxz, Pyz, (Pxx-Pyy)/2, (Pyy-Pzz)/2); GK integral truncated at
+--int-limit ps.
 """
 import argparse
 import sys
 
 import numpy as np
 
-# physical constants (SI)
-KB = 1.380649e-23           # J/K
+KB = 1.380649e-23
 BAR_TO_PA = 1.0e5
 ANG3_TO_M3 = 1.0e-30
-# the base 64-H2O cell is 12.42 A cube -> volume per molecule at rho ~ 1 g/cm3
 VOL_PER_MOLECULE_ANG3 = 12.42 ** 3 / 64.0
 
 
 def read_stress(path):
-    """Return (time_fs, P) where P has shape (nframes, 3, 3), stress in bar."""
     steps, times, comps = [], [], []
     with open(path) as f:
         for line in f:
@@ -57,16 +37,15 @@ def read_stress(path):
 
 
 def fft_acf(x, max_lag):
-    """Unbiased autocorrelation of a 1-D series via FFT (Wiener-Khinchin).
-    No mean subtraction: the off-diagonal stress already fluctuates about 0,
-    which is the quantity the Green-Kubo relation integrates."""
+    """Unbiased autocorrelation of a 1-D series via FFT. No mean subtraction:
+    the off-diagonal stress already fluctuates about 0."""
     n = len(x)
     fsize = 1
     while fsize < 2 * n:
         fsize *= 2
     fx = np.fft.rfft(x, n=fsize)
     acf = np.fft.irfft(fx * np.conj(fx))[:n]
-    acf /= (n - np.arange(n))           # unbiased: divide by # of contributing pairs
+    acf /= (n - np.arange(n))
     return acf[:max_lag]
 
 
@@ -92,14 +71,12 @@ def main():
 
     t_fs, P = read_stress(args.stress_file)
     dt_fs = args.timestep_fs
-    # discard the initial transient
     n_discard = int(round(args.discard_ps * 1000.0 / dt_fs))
     P = P[n_discard:]
     if len(P) < 100:
         raise RuntimeError(f"too few stress frames after discarding "
                             f"{args.discard_ps} ps ({len(P)} left)")
 
-    # five independent shear components (SI section B), converted bar -> Pa
     comps = np.array([
         P[:, 0, 1],
         P[:, 0, 2],
@@ -111,15 +88,13 @@ def main():
     max_lag = int(round(args.int_limit_ps * 1000.0 / dt_fs)) + 1
     max_lag = min(max_lag, len(P) // 2)
 
-    # ACF averaged over the five components  ->  <P_ab(t) P_ab(0)>  in Pa^2
     acf = np.mean([fft_acf(c, max_lag) for c in comps], axis=0)
 
     lag_fs = np.arange(max_lag) * dt_fs
     dt_s = dt_fs * 1e-15
-    # running Green-Kubo integral -> running viscosity eta(t)  (Pa.s -> mPa.s)
     running_integral = np.concatenate([[0.0],
                                        np.cumsum(0.5 * (acf[1:] + acf[:-1]) * dt_s)])
-    running_eta = (V / kT) * running_integral * 1.0e3        # mPa.s
+    running_eta = (V / kT) * running_integral * 1.0e3
 
     eta_final = running_eta[-1]
     acf_norm = acf / acf[0]

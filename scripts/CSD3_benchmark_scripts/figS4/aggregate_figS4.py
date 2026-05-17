@@ -1,25 +1,5 @@
 #!/usr/bin/env python3
-"""
-Aggregate the Fig. S4 NVE production runs into panel-ready CSVs.
-
-Walks   <prod_root>/<branch>/N<size>/seg<k>/   ; for every segment it runs
-compute_viscosity.py and compute_diffusion.py, then averages viscosity,
-diffusion coefficients, the stress ACF, the running viscosity, the MSD and
-the per-step wall-time over the 5 independent segments (mean +/- standard
-error of the mean -- the error bars in Fig. S4 / Fig. 1 C,D).
-
-Outputs (in <out_dir>):
-  figS4_summary.csv                       eta / D_PBC / D_0 / time-per-step,
-                                          mean +/- SEM, per (branch, size)
-  acf_<branch>_N<size>.csv                averaged normalised stress ACF (panel A)
-  running_eta_<branch>_N<size>.csv        averaged running viscosity   (panel B)
-  msd_<branch>_N<size>.csv                averaged MSD                 (panel D aux)
-
-Usage:
-  aggregate_figS4.py --prod-root <dir> --out-dir <dir>
-      [--branches master feature-nnp-native-spline] [--sizes 64 128 256 512 1024]
-      [--discard-ps 10] [--int-limit-ps 3.0]
-"""
+"""Aggregate Fig. S4 NVE production segments into panel-ready CSVs."""
 import argparse
 import glob
 import os
@@ -31,15 +11,13 @@ import numpy as np
 HERE = os.path.dirname(os.path.abspath(__file__))
 VISC = os.path.join(HERE, "compute_viscosity.py")
 DIFF = os.path.join(HERE, "compute_diffusion.py")
-BASE_L = 12.42  # base 64-H2O cubic cell edge (Angstrom)
+BASE_L = 12.42
 
-# size -> MULTIPLE_UNIT_CELL multipliers (must match the run scripts)
 MULT = {64: (1, 1, 1), 128: (2, 1, 1), 256: (2, 2, 1),
         512: (2, 2, 2), 1024: (4, 2, 2)}
 
 
 def read_header(path):
-    """Return dict of '# key: value' header comments from a CSV."""
     meta = {}
     with open(path) as f:
         for line in f:
@@ -53,7 +31,6 @@ def read_header(path):
 
 
 def read_curve(path, ncols):
-    """Return the numeric data rows of a CSV (skipping # and the header row)."""
     rows = []
     with open(path) as f:
         for line in f:
@@ -65,12 +42,11 @@ def read_curve(path, ncols):
             try:
                 rows.append([float(x) for x in p])
             except ValueError:
-                continue  # header row
+                continue
     return np.asarray(rows)
 
 
 def stack_mean_sem(curves, ycol):
-    """Truncate a list of (x, y) arrays to common length, return x, mean, sem."""
     n = min(len(c) for c in curves)
     x = curves[0][:n, 0]
     ys = np.array([c[:n, ycol] for c in curves])
@@ -117,7 +93,6 @@ def main():
                           f"missing stress/traj, skipping", file=sys.stderr)
                     continue
 
-                # --- viscosity (panels A,B,C) -------------------------------
                 vcsv = os.path.join(sd, "viscosity.csv")
                 subprocess.run([sys.executable, VISC, stress[0],
                                 "--n-molecules", str(size),
@@ -128,10 +103,9 @@ def main():
                 vmeta = read_header(vcsv)
                 eta = float(vmeta["eta_mPa_s"])
                 etas.append(eta)
-                acf_curves.append(read_curve(vcsv, 3)[:, [0, 1]])      # lag_fs, acf
-                reta_curves.append(read_curve(vcsv, 3)[:, [0, 2]])     # lag_fs, running_eta
+                acf_curves.append(read_curve(vcsv, 3)[:, [0, 1]])
+                reta_curves.append(read_curve(vcsv, 3)[:, [0, 2]])
 
-                # --- diffusion (panel D) ------------------------------------
                 dcsv = os.path.join(sd, "diffusion.csv")
                 subprocess.run([sys.executable, DIFF, traj[0],
                                 "--cell-ang", f"{cell[0]}", f"{cell[1]}", f"{cell[2]}",
@@ -140,11 +114,8 @@ def main():
                 dmeta = read_header(dcsv)
                 dpbc.append(float(dmeta["D_PBC_ang2_ps"]))
                 d0.append(float(dmeta["D_0_ang2_ps"]))
-                msd_curves.append(read_curve(dcsv, 2))                 # lag_ps, msd
+                msd_curves.append(read_curve(dcsv, 2))
 
-                # --- timing (performance) -----------------------------------
-                # timing.csv cols: branch,label,n_molecules,segment,mpi_ranks,
-                #   prod_steps,time_per_step_s,md_loop_s,total_walltime_s
                 if os.path.exists(timing):
                     with open(timing) as f:
                         for line in f:
@@ -181,7 +152,6 @@ def main():
                   f"D_PBC={dp_m:.4f}  D_0={d0_m:.4f} A^2/ps  "
                   f"t/step={t_m:.4f}s")
 
-            # --- averaged curves ---------------------------------------------
             x, m, s = stack_mean_sem(acf_curves, 1)
             np.savetxt(os.path.join(args.out_dir, f"acf_{branch}_N{size}.csv"),
                        np.c_[x, m, s], delimiter=",",

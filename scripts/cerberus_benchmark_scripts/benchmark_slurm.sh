@@ -12,16 +12,11 @@
 
 mkdir -p /home/raid/crm98/cp2k-benchmarks/logs/
 
-# ---------------------------------------------------------------------------
-# Per-branch binary cache.  Each branch gets its own bin + lib directory so
-# we never accidentally run binary-A against libcp2k.so-of-B: the run scripts
-# point LD_LIBRARY_PATH at $BIN_ROOT/<branch>/lib, not at the scratch install
-# tree (which gets overwritten by the next rebuild).
-#
-# Lives on scratch (/local/data/public), NOT on /home — libcp2k.so.* alone is
-# hundreds of MB, three copies will blow out a typical home quota.  Job 10330
-# died with "Disk quota exceeded" mid-rebuild because BIN_ROOT was on /home.
-# ---------------------------------------------------------------------------
+# Per-branch binary cache: each branch has its own bin + lib so the run scripts
+# can point LD_LIBRARY_PATH at $BIN_ROOT/<branch>/lib without picking up another
+# branch's libcp2k.so from the scratch install tree (which gets overwritten on
+# the next rebuild). Must live on /local/data/public, not /home: libcp2k.so.*
+# is hundreds of MB per branch and exceeds the home quota.
 BIN_ROOT=/local/data/public/crm98/cp2k_binaries/phy-cerberus
 mkdir -p "$BIN_ROOT/master/lib"
 mkdir -p "$BIN_ROOT/feature-nnp-verlet-cells/lib"
@@ -30,30 +25,20 @@ mkdir -p "$BIN_ROOT/feature-nnp-native-spline-omp/lib"
 
 CP2K_REPO=/home/raid/crm98/cp2k
 
-# ---------------------------------------------------------------------------
-# Master — built from the dedicated upstream clone into 'cp2k-buildtree'.
-#    No collision risk with the feature builds (different scratch tree).
-# ---------------------------------------------------------------------------
+# Master is built from a dedicated upstream clone into 'cp2k-buildtree' so it
+# doesn't collide with the feature builds, which use a different scratch tree.
 cd /home/raid/crm98/cp2k-benchmarks/cp2k_master/cerberus_build_scripts/
 ./cp2k_cerberus_master_build.sh -j 32
 MASTER_INSTALL=/local/data/public/crm98/cp2k-buildtree/install
 cp     "$MASTER_INSTALL/bin/cp2k.psmp"     "$BIN_ROOT/master/cp2k.psmp"
-# Copy only the runtime shared library + its versioned symlinks.  -P preserves
-# the symlinks instead of dereferencing them.  We deliberately skip install/lib's
-# cmake/ and pkgconfig/ subdirs — those are build-time metadata for downstream
-# CMake consumers, not required for LD_LIBRARY_PATH at runtime.
+# -P preserves the versioned symlinks instead of dereferencing them.
 cp -P "$MASTER_INSTALL/lib"/libcp2k.so*    "$BIN_ROOT/master/lib/"
 
-# Toolchain setup is shared across every build (same toolchain dir).  Save once.
 cp /local/data/public/crm98/original_cp2k/tools/toolchain/install/setup \
    "$BIN_ROOT/setup"
 
-# ---------------------------------------------------------------------------
-#  Feature branch: nnp-verlet-cells.  rebuild_cp2k.sh rsyncs
-#    /home/raid/crm98/cp2k -> /local/data/public/crm98/original_cp2k, so
-#    'feature' and 'native-spline' share the same scratch source AND the
-#    same install/{bin,lib}.
-# ---------------------------------------------------------------------------
+# rebuild_cp2k.sh rsyncs /home/raid/crm98/cp2k -> /local/data/public/crm98/original_cp2k,
+# so all feature branches share the same scratch source AND install/{bin,lib}.
 git -C "$CP2K_REPO" stash
 git -C "$CP2K_REPO" checkout feature/nnp-verlet-cells
 cd /home/raid/crm98/cp2k-benchmarks/cp2k_optimized/cerberus_build_scripts/
@@ -63,9 +48,6 @@ cp     "$FEATURE_INSTALL/bin/cp2k.psmp"     "$BIN_ROOT/feature-nnp-verlet-cells/
 cp -P "$FEATURE_INSTALL/lib"/libcp2k.so*    "$BIN_ROOT/feature-nnp-verlet-cells/lib/"
 git -C "$CP2K_REPO" stash pop
 
-# ---------------------------------------------------------------------------
-#  Feature branch: nnp-native-spline. 
-# ---------------------------------------------------------------------------
 git -C "$CP2K_REPO" stash
 git -C "$CP2K_REPO" checkout feature/nnp-native-spline
 cd /home/raid/crm98/cp2k-benchmarks/cp2k_optimized/cerberus_build_scripts/
@@ -74,9 +56,6 @@ cp     "$FEATURE_INSTALL/bin/cp2k.psmp"     "$BIN_ROOT/feature-nnp-native-spline
 cp -P "$FEATURE_INSTALL/lib"/libcp2k.so*    "$BIN_ROOT/feature-nnp-native-spline/lib/"
 git -C "$CP2K_REPO" stash pop
 
-# ---------------------------------------------------------------------------
-#  Feature branch: nnp-native-spline-omp. 
-# ---------------------------------------------------------------------------
 git -C "$CP2K_REPO" stash
 git -C "$CP2K_REPO" checkout feature/nnp-native-spline-omp
 cd /home/raid/crm98/cp2k-benchmarks/cp2k_optimized/cerberus_build_scripts/
@@ -85,11 +64,8 @@ cp     "$FEATURE_INSTALL/bin/cp2k.psmp"     "$BIN_ROOT/feature-nnp-native-spline
 cp -P "$FEATURE_INSTALL/lib"/libcp2k.so*    "$BIN_ROOT/feature-nnp-native-spline-omp/lib/"
 git -C "$CP2K_REPO" stash pop
 
-# ---------------------------------------------------------------------------
-# Confirm the three cp2k.psmp binaries and their libcp2k.so
-# are genuinely distinct.  Matching hashes would mean a rebuild was skipped
-# or the wrong source tree was used.
-# ---------------------------------------------------------------------------
+# Matching hashes would mean a rebuild was skipped or the wrong source tree
+# was used.
 echo "=== BINARY VERIFICATION ==="
 echo "-- cp2k.psmp md5sums --"
 md5sum "$BIN_ROOT/master/cp2k.psmp" \
@@ -107,10 +83,6 @@ export LD_LIBRARY_PATH="$BIN_ROOT/feature-nnp-verlet-cells/lib:${LD_LIBRARY_PATH
 ldd "$BIN_ROOT/feature-nnp-verlet-cells/cp2k.psmp" | grep libcp2k
 echo ""
 
-# ---------------------------------------------------------------------------
-# Benchmarks. The run scripts read from $BIN_ROOT/<branch>/{cp2k.psmp,lib},
-# so the home-repo's currently-checked-out branch is irrelevant from here on.
-# ---------------------------------------------------------------------------
 cd /home/raid/crm98/cp2k-benchmarks/scripts/
 
 echo "=== SIZE SCALING ==="
@@ -125,10 +97,7 @@ echo "=== CORE SCALING ==="
 ./run_nnp_core_scaling_slurm.sh feature-nnp-verlet-cells
 ./run_nnp_core_scaling_slurm.sh feature-nnp-native-spline
 ./run_nnp_core_scaling_slurm.sh feature-nnp-native-spline-omp
-# ---------------------------------------------------------------------------
-# Copy CSV results from node-local scratch to home so they are accessible
-# from the login node (cerberus1) for plotting.
-# ---------------------------------------------------------------------------
+
 SCRATCH_RESULTS=/local/data/public/crm98/cp2k-benchmarks/results
 HOME_RESULTS=/home/raid/crm98/cp2k-benchmarks/results
 mkdir -p "$HOME_RESULTS"
