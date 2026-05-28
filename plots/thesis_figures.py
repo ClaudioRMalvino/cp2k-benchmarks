@@ -11,6 +11,7 @@ import argparse
 import glob
 import os
 import re
+import textwrap
 
 import matplotlib
 matplotlib.use("Agg")
@@ -1276,6 +1277,139 @@ def fig7_perf_summary(data, omp):
     _save(fig, "fig7_perf_summary")
 
 
+# ============================================================================
+# Compiler-flags appendix table
+# ============================================================================
+# Compiler flags passed by the build scripts (cp2k_CSD3_master_build.sh and
+# cp2k_CSD3_opt_build.sh).  Both scripts pass the same set; CMake's Release
+# preset and CP2K's CMakeLists.txt add further flags downstream, but those
+# are build-system plumbing rather than choices made for this work.
+COMPILER_FLAGS = [
+    ("-O2",
+        "C, C++, Fortran",
+        "Base optimisation level: aggressive inlining, scalar replacement "
+        "of aggregates, and inner-loop transforms enabled."),
+    ("-g",
+        "C, C++, Fortran",
+        "Emit DWARF debug symbols so MAQAO and perf can resolve samples "
+        "back to source lines."),
+    ("-xCORE-AVX512",
+        "C, C++, Fortran",
+        "Target the Intel Ice Lake-server AVX-512 ISA; implies all earlier "
+        "vector extensions (SSE 4.2, AVX, AVX2)."),
+    ("-qopenmp",
+        "C, C++, Fortran",
+        "Enable OpenMP directives.  Required for the OMP-threaded NN "
+        "evaluation in the feature/nnp-native-spline-omp branch and for "
+        "the threaded MKL paths used by CP2K's solver."),
+    ("-funroll-loops",
+        "Fortran",
+        "Unroll loops with statically known trip counts; complements the "
+        "vectoriser on the symmetry-function kernels."),
+    ("-ftree-vectorize",
+        "Fortran",
+        "Run the inner-loop vectoriser independently of the optimisation "
+        "level."),
+]
+
+
+def _wrap_flag_token(text, width):
+    """Wrap a flag-style string at width, breaking at `_`, `=`, `,`, `/`
+    in addition to spaces/hyphens that textwrap already understands."""
+    if len(text) <= width:
+        return text
+    breakables = "_=,/ "
+    tokens, current = [], ""
+    for ch in text:
+        current += ch
+        if ch in breakables:
+            tokens.append(current)
+            current = ""
+    if current:
+        tokens.append(current)
+    lines, line = [], ""
+    for t in tokens:
+        if line and len(line) + len(t) > width:
+            lines.append(line.rstrip())
+            line = t
+        else:
+            line += t
+    if line:
+        lines.append(line.rstrip())
+    return "\n".join(lines)
+
+
+def fig8_compiler_flags(data, omp):
+    """Compiler-flags appendix table rendered with the same palette as the
+    rest of the thesis figures.  Reads its data from COMPILER_FLAGS above
+    (no external inputs)."""
+    print("\n[fig 8] compiler-flags appendix table")
+
+    HEADERS    = ("Flag", "Languages", "Purpose / notes")
+    COL_WIDTHS = [0.22, 0.20, 0.58]
+    WRAP_CHARS = (22, 16, 45)
+
+    n_rows = len(COMPILER_FLAGS)
+    n_cols = len(HEADERS)
+
+    cell_text = [
+        [
+            _wrap_flag_token(flag, WRAP_CHARS[0]),
+            "\n".join(textwrap.wrap(langs,   WRAP_CHARS[1])) or langs,
+            "\n".join(textwrap.wrap(purpose, WRAP_CHARS[2])) or purpose,
+        ]
+        for flag, langs, purpose in COMPILER_FLAGS
+    ]
+    row_lines = [max(c.count("\n") + 1 for c in row) for row in cell_text]
+
+    line_inches   = 0.18
+    header_inches = 0.40
+    total_h = header_inches + sum(r * line_inches for r in row_lines) + 0.40
+
+    fig, ax = plt.subplots(figsize=(8.5, total_h))
+    ax.axis("off")
+
+    table = ax.table(cellText=cell_text,
+                     colLabels=list(HEADERS),
+                     cellLoc="left",
+                     loc="upper center",
+                     colWidths=COL_WIDTHS)
+    table.auto_set_font_size(False)
+    table.set_fontsize(9)
+
+    base_h = 1.0 / (n_rows + 1)
+    for col in range(n_cols):
+        table[(0, col)].set_height(base_h)
+    for i, lines in enumerate(row_lines, start=1):
+        h = base_h * (lines * 0.80 + 0.4)
+        for col in range(n_cols):
+            table[(i, col)].set_height(h)
+
+    # Header row: navy fill, white bold text.
+    for col in range(n_cols):
+        cell = table[(0, col)]
+        cell.set_facecolor(CAMBRIDGE["blue_dark"])
+        cell.set_text_props(weight="bold", color=CAMBRIDGE["white"],
+                            size=10, ha="left")
+        cell.set_edgecolor("white")
+        cell.set_linewidth(0.5)
+        cell.PAD = 0.04
+
+    # Body rows: alternating slate/white stripes.
+    body_stripe = [CAMBRIDGE["slate_1"], CAMBRIDGE["white"]]
+    for i in range(1, n_rows + 1):
+        for col in range(n_cols):
+            cell = table[(i, col)]
+            cell.set_facecolor(body_stripe[(i - 1) % 2])
+            cell.set_text_props(color=CAMBRIDGE["slate_4"], ha="left",
+                                va="center")
+            cell.set_edgecolor(CAMBRIDGE["slate_2"])
+            cell.set_linewidth(0.4)
+            cell.PAD = 0.04
+
+    _save(fig, "fig8_compiler_flags")
+
+
 FIGURES = [
     (1, fig1_algorithmic_complexity),
     (2, fig2_strong_scaling),
@@ -1284,12 +1418,13 @@ FIGURES = [
     (5, fig5_maqao_microarchitectural),
     (6, fig6_omp_size_heatmap),
     (7, fig7_perf_summary),
+    (8, fig8_compiler_flags),
 ]
 
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--only", type=int, choices=[1, 2, 3, 4, 5, 6, 7], default=None,
+    ap.add_argument("--only", type=int, choices=[1, 2, 3, 4, 5, 6, 7, 8], default=None,
                     help="only produce figure N")
     args = ap.parse_args()
 
