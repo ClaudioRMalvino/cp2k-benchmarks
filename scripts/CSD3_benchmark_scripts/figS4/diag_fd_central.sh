@@ -14,7 +14,7 @@
 #SBATCH -A NIKIFORAKIS-CSC-FUNDS-SL3-CPU
 #SBATCH -p icelake
 #SBATCH --nodes=1
-#SBATCH --ntasks=32
+#SBATCH --ntasks=4
 #SBATCH --time=00:10:00
 #SBATCH --mail-type=NONE
 #SBATCH --output=/home/crm98/cp2k-benchmarks/logs/diag_fd_central_%j.out
@@ -50,7 +50,7 @@ done
 cd "$rundir"
 for f in fd_N64_minus fd_N128_minus; do
    echo "=== running $f ==="
-   srun --ntasks=32 --cpus-per-task=1 --hint=nomultithread \
+   srun --ntasks=4 --cpus-per-task=1 --hint=nomultithread \
         "$CP2K_EXE" -i "${f}.inp" > "${f}.out" 2>&1 || true
 done
 

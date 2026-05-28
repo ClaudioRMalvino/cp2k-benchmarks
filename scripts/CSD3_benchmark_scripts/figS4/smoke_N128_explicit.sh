@@ -7,7 +7,7 @@
 #SBATCH -A NIKIFORAKIS-CSC-FUNDS-SL3-CPU
 #SBATCH -p icelake
 #SBATCH --nodes=1
-#SBATCH --ntasks=32
+#SBATCH --ntasks=8
 #SBATCH --time=00:15:00
 #SBATCH --mail-type=NONE
 #SBATCH --output=/home/crm98/cp2k-benchmarks/logs/smoke_N128_explicit_%j.out
@@ -32,7 +32,7 @@ ln -sfn /home/crm98/cp2k-benchmarks/potentials "$rundir/NNP"
 
 echo "=== smoke N=128 explicit (no MULTIPLE_UNIT_CELL) ==="
 cd "$rundir"
-srun --ntasks=32 --cpus-per-task=1 --hint=nomultithread "$CP2K_EXE" -i run.inp >cp2k.out 2>&1 || true
+srun --ntasks=8 --cpus-per-task=1 --hint=nomultithread "$CP2K_EXE" -i run.inp >cp2k.out 2>&1 || true
 
 echo ""
 echo "=== verdict: temperature column over the 200 steps ==="

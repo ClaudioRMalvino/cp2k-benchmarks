@@ -3,11 +3,11 @@
 # Override the MD length via: STEPS=1000 sbatch run_maqao_profile_slurm.sh
 
 #SBATCH -J maqao_cp2k
-#SBATCH -A MPHIL-NIKIFORAKIS-CRM98-SL2-CPU
+#SBATCH -A NIKIFORAKIS-CSC-FUNDS-SL3-CPU
 #SBATCH -p icelake
 #SBATCH --nodes=1
-#SBATCH --ntasks-per-node=76
-#SBATCH --time=01:00:00
+#SBATCH --ntasks-per-node=16
+#SBATCH --time=00:30:00
 #SBATCH --mail-type=ALL
 #SBATCH --output=/home/crm98/cp2k-benchmarks/logs/maqao_cp2k_%j.out
 

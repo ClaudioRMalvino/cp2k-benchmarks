@@ -3,7 +3,7 @@
 #SBATCH -A NIKIFORAKIS-CSC-FUNDS-SL3-CPU
 #SBATCH -p icelake
 #SBATCH --nodes=1
-#SBATCH --ntasks=16
+#SBATCH --ntasks=4
 #SBATCH --time=00:10:00
 #SBATCH --mail-type=NONE
 #SBATCH --output=/home/crm98/cp2k-benchmarks/logs/smoke_N64_wrapped_%j.out
@@ -28,7 +28,7 @@ ln -sfn /home/crm98/cp2k-benchmarks/potentials "$rundir/NNP"
 
 echo "=== smoke N=64 WRAPPED coords (no replication) ==="
 cd "$rundir"
-srun --ntasks=16 --cpus-per-task=1 --hint=nomultithread "$CP2K_EXE" -i run.inp >cp2k.out 2>&1 || true
+srun --ntasks=4 --cpus-per-task=1 --hint=nomultithread "$CP2K_EXE" -i run.inp >cp2k.out 2>&1 || true
 
 ener=$(ls *.ener 2>/dev/null | head -1)
 [ -z "$ener" ] && { echo "no .ener!"; tail -30 cp2k.out; exit 1; }

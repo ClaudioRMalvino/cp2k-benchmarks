@@ -48,6 +48,14 @@ case "$TARGET_BRANCH" in
       ;;
 esac
 
+# Optional override: point at an arbitrary cp2k.psmp (e.g. install/bin) without
+# touching $BIN_ROOT.  Set CP2K_EXE_OVERRIDE (and optionally INSTALL_LIB_OVERRIDE)
+# in the outer SLURM driver.
+if [[ -n "${CP2K_EXE_OVERRIDE:-}" ]]; then
+   CP2K_EXE="$CP2K_EXE_OVERRIDE"
+   [[ -n "${INSTALL_LIB_OVERRIDE:-}" ]] && INSTALL_LIB="$INSTALL_LIB_OVERRIDE"
+fi
+
 # OMP branch uses OMP=2, so MPI ranks are halved to keep total cores =
 # CORES_PER_NODE.
 MPI_RANKS=$(( CORES_PER_NODE / OMP_THREADS ))

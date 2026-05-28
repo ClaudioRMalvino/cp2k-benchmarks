@@ -1,0 +1,52 @@
+[MAQAO] Info: No innermost loops in the function input_cp2k_nnp_mp_create_nnp_section_
+[MAQAO] Info: No innermost loops in the function input_cp2k_nnp_mp_create_nnp_bias_print_section_
+[MAQAO] Info: No innermost loops in the function input_cp2k_nnp_mp_create_nnp_print_section_
+[MAQAO] Info: No innermost loops in the function nnp_environment._
+[MAQAO] Info: Assuming lines 369 and 368 correspond to the same source loop
+[MAQAO] Info: Assuming lines 515 and 516 correspond to the same source loop
+[MAQAO] Info: Assuming lines 518 and 519 correspond to the same source loop
+[MAQAO] Info: Assuming lines 542 and 541 correspond to the same source loop
+[MAQAO] Info: Assuming lines 517 and 518 correspond to the same source loop
+[MAQAO] Info: Assuming lines 538 and 539 correspond to the same source loop
+[MAQAO] Info: Assuming lines 543 and 542 correspond to the same source loop
+[MAQAO] Info: Assuming lines 544 and 543 correspond to the same source loop
+[MAQAO] Info: Assuming lines 545 and 544 correspond to the same source loop
+[MAQAO] Info: Assuming lines 537 and 538 correspond to the same source loop
+[MAQAO] Info: No innermost loops in the function nnp_environment_mp_nnp_init_
+[MAQAO] Info: No innermost loops in the function nnp_environment_types._
+[MAQAO] Info: No innermost loops in the function nnp_force._
+[MAQAO] Info: Assuming lines 103 and 102 correspond to the same source loop
+[MAQAO] Info: Assuming lines 240 and 239 correspond to the same source loop
+[MAQAO] Info: Assuming lines 104 and 103 correspond to the same source loop
+[MAQAO] Info: Assuming lines 250 and 252 correspond to the same source loop
+[MAQAO] Info: Assuming lines 161 and 163 correspond to the same source loop
+[MAQAO] Info: Assuming lines 238 and 240 correspond to the same source loop
+[MAQAO] Info: Assuming lines 332 and 334 correspond to the same source loop
+[MAQAO] Info: No innermost loops in the function nnp_force_mp_nnp_print_bias_
+[MAQAO] Info: No innermost loops in the function nnp_force_mp_nnp_print_
+[MAQAO] Info: No innermost loops in the function nnp_model._
+[MAQAO] Info: Assuming lines 192 and 194 correspond to the same source loop
+[MAQAO] Info: No innermost loops in the function nnp_acsf._
+[MAQAO] Info: Assuming lines 180 and 181 correspond to the same source loop
+[MAQAO] Info: Assuming lines 266 and 267 correspond to the same source loop
+[MAQAO] Info: Assuming lines 237 and 238 correspond to the same source loop
+[MAQAO] Info: Assuming lines 349 and 350 correspond to the same source loop
+[MAQAO] Info: Assuming lines 179 and 180 correspond to the same source loop
+[MAQAO] Info: Assuming lines 266 and 268 correspond to the same source loop
+[MAQAO] Info: Assuming lines 349 and 351 correspond to the same source loop
+[MAQAO] Info: No innermost loops in the function nnp_acsf_mp_nnp_cell_list_linear_index_
+[MAQAO] Info: Assuming lines 1428 and 1430 correspond to the same source loop
+[MAQAO] Info: No innermost loops in the function nnp_acsf_mp_nnp_swapang_
+[MAQAO] Info: No innermost loops in the function nnp_acsf_mp_nnp_swaprad_
+[MAQAO] Info: Assuming lines 2301 and 2302 correspond to the same source loop
+[MAQAO] Info: No innermost loops in the function nnp_acsf_mp_nnp_cell_list_bin_from_position_
+[MAQAO] Info: Assuming lines 1765 and 1766 correspond to the same source loop
+[MAQAO] Info: Assuming lines 1885 and 1884 correspond to the same source loop
+[MAQAO] Info: Assuming lines 1883 and 1882 correspond to the same source loop
+[MAQAO] Info: Assuming lines 1862 and 1863 correspond to the same source loop
+[MAQAO] Info: Assuming lines 1883 and 1885 correspond to the same source loop
+[MAQAO] Info: Assuming lines 781 and 782 correspond to the same source loop
+[MAQAO] Info: Assuming lines 791 and 790 correspond to the same source loop
+[MAQAO] Info: Assuming lines 797 and 798 correspond to the same source loop
+[MAQAO] Info: No innermost loops in the function helium_nnp_mp_helium_nnp_print_
+[MAQAO] Info: Assuming lines 134 and 133 correspond to the same source loop

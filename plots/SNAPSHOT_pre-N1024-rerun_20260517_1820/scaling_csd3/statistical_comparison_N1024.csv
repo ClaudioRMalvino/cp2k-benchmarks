@@ -1,4 +1,0 @@
-pair,mean_a,mean_b,mean_diff_pct,shapiro_p_a,shapiro_p_b,welch_t,welch_p,mannwhitney_p,cohens_d,effect,sig_at_5pct
-upstream master  vs  native-spline,0.19034,0.07215,+163.8,0.614,0.854,+62.910,4.81e-08,7.94e-03,+39.79,very large,YES
-upstream master  vs  native-spline-omp,0.19034,0.08948,+112.7,0.614,0.224,+16.566,6.99e-05,7.94e-03,+10.48,very large,YES
-native-spline  vs  native-spline-omp,0.07215,0.08948,-19.4,0.854,0.224,-2.739,4.36e-02,5.56e-02,-1.73,very large,YES

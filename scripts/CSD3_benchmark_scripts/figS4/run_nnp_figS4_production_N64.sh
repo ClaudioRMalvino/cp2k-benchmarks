@@ -2,15 +2,15 @@
 # Fig. S4 STAGE 2: NVE production array job (50 tasks = 2 branches x 5 sizes
 # x 5 segments). Each task runs PROD_PS ps from a shared equilibration
 # snapshot, writing stress every step and positions every 10 steps.
-#SBATCH -J figS4_prod
+#SBATCH -J figS4_prod_N64
 #SBATCH -A NIKIFORAKIS-CSC-FUNDS-SL3-CPU
 #SBATCH -p icelake
 #SBATCH --nodes=1
-#SBATCH --ntasks=76
-#SBATCH --time=04:00:00
-#SBATCH --array=30-34,40-44%5
+#SBATCH --ntasks=16
+#SBATCH --time=01:00:00
+#SBATCH --array=25-29%5
 #SBATCH --mail-type=NONE
-#SBATCH --output=/home/crm98/cp2k-benchmarks/logs/figS4_prod_%A_%a.out
+#SBATCH --output=/home/crm98/cp2k-benchmarks/logs/figS4_prod_N64_%A_%a.out
 
 # Source toolchain env BEFORE strict mode: 'setup' references unbound
 # CP_DFLAGS that would trip `set -u`.

@@ -1,0 +1,32 @@
+MAQAO CQA fresh aggregate (N = 64 H2O reference binary, NNP-only loops)
+========================================================================
+
+branch                                  master  native-spline (post-port)  native-spline-omp
+n_loops                             385.000000                 503.000000         468.000000
+cycles/iter (arith mean)              7.633030                   6.020242           6.112497
+cycles/iter (median)                  4.000000                   3.000000           3.450000
+cycles/iter (p25)                     1.500000                   1.200000           1.000000
+cycles/iter (p75)                     8.000000                   6.000000           6.250000
+cycles/iter (full-vec, arith mean)    2.433981                   0.863876           0.794159
+cycles/iter (FP-vec, arith mean)      6.253549                   4.535136           4.609238
+cycles/iter (clean, arith mean)       6.071364                   4.552966           4.540474
+IPC (harm mean)                       2.933248                   4.139251           4.150475
+FLOP/cycle (harm mean)                0.319561                   0.399139           0.334056
+Vec ratio % (geo mean, > 0)          63.607026                  47.322397          47.549288
+Vec ratio FP % (geo mean, > 0)       69.549951                  57.561482          51.740764
+Vec efficiency % (geo mean, > 0)     16.966022                  14.535209          13.902997
+Arith intensity (median)              0.000000                   0.000000           0.000000
+n_loops with vec_ratio == 0         236.000000                 334.000000         327.000000
+n_loops with vec_ratio >= 50%       110.000000                 103.000000          85.000000
+
+Aggregation rules (Hoefler & Belli SC'15)
+  Rule 3 -- costs:  arithmetic mean of cycles/iter, FLOP, bytes
+  Rule 3 -- rates:  harmonic mean of IPC, FLOP/cycle
+  Rule 4 -- ratios: geometric mean of vec ratio / vec efficiency,
+                    excluding loops with vec_ratio == 0 (log(0) undefined).
+                    Reported separately as 'n_loops with vec_ratio == 0'.
+  Rule 8 -- mean + median + p25/p75 reported for cycles/iter so the
+            heavy-tailed distribution is visible.
+  Rule 11 -- 'full-vec / FP-vec / clean' columns are CQA upper-bound
+             models: lower bound on cycles/iter under that idealization.
+  Rule 5 -- CQA is deterministic static analysis; no CIs are required.

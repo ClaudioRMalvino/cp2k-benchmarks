@@ -10,6 +10,7 @@ Usage:
 import argparse
 import glob
 import os
+import re
 
 import matplotlib
 matplotlib.use("Agg")
@@ -56,13 +57,13 @@ BRANCH_STYLE = {
 plt.rcParams.update({
     "font.family":        "serif",
     "font.serif":         ["DejaVu Serif", "Liberation Serif", "Bitstream Vera Serif", "serif"],
-    "font.size":          11,
-    "axes.labelsize":     11,
-    "axes.titlesize":     11.5,
-    "xtick.labelsize":    9.5,
-    "ytick.labelsize":    9.5,
-    "legend.fontsize":    9,
-    "figure.titlesize":   12.5,
+    "font.size":          12,
+    "axes.labelsize":     13,
+    "axes.titlesize":     13,
+    "xtick.labelsize":    11,
+    "ytick.labelsize":    11,
+    "legend.fontsize":    11,
+    "figure.titlesize":   14,
     "text.color":         CAMBRIDGE["slate_4"],
     "axes.edgecolor":     CAMBRIDGE["slate_4"],
     "axes.labelcolor":    CAMBRIDGE["slate_4"],
@@ -182,11 +183,27 @@ def _atoms(n_mol):
     return n_mol * ATOMS_PER_MOL
 
 
-def _panel_letter(ax, letter, xoff=0.5, yoff=1.03):
-    """Place a bold panel letter (a, b, c, ...) above the axes."""
+def _panel_letter(ax, letter, xoff=0.5, yoff=1.03, va="bottom"):
+    """Place a bold panel letter (a, b, c, ...).  Default position is above
+    the axes; pass yoff < 0 and va="top" to drop the letter below the x-axis
+    label instead."""
     ax.text(xoff, yoff, f"({letter})", transform=ax.transAxes,
-            fontsize=12, fontweight="bold", va="bottom", ha="center",
+            fontsize=12, fontweight="bold", va=va, ha="center",
             color=CAMBRIDGE["slate_4"])
+
+
+def _row_major(items, ncols):
+    """Reorder items so matplotlib's column-major legend renders them
+    in row-major (left-to-right, top-down) order at the given ncols."""
+    n = len(items)
+    nrows = (n + ncols - 1) // ncols
+    out = []
+    for col in range(ncols):
+        for row in range(nrows):
+            idx = row * ncols + col
+            if idx < n:
+                out.append(items[idx])
+    return out
 
 
 def _save(fig, name):
@@ -298,7 +315,7 @@ def fig1_algorithmic_complexity(data, omp):
         baseline = ax_d.axhline(1.0, color=CAMBRIDGE["slate_3"], ls="--", lw=1.0)
     ax_d.set(xscale="log")
     ax_d.set_xlabel(r"Number of atoms, $N$")
-    ax_d.set_ylabel(r"Speedup ($t_\mathrm{master} / t_\mathrm{branch}$)")
+    ax_d.set_ylabel("Speedup")
     if m is not None:
         ax_d.legend([baseline], [r"Master baseline ($1\times$)"],
                     loc="upper left", fontsize=8, frameon=True, framealpha=0.93)
@@ -317,11 +334,15 @@ def fig1_algorithmic_complexity(data, omp):
         plt.Line2D([0], [0], color=CAMBRIDGE["blue_dark"], ls=":",  lw=1.0,
                    label=r"$\propto N^{2}$"),
     ]
-    fig.legend(handles=handles, loc="upper center",
-               bbox_to_anchor=(0.5, 1.00), ncol=len(handles),
-               frameon=False, fontsize=10, columnspacing=1.8, handlelength=2.6)
+    # Two rows of three for legibility: 3 branches on top, 2 power-law
+    # references on the bottom.  _row_major restores left-to-right reading
+    # order against matplotlib's column-major legend layout.
+    fig.legend(handles=_row_major(handles, 3), loc="upper center",
+               bbox_to_anchor=(0.5, 1.00), ncol=3,
+               frameon=False, fontsize=12, columnspacing=2.0,
+               handlelength=2.6, handletextpad=0.6)
 
-    fig.tight_layout(rect=[0, 0, 1, 0.96], h_pad=2.0, w_pad=2.5)
+    fig.tight_layout(rect=[0, 0, 1, 0.91], h_pad=2.0, w_pad=2.5)
     _save(fig, "fig1_algorithmic_complexity")
 
 
@@ -379,7 +400,7 @@ def fig2_strong_scaling(data, omp):
     ax_a.set_yscale("log")
     ax_a.set_ylabel("Time per MD step (s)")
     _log_decade_ticks(ax_a, "y", expand_to_decades=True)
-    ax_b.set_ylabel(r"Speedup ($t_\mathrm{master,1} / t_\mathrm{branch,N}$)")
+    ax_b.set_ylabel("Speedup")
     ax_c.set_ylabel("Parallel efficiency (%)")
     ax_c.set_ylim(0, 110)
     ax_d.set_yscale("log")
@@ -399,7 +420,7 @@ def fig2_strong_scaling(data, omp):
                for _, d in drawn_branches]
     fig.legend(handles=handles, loc="upper center",
                bbox_to_anchor=(0.5, 1.00), ncol=len(handles),
-               frameon=False, fontsize=12, columnspacing=2.2, handlelength=3.0,
+               frameon=False, fontsize=13, columnspacing=2.2, handlelength=3.0,
                handletextpad=0.7)
 
     fig.tight_layout(rect=[0, 0.03, 1, 0.96], h_pad=2.5, w_pad=2.5)
@@ -422,7 +443,7 @@ def fig3_openmp_threading(data, omp):
                                label="Time / step")
         ax_a.set_xscale("log", base=2); ax_a.set_yscale("log")
         ax_a.set_xticks(ticks); ax_a.xaxis.set_major_formatter(ticker.FixedFormatter([str(c) for c in ticks]))
-        ax_a.set_xlabel("OMP threads (MPI = 1, N = 64 H$_2$O)")
+        ax_a.set_xlabel("OMP threads")
         ax_a.set_ylabel("Time per MD step (s)")
         ax_a2 = ax_a.twinx()
         h_ideal,    = ax_a2.plot(t["omp_threads"], t["omp_threads"], "--",
@@ -434,7 +455,7 @@ def fig3_openmp_threading(data, omp):
         ax_a2.tick_params(axis="y", labelcolor=CAMBRIDGE["indigo"])
         ax_a2.grid(False)
         panel_a_handles = [h_time, h_ideal, h_observed]
-    _panel_letter(ax_a, "a", yoff=1.18)
+    _panel_letter(ax_a, "a", yoff=-0.22, va="top")
 
     panel_b_handles = []; panel_b_labels = []
     td = omp["two_d"]
@@ -463,21 +484,25 @@ def fig3_openmp_threading(data, omp):
         ax_b.set_xlabel(r"Number of atoms, $N$")
         ax_b.set_ylabel("Time per MD step (s)")
         ax_b.xaxis.set_major_formatter(ticker.FuncFormatter(lambda v, _: f"{int(v):,}"))
-    _panel_letter(ax_b, "b", yoff=1.18)
+    _panel_letter(ax_b, "b", yoff=-0.22, va="top")
 
     if panel_a_handles:
         ax_a.legend(panel_a_handles,
                     [h.get_label() for h in panel_a_handles],
                     loc="lower center", bbox_to_anchor=(0.5, 1.04),
-                    ncol=3, frameon=False, fontsize=9,
-                    columnspacing=1.0, handlelength=2.0, handletextpad=0.5)
+                    ncol=3, frameon=False, fontsize=11,
+                    columnspacing=1.2, handlelength=2.0, handletextpad=0.5)
     if panel_b_handles:
-        ax_b.legend(panel_b_handles, panel_b_labels,
+        # Reorder so matplotlib's column-major legend renders row-major:
+        # top row OMP=1,2,4; bottom row OMP=8,16.
+        ncol_b = 3
+        ax_b.legend(_row_major(panel_b_handles, ncol_b),
+                    _row_major(panel_b_labels,  ncol_b),
                     loc="lower center", bbox_to_anchor=(0.5, 1.04),
-                    ncol=len(panel_b_handles), frameon=False, fontsize=9,
-                    columnspacing=1.0, handlelength=2.0, handletextpad=0.5)
+                    ncol=ncol_b, frameon=False, fontsize=11,
+                    columnspacing=1.4, handlelength=2.0, handletextpad=0.5)
 
-    fig.tight_layout(rect=[0, 0, 1, 0.88])
+    fig.tight_layout(rect=[0, 0.06, 1, 0.84])
     _save(fig, "fig3_openmp_threading")
 
 
@@ -543,7 +568,7 @@ MAQAO_HOTSPOTS = {
         "libm tanh / exp (NN activ.)":      8.91,
         "nnp_calc_ang":                     3.54,
         "pbc2 (O(N$^2$) neighbour cost)":   2.81,
-        "__powr8i4":                        2.55,
+        "libm pow (__powr8i4)":             2.55,
         "OMP runtime (atomics / barriers)": 0.00,
         "hermite_spline_value":             0.00,
         "other / user code":               48.94,
@@ -553,7 +578,7 @@ MAQAO_HOTSPOTS = {
         "libm tanh / exp (NN activ.)":      0.14,
         "nnp_calc_ang":                     2.64,
         "pbc2 (O(N$^2$) neighbour cost)":   0.00,
-        "__powr8i4":                        5.24,
+        "libm pow (__powr8i4)":             5.24,
         "OMP runtime (atomics / barriers)": 0.00,
         "hermite_spline_value":            10.88,
         "other / user code":               46.33,
@@ -563,13 +588,448 @@ MAQAO_HOTSPOTS = {
         "libm tanh / exp (NN activ.)":      0.21,
         "nnp_calc_ang":                     1.65,
         "pbc2 (O(N$^2$) neighbour cost)":   0.00,
-        "__powr8i4":                        3.22,
+        "libm pow (__powr8i4)":             3.22,
         "OMP runtime (atomics / barriers)": 28.44,
         "hermite_spline_value":             5.98,
         "other / user code":               33.29,
     },
 }
 MAQAO_AAEFF = {"master": 52.92, "native-spline-omp": 78.17}
+
+
+# ============================================================================
+# Fresh CQA per-loop data (May-26, post-port aware).  Static disassembly only;
+# numbers are deterministic per binary.  Used by figs 7-9.
+# Produced via:
+#   maqao cqa <binary> --fct-loops="nnp_" --output-format=csv \
+#                      --output-path=<csv>
+# ============================================================================
+FRESH_CQA_DIR = "/home/crm98/cp2k-benchmarks/maqao_login_cqa"
+FRESH_CQA_PATHS = {
+    "master":            f"{FRESH_CQA_DIR}/master_nnp.csv",
+    "native-spline":     f"{FRESH_CQA_DIR}/native_spline_postport_nnp.csv",
+    "native-spline-omp": f"{FRESH_CQA_DIR}/omp_nnp.csv",
+}
+NNP_SRC_BASENAMES = {"nnp_acsf.F", "nnp_force.F", "nnp_model.F", "nnp_environment.F"}
+
+def _load_fresh_cqa():
+    """Read the three CQA CSVs, tag each row with branch, restrict to NNP
+       Fortran sources.  Returns combined DataFrame or None if any CSV missing."""
+    parts = []
+    for branch, p in FRESH_CQA_PATHS.items():
+        if not os.path.exists(p):
+            print(f"  [_load_fresh_cqa] missing CSV: {p}")
+            return None
+        d = pd.read_csv(p, sep=";")
+        d.insert(0, "branch", branch)
+        parts.append(d)
+    df = pd.concat(parts, ignore_index=True)
+    df["src_short"] = df["Source file"].apply(
+        lambda s: s.split("/")[-1] if isinstance(s, str) else "?")
+    return df[df["src_short"].isin(NNP_SRC_BASENAMES)].copy()
+
+
+def _branch_style_for(short):
+    """Map a fresh-CSV branch key to the BRANCH_STYLE entry."""
+    return BRANCH_STYLE[{"master": "upstream master",
+                         "native-spline": "native-spline",
+                         "native-spline-omp": "native-spline-omp"}[short]]
+
+
+# ============================================================================
+# ONE View HTML report parsers (May-14 measurement, pre-port).  Source pages
+# come from `maqao oneview --create-report=one` runs.  Used by figs 7-10.
+# ============================================================================
+import re as _re
+import html as _html
+from pathlib import Path as _Path
+
+ONE_VIEW_HTML_ROOT = "/home/crm98/cp2k-benchmarks/results/maqao"
+ONE_VIEW_HTML_DIRS = {
+    "master":            f"{ONE_VIEW_HTML_ROOT}/xp_master/cp2k.psmp_one_html",
+    "native-spline":     f"{ONE_VIEW_HTML_ROOT}/xp_feature-nnp-native-spline/cp2k.psmp_one_html",
+    "native-spline-omp": f"{ONE_VIEW_HTML_ROOT}/xp_feature-nnp-native-spline-omp/cp2k.psmp_one_html",
+}
+
+# Column order in the "Detailed Application Categorization" table after the
+# row label.  Empirically observed; matches MAQAO ONE View 2026.0.0-b.
+APP_CATEGORIES = ["Time(s)", "Binary", "MPI", "OMP", "TBB", "Math",
+                  "System", "Pthread", "IO", "String", "Memory", "Others"]
+
+# Column indices in the expert_summary table (excluding row label).
+EXPERT_HDR_INDEX = {
+    "Source Function":      3,
+    "Coverage (% app. time)": 7,
+    "Speedup if no scalar integer":     8,
+    "Speedup if FP arith vectorized":   9,
+    "Speedup if fully vectorized":     10,
+    "Speedup if FP only":              11,
+    "Vectorization Ratio (%)":         13,
+    "CQA cycles":                      15,
+}
+
+
+def _ov_strip(s):
+    return _html.unescape(_re.sub(r"<[^>]+>", " ", s).strip())
+
+
+def _ov_cells(row_html):
+    return [_ov_strip(c) for c in _re.findall(r"<t[hd][^>]*>([\s\S]*?)</t[hd]>",
+                                              row_html)]
+
+
+def parse_application_categorization(branch):
+    """Read `application.html` for `branch` and return a dict with two keys:
+        aggregate : {category -> value} for the whole run_0 row
+        processes : list[(pid:str, dict{category -> value})] for each MPI rank
+       Categories follow APP_CATEGORIES ordering.  Time(s) is absolute, all
+       others are percentages of the per-row total."""
+    path = _Path(ONE_VIEW_HTML_DIRS[branch]) / "application.html"
+    if not path.exists(): return None
+    rows = _re.findall(r"<tr[^>]*>([\s\S]*?)</tr>", path.read_text())
+    out = {"aggregate": None, "processes": []}
+    for r in rows:
+        cs = _ov_cells(r)
+        if not cs: continue
+        nums_raw = cs[1:1 + len(APP_CATEGORIES)]
+        if len(nums_raw) < len(APP_CATEGORIES): continue
+        try:
+            nums = [float(v.replace(",", "")) for v in nums_raw]
+        except ValueError:
+            continue
+        d = dict(zip(APP_CATEGORIES, nums))
+        label = cs[0]
+        if "run_0" in label and out["aggregate"] is None:
+            out["aggregate"] = d
+        elif label.startswith("○ Thread") or "Thread" in label:
+            out["processes"].append((label.replace("○", "").strip(), d))
+    return out
+
+
+def parse_expert_summary(branch):
+    """Read `expert_summary.html` for `branch`.  Returns list of dicts, one
+       per hot loop, with the EXPERT_HDR_INDEX-named keys parsed to float
+       where possible (string passed through for the function-name column)."""
+    path = _Path(ONE_VIEW_HTML_DIRS[branch]) / "expert_summary.html"
+    if not path.exists(): return []
+    rows = _re.findall(r"<tr[^>]*>([\s\S]*?)</tr>", path.read_text())
+    loops = []
+    for r in rows:
+        cs = _ov_cells(r)
+        if not cs or "Loop" not in cs[0]: continue
+        if len(cs) < max(EXPERT_HDR_INDEX.values()) + 1: continue
+        d = {}
+        for key, idx in EXPERT_HDR_INDEX.items():
+            v = cs[idx]
+            if key == "Source Function":
+                d[key] = v
+                continue
+            # speedup cols can be "1.06" or "8.68 - 7.23" (range across paths)
+            v = v.split(" - ")[0].split(",")[0].strip()
+            try:
+                d[key] = float(v)
+            except ValueError:
+                d[key] = float("nan")
+        loops.append(d)
+    return loops
+
+
+def _amdahl_speedup(coverage_pct, speedup):
+    """Application-wide speedup factor if a set of hot loops with the given
+       per-loop coverages (as % of app time) each speed up by speedup_i:
+           S_app = 1 / [ (1 - sum c_i) + sum c_i / s_i ]
+       coverage_pct / speedup may be array-like; NaNs are dropped."""
+    c = np.asarray(coverage_pct, dtype=float) / 100.0
+    s = np.asarray(speedup,      dtype=float)
+    mask = np.isfinite(c) & np.isfinite(s) & (s > 0)
+    c = c[mask]; s = s[mask]
+    if len(c) == 0: return 1.0
+    # ensure sum(c) <= 1 (defensive against double-counted outer loops)
+    if c.sum() > 1.0: c = c / c.sum()
+    denom = (1.0 - c.sum()) + (c / s).sum()
+    return 1.0 / denom if denom > 0 else float("inf")
+
+
+def fig7_per_process_load_balance(data, omp):
+    """Three-panel figure: one panel per branch.  Each panel shows a stacked
+       bar per MPI rank with the Binary/MPI/OMP/Math/Other share of the
+       rank's wall-clock time.  Exposes load imbalance that the aggregate
+       hotspot bar (fig 5) averages out."""
+    print("\n[fig 7] Per-process load balance (ONE View 'application' page)")
+    branches = ["master", "native-spline", "native-spline-omp"]
+    parsed = {b: parse_application_categorization(b) for b in branches}
+    if any(v is None for v in parsed.values()):
+        print("  one or more application.html pages missing -- skipping"); return
+
+    # Five visible categories; rest collapsed into "Other".
+    SHOW = ["Binary", "MPI", "OMP", "Math"]
+    fig, axes = plt.subplots(1, 3, figsize=(W_TEXT * 1.5, 4.4), sharey=True)
+    colors = [CAMBRIDGE["slate_3"], CAMBRIDGE["crest"],
+              CAMBRIDGE["indigo"],  CAMBRIDGE["cherry"], CAMBRIDGE["slate_2"]]
+
+    for ax, branch in zip(axes, branches):
+        procs = parsed[branch]["processes"]
+        n = len(procs)
+        if n == 0:
+            ax.set_title(f"{branch} (no per-rank data)"); continue
+        x = np.arange(n)
+        bottoms = np.zeros(n)
+        for cat, col in zip(SHOW + ["Other"], colors):
+            if cat == "Other":
+                vals = np.array([100.0 - sum(d[c] for c in SHOW)
+                                 for _, d in procs])
+            else:
+                vals = np.array([d[cat] for _, d in procs])
+            ax.bar(x, vals, bottom=bottoms, color=col, edgecolor=CAMBRIDGE["white"],
+                   linewidth=0.4, label=cat)
+            bottoms += vals
+        ax.set_xticks(x)
+        ax.set_xticklabels([str(i) for i in range(n)], fontsize=7)
+        ax.set_xlabel(f"MPI rank (1...{n})", fontsize=9)
+        ax.set_ylim(0, 102)
+        ax.set_title(branch, fontsize=10)
+        ax.grid(axis="y", ls="--", alpha=0.35)
+        # MPI-share spread annotation
+        mpi_vals = [d["MPI"] for _, d in procs]
+        ax.text(0.02, 0.97,
+                f"MPI share: {min(mpi_vals):.0f}--{max(mpi_vals):.0f}% "
+                f"(spread {max(mpi_vals)-min(mpi_vals):.0f} pp)",
+                transform=ax.transAxes, fontsize=7.5, va="top",
+                color=CAMBRIDGE["slate_4"],
+                bbox=dict(facecolor="white",
+                          edgecolor=CAMBRIDGE["slate_2"],
+                          alpha=0.85, pad=2))
+    axes[0].set_ylabel("Share of rank's wall-clock time (%)")
+    # Single legend on the right
+    handles, labs = axes[0].get_legend_handles_labels()
+    fig.legend(handles, labs, loc="center right", fontsize=9,
+               bbox_to_anchor=(0.995, 0.5), frameon=True,
+               title="Time category", title_fontsize=9)
+    fig.suptitle("Per-MPI-rank load balance (LProf, N = 64 H$_2$O, 16 cores)",
+                 fontsize=11.5, y=0.99)
+    fig.tight_layout(rect=[0, 0, 0.90, 0.96])
+    _save(fig, "fig7_per_process_load_balance")
+
+
+def fig8_headroom_speedup(data, omp):
+    """Coverage-weighted application-wide speedup if every hot loop achieved
+       its CQA upper bound for each optimisation class.  Four classes:
+         - no scalar integer
+         - FP arithmetic vectorized
+         - fully vectorized
+         - FP-only (CQA-projected scenario)
+       Shown as grouped bars: one cluster per branch, four bars per cluster."""
+    print("\n[fig 8] Coverage-weighted Amdahl headroom (ONE View 'expert_summary')")
+    branches = ["master", "native-spline", "native-spline-omp"]
+    loops_by_branch = {b: parse_expert_summary(b) for b in branches}
+    if not any(loops_by_branch.values()):
+        print("  no expert_summary data -- skipping"); return
+
+    OPTS = [
+        ("Speedup if no scalar integer",   "No scalar-int penalty"),
+        ("Speedup if FP arith vectorized", "FP arith vectorised"),
+        ("Speedup if fully vectorized",    "Fully vectorised"),
+        ("Speedup if FP only",             "FP-only kernel"),
+    ]
+
+    rows = []
+    for b in branches:
+        loops = loops_by_branch[b]
+        cov = [L["Coverage (% app. time)"] for L in loops]
+        d = {"branch": b}
+        for k, _ in OPTS:
+            sp = [L[k] for L in loops]
+            d[k] = _amdahl_speedup(cov, sp)
+        rows.append(d)
+    df = pd.DataFrame(rows).set_index("branch")
+
+    fig, ax = plt.subplots(figsize=(W_TEXT, 4.4))
+    x = np.arange(len(OPTS))
+    width = 0.26
+    colors = [CAMBRIDGE["slate_3"], CAMBRIDGE["blue_warm"], CAMBRIDGE["crest"]]
+    for i, b in enumerate(branches):
+        offsets = (i - 1) * width
+        vals = [df.at[b, k] for k, _ in OPTS]
+        bars = ax.bar(x + offsets, vals, width, color=colors[i],
+                      edgecolor=CAMBRIDGE["slate_4"], linewidth=0.6,
+                      label=_branch_style_for(b)["label"])
+        for xi, v, bar in zip(x, vals, bars):
+            ax.text(bar.get_x() + bar.get_width()/2, v + 0.02,
+                    f"{v:.2f}x", ha="center", va="bottom",
+                    fontsize=8, color=CAMBRIDGE["slate_4"])
+    ax.set_xticks(x)
+    ax.set_xticklabels([lbl for _, lbl in OPTS], fontsize=9, rotation=10)
+    ax.axhline(1.0, color=CAMBRIDGE["slate_3"], ls=":", lw=0.8)
+    ax.text(0.01, 1.02, "current performance (1.00x)", transform=ax.get_yaxis_transform(),
+            fontsize=8, color=CAMBRIDGE["slate_3"], style="italic")
+    ax.set_ylabel("Application-wide speedup factor (CQA upper bound, Amdahl-weighted)")
+    ax.set_title("Headroom: theoretical app speedup if every hot loop hit each CQA bound")
+    ax.legend(loc="upper left", fontsize=8, frameon=True)
+    ax.grid(axis="y", ls="--", alpha=0.4)
+    ax.set_ylim(0.9, max(df.values.max() * 1.15, 1.4))
+    fig.tight_layout()
+    _save(fig, "fig8_headroom_speedup")
+
+
+def fig9_library_category_share(data, omp):
+    """Aggregate library-category time share per branch -- MAQAO's official
+       categorisation rather than the hand-curated HOTSPOTS dict.  Stacked
+       horizontal bar so the long category names sit cleanly outside."""
+    print("\n[fig 9] Aggregate library-category time share (ONE View 'application')")
+    branches = ["master", "native-spline", "native-spline-omp"]
+    parsed = {b: parse_application_categorization(b) for b in branches}
+    if any(v is None for v in parsed.values()):
+        print("  one or more application.html pages missing -- skipping"); return
+
+    # Collapse the noise categories into "Other".
+    KEEP = ["Binary", "MPI", "OMP", "Math", "Memory"]
+    OTHER_KEYS = [k for k in APP_CATEGORIES if k not in KEEP and k != "Time(s)"]
+
+    fig, ax = plt.subplots(figsize=(W_TEXT, 3.6))
+    y = np.arange(len(branches))
+    bottoms = np.zeros(len(branches))
+    colors = [CAMBRIDGE["slate_3"], CAMBRIDGE["crest"],
+              CAMBRIDGE["indigo"],  CAMBRIDGE["cherry"],
+              CAMBRIDGE["green"],   CAMBRIDGE["slate_2"]]
+    for cat, col in zip(KEEP + ["Other"], colors):
+        if cat == "Other":
+            vals = np.array([sum(parsed[b]["aggregate"][k] for k in OTHER_KEYS)
+                             for b in branches])
+        else:
+            vals = np.array([parsed[b]["aggregate"][cat] for b in branches])
+        ax.barh(y, vals, left=bottoms, color=col, edgecolor=CAMBRIDGE["white"],
+                linewidth=0.6, label=cat, height=0.62)
+        for yi, vi, bi in zip(y, vals, bottoms):
+            if vi >= 3:
+                ax.text(bi + vi/2, yi, f"{vi:.0f}%",
+                        ha="center", va="center", fontsize=8, color="white",
+                        fontweight="bold")
+        bottoms += vals
+    ax.set_yticks(y)
+    ax.set_yticklabels([_branch_style_for(b)["label"] for b in branches], fontsize=9)
+    ax.set_xlim(0, 102)
+    ax.set_xlabel("Share of application wall-clock time (%)")
+    ax.set_title("Library-category time share (MAQAO ONE View 'Detailed Application Categorization')")
+    ax.legend(loc="center left", bbox_to_anchor=(1.02, 0.5), fontsize=9,
+              frameon=True, title="Category", title_fontsize=9)
+    ax.grid(axis="x", ls="--", alpha=0.35)
+    fig.tight_layout()
+    _save(fig, "fig9_library_category_share")
+
+
+def fig10_top_loops_by_gain(data, omp):
+    """Per-loop *opportunity* ranking: for each hot loop, the application-wide
+       gain you'd unlock by fully vectorising IT ALONE.  Computed via Amdahl
+       on each single loop, so it weights both 'how much time does this loop
+       cost?' and 'how much faster could it be?'.  Top 10 per branch in
+       three panels."""
+    print("\n[fig 10] Top NNP loops ranked by potential vectorisation gain")
+    branches = ["master", "native-spline", "native-spline-omp"]
+    loops_by_branch = {b: parse_expert_summary(b) for b in branches}
+    if not any(loops_by_branch.values()):
+        print("  no expert_summary data -- skipping"); return
+
+    fig, axes = plt.subplots(1, 3, figsize=(W_TEXT * 1.55, 4.6))
+    for ax, b in zip(axes, branches):
+        loops = loops_by_branch[b]
+        gains = []
+        for L in loops:
+            c = L["Coverage (% app. time)"]; s = L["Speedup if fully vectorized"]
+            if not (np.isfinite(c) and np.isfinite(s) and s > 1.0 and c > 0):
+                continue
+            # single-loop Amdahl: 1 / [(1-c/100) + (c/100)/s] -- the speedup
+            # you'd get if ONLY this loop were optimised to its CQA bound
+            s_app = 1.0 / ((1.0 - c/100) + (c/100)/s)
+            gain_pct = (s_app - 1.0) * 100.0
+            fn = L["Source Function"][:24]
+            gains.append((gain_pct, fn, c, s, L["Vectorization Ratio (%)"]))
+        gains.sort(reverse=True)
+        gains = gains[:10]
+        if not gains:
+            ax.set_title(f"{b} (no loops with measurable gain)"); continue
+
+        ys = np.arange(len(gains))[::-1]
+        vals = [g[0] for g in gains]
+        labs = [f"{g[1]}  ({g[2]:.1f}% cov, {g[3]:.1f}x bound)" for g in gains]
+        ax.barh(ys, vals, color=_branch_style_for(b)["color"],
+                edgecolor=CAMBRIDGE["slate_4"], linewidth=0.5)
+        for yi, v in zip(ys, vals):
+            ax.text(v + 0.05, yi, f"+{v:.1f}%", va="center",
+                    fontsize=7.5, color=CAMBRIDGE["slate_4"])
+        ax.set_yticks(ys)
+        ax.set_yticklabels(labs, fontsize=7)
+        ax.set_xlabel("App-wide speedup gain (%)")
+        ax.set_title(_branch_style_for(b)["label"], fontsize=9.5)
+        ax.grid(axis="x", ls="--", alpha=0.35)
+        ax.set_xlim(0, max(vals) * 1.4)
+    fig.suptitle("Top-10 NNP loops by single-loop full-vectorisation opportunity",
+                 fontsize=11.5, y=1.01)
+    fig.tight_layout()
+    _save(fig, "fig10_top_loops_by_gain")
+
+
+def _unused_fig_old_stub(data, omp):
+    """(deprecated; kept as placeholder so editor diffs are minimal)"""
+    fig, ax = plt.subplots(figsize=(W_TEXT, 4.4))
+
+    THRESH = [50.0, 80.0, 95.0]
+    branches = ["master", "native-spline", "native-spline-omp"]
+    legend_lines = []
+    max_rank = 0
+
+    for branch in branches:
+        style = _branch_style_for(branch)
+        sub = df[df["branch"] == branch]
+        cyc = (sub["[L1] Nb cycles: min"].astype(float)
+                  .dropna().sort_values(ascending=False).values)
+        if len(cyc) == 0: continue
+        cum = np.cumsum(cyc) / cyc.sum() * 100.0
+        rank = np.arange(1, len(cyc) + 1)
+        max_rank = max(max_rank, len(cyc))
+
+        # ranks at which the curve first crosses each threshold
+        k = [int(np.searchsorted(cum, t) + 1) for t in THRESH]
+        ax.plot(rank, cum, color=style["color"], lw=1.8)
+        ax.scatter(k, THRESH, s=42, marker=style["marker"],
+                   facecolor=style["color"],
+                   edgecolor=CAMBRIDGE["slate_4"], linewidth=0.7, zorder=5)
+
+        # legend entry includes the per-threshold rank counts
+        n_total = len(cyc)
+        legend_lines.append(
+            (style["label"], style["color"], style["marker"],
+             k[0], k[1], k[2], n_total))
+
+    # Reference dotted lines at the threshold percentages
+    for t in THRESH:
+        ax.axhline(t, color=CAMBRIDGE["slate_2"], ls=":", lw=0.7, zorder=1)
+        ax.text(max_rank * 0.995, t + 0.6, f"{int(t)}%",
+                fontsize=7.5, ha="right", va="bottom",
+                color=CAMBRIDGE["slate_3"], style="italic")
+
+    # Custom legend with the threshold-rank info baked in
+    from matplotlib.lines import Line2D
+    handles = []
+    labels = []
+    for lbl, col, mk, k50, k80, k95, n_total in legend_lines:
+        handles.append(Line2D([0], [0], color=col, marker=mk, lw=1.8,
+                               markersize=7, markeredgecolor=CAMBRIDGE["slate_4"],
+                               markeredgewidth=0.7))
+        labels.append(f"{lbl}\n  50% at rank {k50}, 80% at {k80}, "
+                      f"95% at {k95}  (of {n_total} loops)")
+    leg = ax.legend(handles, labels, loc="lower right", fontsize=8,
+                    frameon=True, handlelength=2.4, labelspacing=0.9,
+                    title="Branch  —  rank at which top-N loops account for ...",
+                    title_fontsize=8.5)
+    leg.get_title().set_color(CAMBRIDGE["slate_4"])
+
+    ax.set_xlabel("Loop rank  (k = top-$k$ slowest NNP loops, sorted by cycles/iter)")
+    ax.set_ylabel("Cumulative share of static cycle budget (%)")
+    ax.set_title("Where the static cycle budget lives across NNP loops")
+    ax.set_xlim(0, max_rank); ax.set_ylim(0, 102)
+    ax.grid(ls="--", alpha=0.3)
+    fig.tight_layout()
+    _save(fig, "fig7_work_concentration")
 
 def fig5_maqao_microarchitectural(data, omp):
     print("\n[fig 5] MAQAO microarchitectural analysis")
@@ -697,6 +1157,125 @@ def fig6_omp_size_heatmap(data, omp):
     _save(fig, "fig6_omp_size_heatmap")
 
 
+# ============================================================================
+# Perf-stat throughput + DRAM summary (login-node perf run, no SLURM burn)
+# Reads results/perf_cache/<TIMESTAMP>/{master,feature-nnp-native-spline}/
+# perf_loads.txt — see scripts/CSD3_benchmark_scripts/perf_cache/.
+# ============================================================================
+PERF_RESULTS_ROOT = "/home/crm98/cp2k-benchmarks/results/perf_cache"
+PERF_BRANCHES = [
+    ("master",                    "master",                    CAMBRIDGE["slate_3"]),
+    ("feature-nnp-native-spline", "feature/nnp-native-spline", CAMBRIDGE["blue_warm"]),
+]
+_PERF_EVENT_LINE   = re.compile(r"^\s*([\d,]+)\s+([A-Za-z0-9_\.\-]+):u\b")
+_PERF_ELAPSED_LINE = re.compile(r"^\s*([0-9.]+)\s+seconds time elapsed")
+
+
+def _parse_perf_stat(path):
+    """Parse one `perf stat -o` file into {event: int_count, 'wall_s': float}."""
+    out = {}
+    if not os.path.exists(path):
+        return out
+    with open(path) as fh:
+        for line in fh:
+            m = _PERF_EVENT_LINE.match(line)
+            if m:
+                out[m.group(2)] = int(m.group(1).replace(",", ""))
+                continue
+            m = _PERF_ELAPSED_LINE.match(line)
+            if m:
+                out["wall_s"] = float(m.group(1))
+    return out
+
+
+def _load_perf_cache():
+    """Locate the most recent results/perf_cache/<TIMESTAMP>/ and merge each
+    branch's loads + backing perf-stat passes.  Returns (ts, {branch: dict})
+    or None if no results are present."""
+    if not os.path.isdir(PERF_RESULTS_ROOT):
+        return None
+    ts_dirs = sorted(d for d in os.listdir(PERF_RESULTS_ROOT)
+                     if os.path.isdir(os.path.join(PERF_RESULTS_ROOT, d)))
+    if not ts_dirs:
+        return None
+    ts  = ts_dirs[-1]
+    out = {}
+    for key, _, _ in PERF_BRANCHES:
+        bdir    = os.path.join(PERF_RESULTS_ROOT, ts, key)
+        loads   = _parse_perf_stat(os.path.join(bdir, "perf_loads.txt"))
+        backing = _parse_perf_stat(os.path.join(bdir, "perf_backing.txt"))
+        merged  = dict(backing)
+        merged.update(loads)
+        merged["wall_s"] = loads.get("wall_s", backing.get("wall_s"))
+        out[key] = merged
+    return ts, out
+
+
+def fig7_perf_summary(data, omp):
+    """Throughput + memory-pressure summary from perf-stat hardware counters.
+
+    Four panels in a single row:
+      (a) wall time          — lower better
+      (b) retired instructions — lower better
+      (c) IPC                — higher better
+      (d) DRAM-resident load traffic (load-retired L3 misses) — lower better
+
+    All four favour the native-spline branch, framed as the compute-for-memory
+    trade described in §4: the L1/L2 spike from spline-table lookups is fully
+    absorbed inside the 1.25 MiB L2, and DRAM traffic itself drops.
+    """
+    print("\n[fig 7] perf-stat throughput + DRAM summary")
+    loaded = _load_perf_cache()
+    if loaded is None:
+        print("  no perf_cache results found, skipping")
+        return
+    ts, perf = loaded
+    if not all("instructions" in perf[k] for k, _, _ in PERF_BRANCHES):
+        print(f"  perf_cache/{ts} is missing events for one or more branches, skipping")
+        return
+    print(f"  reading perf_cache/{ts}")
+
+    fig, axes = plt.subplots(1, 4, figsize=(W_TEXT * 1.30, 3.2),
+                             gridspec_kw={"wspace": 0.60})
+
+    # (panel letter, y-axis label, value extractor, format-string)
+    metrics = [
+        ("a", "Wall time (s)",
+            lambda d: d["wall_s"],                            "{:.2f}"),
+        ("b", "Retired instructions ($\\times 10^{9}$)",
+            lambda d: d["instructions"] / 1.0e9,              "{:.1f}"),
+        ("c", "Instructions per cycle",
+            lambda d: d["instructions"] / d["cycles"],        "{:.2f}"),
+        ("d", "Load-retired L3 misses ($\\times 10^{3}$)",
+            lambda d: d["mem_load_retired.l3_miss"] / 1.0e3,  "{:.0f}"),
+    ]
+
+    labels  = [lab for _, lab, _ in PERF_BRANCHES]
+    colours = [c   for _, _,   c in PERF_BRANCHES]
+
+    for ax, (letter, ylabel, getter, fmt) in zip(axes, metrics):
+        values = [getter(perf[k]) for k, _, _ in PERF_BRANCHES]
+
+        bars = ax.bar(np.arange(2), values, color=colours, width=0.55,
+                      edgecolor=CAMBRIDGE["slate_4"], linewidth=0.8)
+        for bar, v in zip(bars, values):
+            ax.text(bar.get_x() + bar.get_width()/2, v * 1.02,
+                    fmt.format(v),
+                    ha="center", va="bottom",
+                    fontsize=9, fontweight="bold",
+                    color=CAMBRIDGE["slate_4"])
+
+        ax.set_xticks(np.arange(2))
+        ax.set_xticklabels(labels, fontsize=8.5, rotation=25, ha="right")
+        ax.set_ylim(0, max(values) * 1.18)
+        ax.set_ylabel(ylabel, fontsize=10)
+        ax.set_title(f"({letter})", fontsize=12, fontweight="bold", pad=6)
+        ax.grid(axis="y", ls="--", alpha=0.4)
+
+    fig.tight_layout()
+    _save(fig, "fig7_perf_summary")
+
+
 FIGURES = [
     (1, fig1_algorithmic_complexity),
     (2, fig2_strong_scaling),
@@ -704,12 +1283,13 @@ FIGURES = [
     (4, fig4_statistical_significance),
     (5, fig5_maqao_microarchitectural),
     (6, fig6_omp_size_heatmap),
+    (7, fig7_perf_summary),
 ]
 
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--only", type=int, choices=[1, 2, 3, 4, 5], default=None,
+    ap.add_argument("--only", type=int, choices=[1, 2, 3, 4, 5, 6, 7], default=None,
                     help="only produce figure N")
     args = ap.parse_args()
 
