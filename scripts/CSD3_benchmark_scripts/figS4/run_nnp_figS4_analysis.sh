@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Fig. S4 STAGE 3: aggregate 50 NVE segments and plot.
 #SBATCH -J figS4_analysis
-#SBATCH -A MPHIL-NIKIFORAKIS-CRM98-SL2-CPU
+#SBATCH -A NIKIFORAKIS-CSC-FUNDS-SL3-CPU
 #SBATCH -p icelake
 #SBATCH --nodes=1
 #SBATCH --ntasks=4

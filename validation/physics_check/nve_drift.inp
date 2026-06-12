@@ -1,0 +1,48 @@
+&GLOBAL
+  PRINT_LEVEL LOW
+  PROJECT nve_drift
+  RUN_TYPE MD
+&END GLOBAL
+
+&MOTION
+  &MD
+    ENSEMBLE NVE
+    STEPS 4000
+    TEMPERATURE 300
+    TIMESTEP 0.5
+    &PRINT
+      &ENERGY
+        &EACH
+          MD 1
+        &END EACH
+      &END ENERGY
+    &END PRINT
+  &END MD
+  &PRINT
+    &TRAJECTORY
+      &EACH
+        MD 100
+      &END EACH
+    &END TRAJECTORY
+  &END PRINT
+&END MOTION
+
+&FORCE_EVAL
+  METHOD NNP
+  &NNP
+    NNP_INPUT_FILE_NAME /home/crm98/cp2k_optimized/data/NNP/bulkH2O-jcp2020-cnnp/nnp-1/input.nn
+    SCALE_FILE_NAME /home/crm98/cp2k_optimized/data/NNP/bulkH2O-jcp2020-cnnp/nnp-1/scaling.data
+    &MODEL
+      WEIGHTS /home/crm98/cp2k_optimized/data/NNP/bulkH2O-jcp2020-cnnp/nnp-1/weights
+    &END MODEL
+  &END NNP
+  &SUBSYS
+    &CELL
+      ABC [angstrom] 12.42 12.42 12.42
+      PERIODIC XYZ
+    &END CELL
+    &COORD
+      @INCLUDE coord_H2O-64.inc
+    &END COORD
+  &END SUBSYS
+&END FORCE_EVAL

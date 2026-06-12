@@ -1,0 +1,34 @@
+{
+  "config": {
+    "#": "==================================================================",
+    "#": " MAQAO ONE View config -- cp2k_optimized, feature/nnp-chebyshev (hybrid)",
+    "#": "==================================================================",
+    "#": "Same chebyshev binary profiled as 8 MPI ranks x 2 OpenMP threads =",
+    "#": "16 cores, matching the core count of the pure-MPI configs.  LProf",
+    "#": "reports per-thread activity, so the OpenMP runtime share (atomics,",
+    "#": "barriers, CRITICAL reductions) is directly visible and comparable",
+    "#": "to the native-spline-omp profile in Report 1 (Fig 4.7).",
+
+    "experiment_name": "cp2k-chebyshev-omp-NNP-H2O64",
+    "comments": "cp2k_optimized feature/nnp-chebyshev -- minimax NNP path, hybrid 8x2.",
+
+    "executable": "/rds/user/crm98/hpc-work/cp2k_binaries/csd3/feature-nnp-chebyshev/cp2k.psmp",
+    "keep_executable_location": true,
+
+    "run_command": "<executable> -i run.inp",
+    "mpi_command": "srun -n <number_processes> --cpus-per-task=2 --hint=nomultithread",
+    "number_processes": 8,
+    "number_nodes": 1,
+    "number_threads_per_process": 2,
+
+    "dataset": "/home/crm98/cp2k-benchmarks/scripts/maqao_scripts/dataset",
+    "dataset_handler": "link",
+    "run_directory": "<dataset>",
+
+    "envv_OMP_NUM_THREADS": "2",
+
+    "filter": { "type": "number", "value": 15 },
+    "optimizer_loop_count": 15,
+    "maximal_path_number": 4
+  }
+}

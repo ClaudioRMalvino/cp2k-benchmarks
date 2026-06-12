@@ -21,6 +21,36 @@ set +u
 source /home/crm98/cp2k-benchmarks/scripts/CSD3_benchmark_scripts/cp2k_CSD3_env.sh
 set +e   # cp2k_CSD3_env.sh enables `set -e`; MAQAO exit codes handled inline
 
+# LProf attaches to the srun-spawned ranks with ptrace.  The zero-day
+# hardening is being rolled back node-by-node: the June 10 probe worked on
+# cpu-q-206 (ptrace_scope 0) but job 30352216 died on cpu-q-547 with
+# "ptrace cannot attach: Operation not permitted".  Gate on a ptrace
+# self-test so a blocked node costs seconds, not the whole walltime;
+# on failure just resubmit to land on a different node.
+echo "node: $(hostname)   ptrace_scope: $(cat /proc/sys/kernel/yama/ptrace_scope 2>/dev/null)   perf_event_paranoid: $(cat /proc/sys/kernel/perf_event_paranoid 2>/dev/null)"
+if ! srun --ntasks=1 python3 - <<'PYEOF'
+import ctypes, os, sys, time
+libc = ctypes.CDLL("libc.so.6", use_errno=True)
+pid = os.fork()
+if pid == 0:
+    time.sleep(10)
+    os._exit(0)
+rc = libc.ptrace(16, pid, None, None)          # PTRACE_ATTACH
+err = ctypes.get_errno()
+if rc == 0:
+    os.waitpid(pid, 0)
+    libc.ptrace(17, pid, None, None)           # PTRACE_DETACH
+    print("ptrace self-test: OK")
+    sys.exit(0)
+print(f"ptrace self-test: BLOCKED (errno {err}: {os.strerror(err)})")
+sys.exit(1)
+PYEOF
+then
+   echo "!!! ptrace is blocked on this compute node -- MAQAO LProf cannot work here."
+   echo "!!! Resubmit the job; a different node may have the mitigation rolled back."
+   exit 1
+fi
+
 MAQAO=/home/crm98/maqao.x86_64.2026.0.0-b/bin/maqao
 BIN_ROOT=/rds/user/$USER/hpc-work/cp2k_binaries/csd3
 BENCHMARK_ROOT=/home/crm98/cp2k-benchmarks
@@ -73,17 +103,32 @@ run_oneview () {
    fi
 }
 
-run_oneview master                        cp2k_master-config.json
-run_oneview feature-nnp-native-spline      cp2k_optimized-config.json
-run_oneview feature-nnp-native-spline-omp  cp2k_optimized_omp-config.json
+# Report 2 scope: upstream master vs feature/nnp-chebyshev only (the
+# native-spline profiles are in Report 1).  The chebyshev binary is
+# profiled twice: pure-MPI 16x1 (comparable to master) and hybrid 8x2
+# (exposes the OpenMP runtime share).
+run_oneview master                 cp2k_master-config.json
+run_oneview feature-nnp-chebyshev  cp2k_chebyshev-config.json
+XP_CHEBY_OMP="$XP_ROOT/xp_feature-nnp-chebyshev-omp"
+echo
+echo "=== MAQAO ONE View : feature-nnp-chebyshev (hybrid 8x2)"
+export LD_LIBRARY_PATH="$BIN_ROOT/feature-nnp-chebyshev/lib:$ORIG_LD"
+if "$MAQAO" oneview --create-report=one \
+         --config="$MAQAO_DIR/cp2k_chebyshev_omp-config.json" \
+         --experiment-path="$XP_CHEBY_OMP" \
+         --replace; then
+   echo "--- feature-nnp-chebyshev (8x2) : report written to $XP_CHEBY_OMP/RESULTS"
+else
+   echo "!!! feature-nnp-chebyshev (8x2) : ONE View FAILED -- see output above"
+fi
 export LD_LIBRARY_PATH="$ORIG_LD"
 
 # Both binaries are pure-MPI (OMP=1) with identical NNP source symbol names,
 # so MAQAO's function/loop name matching lines the kernels up directly.
 echo
-echo "=== MAQAO ONE View compare : master  vs  feature-nnp-native-spline"
+echo "=== MAQAO ONE View compare : master  vs  feature-nnp-chebyshev"
 if "$MAQAO" oneview --compare-reports \
-         --inputs="$XP_ROOT/xp_master,$XP_ROOT/xp_feature-nnp-native-spline" \
+         --inputs="$XP_ROOT/xp_master,$XP_ROOT/xp_feature-nnp-chebyshev" \
          --include-detailed \
          --experiment-path="$XP_ROOT/xp_compare" \
          --replace; then
@@ -95,7 +140,7 @@ fi
 # Raw LProf/CQA data stays on /rds scratch; only HTML reports go to /home.
 echo
 echo "==> Syncing HTML reports to $HOME_REPORTS"
-for d in xp_master xp_feature-nnp-native-spline xp_feature-nnp-native-spline-omp xp_compare; do
+for d in xp_master xp_feature-nnp-chebyshev xp_feature-nnp-chebyshev-omp xp_compare; do
    if [[ -d "$XP_ROOT/$d/RESULTS" ]]; then
       mkdir -p "$HOME_REPORTS/$d"
       rsync -a "$XP_ROOT/$d/RESULTS/" "$HOME_REPORTS/$d/"

@@ -7,8 +7,11 @@
 #SBATCH -p icelake
 #SBATCH --nodes=1
 #SBATCH --ntasks=76
-#SBATCH --time=04:00:00
-#SBATCH --array=1,3
+# 12 h (SL3 cap): N256 equil measured 0.046 s/step at 76 ranks; ~O(N) scaling
+# puts N1024 at ~0.18 s/step x 210k steps = ~10.7 h.  6 h killed nothing only
+# because N64/N128/N256 are small; it was a sure kill for array 4 (N1024).
+#SBATCH --time=12:00:00
+#SBATCH --array=0-4
 #SBATCH --mail-type=NONE
 #SBATCH --output=/home/crm98/cp2k-benchmarks/logs/figS4_equil_%A_%a.out
 
@@ -24,6 +27,12 @@ RESULTS_SCRATCH=/rds/user/$USER/hpc-work/cp2k-benchmarks/results/figS4
 source "$BIN_ROOT/setup"
 
 set -euo pipefail
+
+# Bash expands here-docs/here-strings via temp files in TMPDIR; node-local
+# /tmp can be full (job 30395309 died on cpu-q-179 with ENOSPC at a
+# here-string).  Point TMPDIR at scratch so a full node disk cannot kill us.
+export TMPDIR=/rds/user/$USER/hpc-work/tmp
+mkdir -p "$TMPDIR"
 
 EQUIL_PS=${EQUIL_PS:-30}
 N_SNAPSHOTS=${N_SNAPSHOTS:-5}
@@ -41,8 +50,8 @@ RANKS[64]=32; RANKS[128]=64; RANKS[256]=76; RANKS[512]=76; RANKS[1024]=76
 SNAP_INT_STEPS=$(python3 -c "print(int(${SNAP_SPACING_PS}/${TIMESTEP_FS}*1000))")
 TOTAL_STEPS=$(python3 -c "print(int((${EQUIL_PS}+${N_SNAPSHOTS}*${SNAP_SPACING_PS})/${TIMESTEP_FS}*1000))")
 
-CP2K_EXE="$BIN_ROOT/feature-nnp-native-spline/cp2k.psmp"
-export LD_LIBRARY_PATH="$BIN_ROOT/feature-nnp-native-spline/lib:${LD_LIBRARY_PATH:-}"
+CP2K_EXE="$BIN_ROOT/feature-nnp-chebyshev/cp2k.psmp"
+export LD_LIBRARY_PATH="$BIN_ROOT/feature-nnp-chebyshev/lib:${LD_LIBRARY_PATH:-}"
 export OMP_NUM_THREADS=1
 
 mx=$(awk '{print $1}' <<<"${MULT[$size]}")

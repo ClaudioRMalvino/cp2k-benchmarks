@@ -1,0 +1,12 @@
+# branch:      feature-nnp-chebyshev
+# exe:         /rds/user/crm98/hpc-work/cp2k_binaries/csd3/feature-nnp-chebyshev/cp2k.psmp
+# MPI ranks:   1  (fixed)
+# N_molecules: 64  (fixed)
+# steps:       100
+# reps:        5 timed (+1 discarded warm-up) per OMP count
+# omp_threads,mpi_ranks,total_cores,n_reps,time_per_step_mean_s,time_per_step_std_s,time_per_step_min_s,walltime_mean_s,walltime_std_s,walltime_min_s,speedup,parallel_efficiency
+1,1,1,5,0.274464,0.001179,0.273450,27.510000,0.118330,27.409000,1.000,100.0
+2,1,2,5,0.155018,0.000092,0.154890,15.565400,0.009290,15.553000,1.771,88.5
+4,1,4,5,0.091752,0.000132,0.091570,9.238200,0.013809,9.219000,2.991,74.8
+8,1,8,5,0.061470,0.000073,0.061360,6.216400,0.012502,6.201000,4.465,55.8
+16,1,16,5,0.048946,0.000110,0.048790,4.960200,0.011432,4.944000,5.607,35.0

@@ -1,0 +1,34 @@
+{
+  "config": {
+    "#": "==================================================================",
+    "#": " MAQAO ONE View config -- cp2k_optimized, feature/nnp-chebyshev",
+    "#": "==================================================================",
+    "#": "Table-free minimax branch (Report 2): Chebyshev/minimax polynomials",
+    "#": "replace the Hermite spline tables; plus the June 2026 optimisation",
+    "#": "pass (shrunk MPI collectives, one-time element sort, reverse-mode",
+    "#": "backprop, walk-bound buffers, halo-filtered images, pbc-copies fix).",
+    "#": "Pure-MPI at 16 ranks x 1 thread, matching the master config so the",
+    "#": "hotspot shares are directly comparable.",
+
+    "experiment_name": "cp2k-chebyshev-NNP-H2O64",
+    "comments": "cp2k_optimized feature/nnp-chebyshev -- minimax NNP path, pure-MPI 16x1. Compared against upstream master.",
+
+    "executable": "/rds/user/crm98/hpc-work/cp2k_binaries/csd3/feature-nnp-chebyshev/cp2k.psmp",
+    "keep_executable_location": true,
+
+    "run_command": "<executable> -i run.inp",
+    "mpi_command": "srun -n <number_processes> --hint=nomultithread",
+    "number_processes": 16,
+    "number_nodes": 1,
+
+    "dataset": "/home/crm98/cp2k-benchmarks/scripts/maqao_scripts/dataset",
+    "dataset_handler": "link",
+    "run_directory": "<dataset>",
+
+    "envv_OMP_NUM_THREADS": "1",
+
+    "filter": { "type": "number", "value": 15 },
+    "optimizer_loop_count": 15,
+    "maximal_path_number": 4
+  }
+}

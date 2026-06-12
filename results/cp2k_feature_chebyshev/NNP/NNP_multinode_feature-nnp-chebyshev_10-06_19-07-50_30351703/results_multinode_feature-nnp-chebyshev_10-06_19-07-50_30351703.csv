@@ -1,0 +1,10 @@
+# branch: feature-nnp-chebyshev
+# exe:    /rds/user/crm98/hpc-work/cp2k_binaries/csd3/feature-nnp-chebyshev/cp2k.psmp (c732e694b36f2a0f7c564f808a2ae959)
+# steps:  50   reps: 3 (+1 warm-up)
+# n_molecules,nodes,mpi_ranks,n_reps,time_per_step_mean_s,time_per_step_std_s,time_per_step_min_s,speedup_vs_1node,parallel_efficiency_pct
+1024,1,76,3,0.121807,0.007824,0.114360,1.000,100.0
+1024,2,152,3,0.074873,0.001059,0.074100,1.627,81.3
+1024,4,304,3,0.062793,0.009647,0.053360,1.940,48.5
+4096,1,76,3,0.389333,0.015650,0.379500,1.000,100.0
+4096,2,152,3,0.209253,0.000620,0.208540,1.861,93.0
+4096,4,304,3,0.133400,0.003895,0.129620,2.919,73.0

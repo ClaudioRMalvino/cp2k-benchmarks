@@ -30,7 +30,7 @@ TIMESTEP_FS=0.5
 PROD_STEPS=$(python3 -c "print(int(${PROD_PS}/${TIMESTEP_FS}*1000))")
 
 idx=$SLURM_ARRAY_TASK_ID
-BRANCH_LIST=(master feature-nnp-native-spline)
+BRANCH_LIST=(master feature-nnp-chebyshev)
 SIZE_LIST=(64 128 256 512 1024)
 branch=${BRANCH_LIST[$(( idx / 25 ))]}
 size=${SIZE_LIST[$(( (idx % 25) / 5 ))]}
@@ -38,7 +38,7 @@ seg=$(( (idx % 25) % 5 + 1 ))
 
 case "$branch" in
   master)                    CP2K_EXE="$BIN_ROOT/master/cp2k.psmp";                   LIB="$BIN_ROOT/master/lib";                   LABEL=upstream-master ;;
-  feature-nnp-native-spline) CP2K_EXE="$BIN_ROOT/feature-nnp-native-spline/cp2k.psmp"; LIB="$BIN_ROOT/feature-nnp-native-spline/lib"; LABEL=feature-nnp-native-spline ;;
+  feature-nnp-chebyshev) CP2K_EXE="$BIN_ROOT/feature-nnp-chebyshev/cp2k.psmp"; LIB="$BIN_ROOT/feature-nnp-chebyshev/lib"; LABEL=feature-nnp-chebyshev ;;
 esac
 export LD_LIBRARY_PATH="$LIB:${LD_LIBRARY_PATH:-}"
 export OMP_NUM_THREADS=1

@@ -1,0 +1,14 @@
+# branch:      feature-nnp-native-spline-omp
+# exe:         /rds/user/crm98/hpc-work/cp2k_binaries/csd3/feature-nnp-native-spline-omp/cp2k.psmp
+# N_molecules: 64
+# steps:       100
+# reps:        5 timed (+1 discarded warm-up) per core count
+# mpi_ranks,omp_threads,total_cores,rep,time_per_step_s,walltime_s
+1,2,2,1,0.122010,12.265
+1,2,2,2,0.122220,12.286
+1,2,2,3,0.121800,12.244
+1,2,2,4,0.122550,12.320
+1,2,2,5,0.122300,12.294
+2,2,4,1,0.069020,6.975
+2,2,4,2,0.069010,6.965
+2,2,4,3,FAILED,FAILED

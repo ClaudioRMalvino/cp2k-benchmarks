@@ -18,14 +18,14 @@ source /home/crm98/cp2k-benchmarks/scripts/CSD3_benchmark_scripts/cp2k_CSD3_env.
 source "$BIN_ROOT/setup"
 set -u
 
-LABEL="feature-nnp-native-spline-omp"
+LABEL="${TARGET_LABEL:-feature-nnp-chebyshev}"
 CP2K_EXE="$BIN_ROOT/$LABEL/cp2k.psmp"
 INSTALL_LIB="$BIN_ROOT/$LABEL/lib"
 PROJECT_ROOT="/home/crm98/cp2k_optimized"
-OUTDIR_PARENT="cp2k_feature_native_spline_omp"
+OUTDIR_PARENT="cp2k_feature_chebyshev"
 
 MPI_RANKS=${MPI_RANKS:-1}
-STEPS=${STEPS:-20}
+STEPS=${STEPS:-100}   # 100 MD steps: uniform across every Report-2 measurement
 N_REPS=${N_REPS:-5}
 OMP_LIST="${OMP_LIST:-1 2 4 8}"
 SIZE_LIST="${SIZE_LIST:-64 256 512 1024 2048}"

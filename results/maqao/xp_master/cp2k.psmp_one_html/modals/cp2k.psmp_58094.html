@@ -97,7 +97,7 @@ addLoadEvent(function(){
       <td><button type="button" style="cursor:pointer;" onclick="set_next_ldbal_input_ ();">&rarr;</button></td>
     </tr>
   </table>
-<div style="margin: 10px; overflow-x:auto; overflow-y:hidden;"><div id="chart_cat_2667" style="height:500px" ></div><div style="text-align:center;"></div></div>
+<div style="margin: 10px; overflow-x:auto; overflow-y:hidden;"><div id="chart_cat_2183" style="height:500px" ></div><div style="text-align:center;"></div></div>
 <script class="code">
 </script>
 <table class="_fixed_table _no_auto_sorting" style="width:100%;"><tr><th>min</th><th>med</th><th>avg</th><th>max</th>
@@ -124,7 +124,7 @@ addLoadEvent(function(){
 <td id="_stats_cov_p9"></td>
 <td id="_stats_cov_p10"></td>
 </tr></table><hr><hr>
-<div style="margin: 10px; overflow-x:auto; overflow-y:hidden;"><div id="chart_cat_2668" style="height:500px" ></div><div style="text-align:center;"></div></div>
+<div style="margin: 10px; overflow-x:auto; overflow-y:hidden;"><div id="chart_cat_2184" style="height:500px" ></div><div style="text-align:center;"></div></div>
 <script class="code">
 </script>
 <table class="_fixed_table _no_auto_sorting" style="width:100%;"><tr><th>min</th><th>med</th><th>avg</th><th>max</th>
@@ -155,15 +155,15 @@ addLoadEvent(function(){
 function set_ldbal_input_ () {
   var selector_run  = document.getElementById ("ldbal_select_run_");
   // Clear placeholder content and update their size
-  document.getElementById("chart_cat_2667").innerHTML = "";
-  var _width = Math.floor(document.getElementById("chart_cat_2667").getBoundingClientRect().width);
-  document.getElementById("chart_cat_2668").innerHTML = "";
-  var _width = Math.floor(document.getElementById("chart_cat_2668").getBoundingClientRect().width);
+  document.getElementById("chart_cat_2183").innerHTML = "";
+  var _width = Math.floor(document.getElementById("chart_cat_2183").getBoundingClientRect().width);
+  document.getElementById("chart_cat_2184").innerHTML = "";
+  var _width = Math.floor(document.getElementById("chart_cat_2184").getBoundingClientRect().width);
   // According to selector, draw both charts
   if (selector_run.value  == "1") {
 $(document).ready(function(){
-  var ordinals = ['cpu-q-154_1513180_1513180','cpu-q-154_1513181_1513181','cpu-q-154_1513182_1513182','cpu-q-154_1513183_1513183','cpu-q-154_1513184_1513184','cpu-q-154_1513185_1513185','cpu-q-154_1513186_1513186','cpu-q-154_1513187_1513187','cpu-q-154_1513188_1513188','cpu-q-154_1513189_1513189','cpu-q-154_1513190_1513190','cpu-q-154_1513191_1513191','cpu-q-154_1513192_1513192','cpu-q-154_1513193_1513193','cpu-q-154_1513194_1513194','cpu-q-154_1513195_1513195'];
-  var data = [{value:0.50953453779221,offset:0, i:0,color:"#333399"},{value:0.38610404729843,offset:0, i:1,color:"#333399"},{value:0.44298642873764,offset:0, i:2,color:"#333399"},{value:0.44400605559349,offset:0, i:3,color:"#333399"},{value:0.42735135555267,offset:0, i:4,color:"#333399"},{value:0.41050997376442,offset:0, i:5,color:"#333399"},{value:0.4768950343132,offset:0, i:6,color:"#333399"},{value:0.32889333367348,offset:0, i:7,color:"#333399"},{value:0.34465795755386,offset:0, i:8,color:"#333399"},{value:0.22988523542881,offset:0, i:9,color:"#333399"},{value:0.32851654291153,offset:0, i:10,color:"#333399"},{value:0.36118999123573,offset:0, i:11,color:"#333399"},{value:0.36196199059486,offset:0, i:12,color:"#333399"},{value:0.31198787689209,offset:0, i:13,color:"#333399"},{value:0.42756155133247,offset:0, i:14,color:"#333399"},{value:0.32856944203377,offset:0, i:15,color:"#333399"}];
+  var ordinals = ['cpu-q-206_84840_84840','cpu-q-206_84841_84841','cpu-q-206_84842_84842','cpu-q-206_84843_84843','cpu-q-206_84844_84844','cpu-q-206_84845_84845','cpu-q-206_84846_84846','cpu-q-206_84847_84847','cpu-q-206_84848_84848','cpu-q-206_84849_84849','cpu-q-206_84850_84850','cpu-q-206_84851_84851','cpu-q-206_84852_84852','cpu-q-206_84853_84853','cpu-q-206_84854_84854','cpu-q-206_84855_84855'];
+  var data = [{value:0.33898410201073,offset:0, i:0,color:"#333399"},{value:0.3242743909359,offset:0, i:1,color:"#333399"},{value:0.39506506919861,offset:0, i:2,color:"#333399"},{value:0.38503023982048,offset:0, i:3,color:"#333399"},{value:0.35493940114975,offset:0, i:4,color:"#333399"},{value:0.35461083054543,offset:0, i:5,color:"#333399"},{value:0.49482107162476,offset:0, i:6,color:"#333399"},{value:0.35461133718491,offset:0, i:7,color:"#333399"},{value:0.37077099084854,offset:0, i:8,color:"#333399"},{value:0.46239250898361,offset:0, i:9,color:"#333399"},{value:0.60334414243698,offset:0, i:10,color:"#333399"},{value:0.33992597460747,offset:0, i:11,color:"#333399"},{value:0.38592174649239,offset:0, i:12,color:"#333399"},{value:0.44780871272087,offset:0, i:13,color:"#333399"},{value:0.3396637737751,offset:0, i:14,color:"#333399"},{value:0.33987349271774,offset:0, i:15,color:"#333399"}];
   var widthgl  = _width;
   var widthin  = _width;
   var heightgl = 480;
@@ -173,7 +173,7 @@ $(document).ready(function(){
   height = heightgl - margin.top - margin.bottom,
   radius = (Math.min(width, height) / 2) - 10,
   node;
-  const svg = d3.select('#chart_cat_2667')
+  const svg = d3.select('#chart_cat_2183')
       .append('svg')
       .attr('width', widthin)
       .attr('height', heightin)
@@ -230,13 +230,13 @@ $(document).ready(function(){
   let tooltip = d3.select("body").append("div").attr("class", "D3tooltip");
   let bars = svg.append('g')
     .attr('clip-path','url(#my-clip-path)')
-    .attr('id', 'zoom_chart_2667')
+    .attr('id', 'zoom_chart_2183')
     .selectAll('.bar')
     .data(data)
     .enter()
     .append('rect')
     .attr('class', 'bar')
-    .attr('id', function (d, i) {return 'zoom_chart_2667_'+i;})
+    .attr('id', function (d, i) {return 'zoom_chart_2183_'+i;})
     .attr('x',  function (d, i) {return xScale(d.i) - xBand.bandwidth()*0.9/2})
     .attr('y',  function (d, i) {return yScale (d.value + d.offset)})
     .attr('width', xBand.bandwidth()*0.9)
@@ -281,41 +281,41 @@ $(document).ready(function(){
       bars.attr("transform", "translate(" + d3.event.transform.x+",0)scale(" + d3.event.transform.k + ",1)")
   }
 });
-$("#zoom_chart_2667_0").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-154_1513180_1513180");});
-$("#zoom_chart_2667_1").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-154_1513181_1513181");});
-$("#zoom_chart_2667_2").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-154_1513182_1513182");});
-$("#zoom_chart_2667_3").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-154_1513183_1513183");});
-$("#zoom_chart_2667_4").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-154_1513184_1513184");});
-$("#zoom_chart_2667_5").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-154_1513185_1513185");});
-$("#zoom_chart_2667_6").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-154_1513186_1513186");});
-$("#zoom_chart_2667_7").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-154_1513187_1513187");});
-$("#zoom_chart_2667_8").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-154_1513188_1513188");});
-$("#zoom_chart_2667_9").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-154_1513189_1513189");});
-$("#zoom_chart_2667_10").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-154_1513190_1513190");});
-$("#zoom_chart_2667_11").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-154_1513191_1513191");});
-$("#zoom_chart_2667_12").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-154_1513192_1513192");});
-$("#zoom_chart_2667_13").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-154_1513193_1513193");});
-$("#zoom_chart_2667_14").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-154_1513194_1513194");});
-$("#zoom_chart_2667_15").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-154_1513195_1513195");});
-    document.getElementById ("_stats_cov_min").innerText = "0.23";
-    document.getElementById ("_stats_cov_med").innerText = "0.37";
-    document.getElementById ("_stats_cov_avg").innerText = "0.38";
-    document.getElementById ("_stats_cov_max").innerText = "0.51";
-    document.getElementById ("_stats_cov_p1").innerText = "0.23";
-    document.getElementById ("_stats_cov_p2").innerText = "0.33";
-    document.getElementById ("_stats_cov_p3").innerText = "0.33";
-    document.getElementById ("_stats_cov_p4").innerText = "0.34";
-    document.getElementById ("_stats_cov_p5").innerText = "0.36";
-    document.getElementById ("_stats_cov_p6").innerText = "0.39";
-    document.getElementById ("_stats_cov_p7").innerText = "0.43";
-    document.getElementById ("_stats_cov_p8").innerText = "0.43";
-    document.getElementById ("_stats_cov_p9").innerText = "0.44";
-    document.getElementById ("_stats_cov_p10").innerText = "0.51";
+$("#zoom_chart_2183_0").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-206_84840_84840");});
+$("#zoom_chart_2183_1").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-206_84841_84841");});
+$("#zoom_chart_2183_2").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-206_84842_84842");});
+$("#zoom_chart_2183_3").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-206_84843_84843");});
+$("#zoom_chart_2183_4").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-206_84844_84844");});
+$("#zoom_chart_2183_5").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-206_84845_84845");});
+$("#zoom_chart_2183_6").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-206_84846_84846");});
+$("#zoom_chart_2183_7").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-206_84847_84847");});
+$("#zoom_chart_2183_8").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-206_84848_84848");});
+$("#zoom_chart_2183_9").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-206_84849_84849");});
+$("#zoom_chart_2183_10").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-206_84850_84850");});
+$("#zoom_chart_2183_11").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-206_84851_84851");});
+$("#zoom_chart_2183_12").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-206_84852_84852");});
+$("#zoom_chart_2183_13").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-206_84853_84853");});
+$("#zoom_chart_2183_14").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-206_84854_84854");});
+$("#zoom_chart_2183_15").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-206_84855_84855");});
+    document.getElementById ("_stats_cov_min").innerText = "0.32";
+    document.getElementById ("_stats_cov_med").innerText = "0.36";
+    document.getElementById ("_stats_cov_avg").innerText = "0.39";
+    document.getElementById ("_stats_cov_max").innerText = "0.60";
+    document.getElementById ("_stats_cov_p1").innerText = "0.32";
+    document.getElementById ("_stats_cov_p2").innerText = "0.34";
+    document.getElementById ("_stats_cov_p3").innerText = "0.34";
+    document.getElementById ("_stats_cov_p4").innerText = "0.35";
+    document.getElementById ("_stats_cov_p5").innerText = "0.35";
+    document.getElementById ("_stats_cov_p6").innerText = "0.37";
+    document.getElementById ("_stats_cov_p7").innerText = "0.39";
+    document.getElementById ("_stats_cov_p8").innerText = "0.40";
+    document.getElementById ("_stats_cov_p9").innerText = "0.46";
+    document.getElementById ("_stats_cov_p10").innerText = "0.60";
   }
   if (selector_run.value  == "1") {
 $(document).ready(function(){
-  var ordinals = ['cpu-q-154_1513180_1513180','cpu-q-154_1513181_1513181','cpu-q-154_1513182_1513182','cpu-q-154_1513183_1513183','cpu-q-154_1513184_1513184','cpu-q-154_1513185_1513185','cpu-q-154_1513186_1513186','cpu-q-154_1513187_1513187','cpu-q-154_1513188_1513188','cpu-q-154_1513189_1513189','cpu-q-154_1513190_1513190','cpu-q-154_1513191_1513191','cpu-q-154_1513192_1513192','cpu-q-154_1513193_1513193','cpu-q-154_1513194_1513194','cpu-q-154_1513195_1513195'];
-  var data = [{value:0.15500000119209,offset:0, i:0,color:"#333399"},{value:0.11000001430511,offset:0, i:1,color:"#333399"},{value:0.13500000536442,offset:0, i:2,color:"#333399"},{value:0.13499999046326,offset:0, i:3,color:"#333399"},{value:0.12999999523163,offset:0, i:4,color:"#333399"},{value:0.125,offset:0, i:5,color:"#333399"},{value:0.14500001072884,offset:0, i:6,color:"#333399"},{value:0.10000000149012,offset:0, i:7,color:"#333399"},{value:0.10499999672174,offset:0, i:8,color:"#333399"},{value:0.070000007748604,offset:0, i:9,color:"#333399"},{value:0.10000000149012,offset:0, i:10,color:"#333399"},{value:0.11000001430511,offset:0, i:11,color:"#333399"},{value:0.11000000685453,offset:0, i:12,color:"#333399"},{value:0.094999998807907,offset:0, i:13,color:"#333399"},{value:0.12999999523163,offset:0, i:14,color:"#333399"},{value:0.10000000149012,offset:0, i:15,color:"#333399"}];
+  var ordinals = ['cpu-q-206_84840_84840','cpu-q-206_84841_84841','cpu-q-206_84842_84842','cpu-q-206_84843_84843','cpu-q-206_84844_84844','cpu-q-206_84845_84845','cpu-q-206_84846_84846','cpu-q-206_84847_84847','cpu-q-206_84848_84848','cpu-q-206_84849_84849','cpu-q-206_84850_84850','cpu-q-206_84851_84851','cpu-q-206_84852_84852','cpu-q-206_84853_84853','cpu-q-206_84854_84854','cpu-q-206_84855_84855'];
+  var data = [{value:0.11000000685453,offset:0, i:0,color:"#333399"},{value:0.10500000417233,offset:0, i:1,color:"#333399"},{value:0.11999999731779,offset:0, i:2,color:"#333399"},{value:0.12499999254942,offset:0, i:3,color:"#333399"},{value:0.114999987185,offset:0, i:4,color:"#333399"},{value:0.11499999463558,offset:0, i:5,color:"#333399"},{value:0.15999999642372,offset:0, i:6,color:"#333399"},{value:0.11500000953674,offset:0, i:7,color:"#333399"},{value:0.11999999731779,offset:0, i:8,color:"#333399"},{value:0.15000002086163,offset:0, i:9,color:"#333399"},{value:0.19499999284744,offset:0, i:10,color:"#333399"},{value:0.11000000685453,offset:0, i:11,color:"#333399"},{value:0.12500001490116,offset:0, i:12,color:"#333399"},{value:0.14499999582767,offset:0, i:13,color:"#333399"},{value:0.11000000685453,offset:0, i:14,color:"#333399"},{value:0.10999999195337,offset:0, i:15,color:"#333399"}];
   var widthgl  = _width;
   var widthin  = _width;
   var heightgl = 480;
@@ -325,7 +325,7 @@ $(document).ready(function(){
   height = heightgl - margin.top - margin.bottom,
   radius = (Math.min(width, height) / 2) - 10,
   node;
-  const svg = d3.select('#chart_cat_2668')
+  const svg = d3.select('#chart_cat_2184')
       .append('svg')
       .attr('width', widthin)
       .attr('height', heightin)
@@ -382,13 +382,13 @@ $(document).ready(function(){
   let tooltip = d3.select("body").append("div").attr("class", "D3tooltip");
   let bars = svg.append('g')
     .attr('clip-path','url(#my-clip-path)')
-    .attr('id', 'zoom_chart_2668')
+    .attr('id', 'zoom_chart_2184')
     .selectAll('.bar')
     .data(data)
     .enter()
     .append('rect')
     .attr('class', 'bar')
-    .attr('id', function (d, i) {return 'zoom_chart_2668_'+i;})
+    .attr('id', function (d, i) {return 'zoom_chart_2184_'+i;})
     .attr('x',  function (d, i) {return xScale(d.i) - xBand.bandwidth()*0.9/2})
     .attr('y',  function (d, i) {return yScale (d.value + d.offset)})
     .attr('width', xBand.bandwidth()*0.9)
@@ -433,36 +433,36 @@ $(document).ready(function(){
       bars.attr("transform", "translate(" + d3.event.transform.x+",0)scale(" + d3.event.transform.k + ",1)")
   }
 });
-$("#zoom_chart_2668_0").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-154_1513180_1513180");});
-$("#zoom_chart_2668_1").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-154_1513181_1513181");});
-$("#zoom_chart_2668_2").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-154_1513182_1513182");});
-$("#zoom_chart_2668_3").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-154_1513183_1513183");});
-$("#zoom_chart_2668_4").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-154_1513184_1513184");});
-$("#zoom_chart_2668_5").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-154_1513185_1513185");});
-$("#zoom_chart_2668_6").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-154_1513186_1513186");});
-$("#zoom_chart_2668_7").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-154_1513187_1513187");});
-$("#zoom_chart_2668_8").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-154_1513188_1513188");});
-$("#zoom_chart_2668_9").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-154_1513189_1513189");});
-$("#zoom_chart_2668_10").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-154_1513190_1513190");});
-$("#zoom_chart_2668_11").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-154_1513191_1513191");});
-$("#zoom_chart_2668_12").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-154_1513192_1513192");});
-$("#zoom_chart_2668_13").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-154_1513193_1513193");});
-$("#zoom_chart_2668_14").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-154_1513194_1513194");});
-$("#zoom_chart_2668_15").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-154_1513195_1513195");});
-    document.getElementById ("_stats_tps_min").innerText = "0.07";
-    document.getElementById ("_stats_tps_med").innerText = "0.11";
-    document.getElementById ("_stats_tps_avg").innerText = "0.12";
-    document.getElementById ("_stats_tps_max").innerText = "0.16";
-    document.getElementById ("_stats_tps_p1").innerText = "0.07";
-    document.getElementById ("_stats_tps_p2").innerText = "0.10";
-    document.getElementById ("_stats_tps_p3").innerText = "0.10";
-    document.getElementById ("_stats_tps_p4").innerText = "0.10";
-    document.getElementById ("_stats_tps_p5").innerText = "0.11";
-    document.getElementById ("_stats_tps_p6").innerText = "0.11";
-    document.getElementById ("_stats_tps_p7").innerText = "0.13";
+$("#zoom_chart_2184_0").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-206_84840_84840");});
+$("#zoom_chart_2184_1").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-206_84841_84841");});
+$("#zoom_chart_2184_2").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-206_84842_84842");});
+$("#zoom_chart_2184_3").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-206_84843_84843");});
+$("#zoom_chart_2184_4").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-206_84844_84844");});
+$("#zoom_chart_2184_5").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-206_84845_84845");});
+$("#zoom_chart_2184_6").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-206_84846_84846");});
+$("#zoom_chart_2184_7").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-206_84847_84847");});
+$("#zoom_chart_2184_8").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-206_84848_84848");});
+$("#zoom_chart_2184_9").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-206_84849_84849");});
+$("#zoom_chart_2184_10").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-206_84850_84850");});
+$("#zoom_chart_2184_11").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-206_84851_84851");});
+$("#zoom_chart_2184_12").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-206_84852_84852");});
+$("#zoom_chart_2184_13").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-206_84853_84853");});
+$("#zoom_chart_2184_14").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-206_84854_84854");});
+$("#zoom_chart_2184_15").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-206_84855_84855");});
+    document.getElementById ("_stats_tps_min").innerText = "0.11";
+    document.getElementById ("_stats_tps_med").innerText = "0.12";
+    document.getElementById ("_stats_tps_avg").innerText = "0.13";
+    document.getElementById ("_stats_tps_max").innerText = "0.19";
+    document.getElementById ("_stats_tps_p1").innerText = "0.11";
+    document.getElementById ("_stats_tps_p2").innerText = "0.11";
+    document.getElementById ("_stats_tps_p3").innerText = "0.11";
+    document.getElementById ("_stats_tps_p4").innerText = "0.11";
+    document.getElementById ("_stats_tps_p5").innerText = "0.12";
+    document.getElementById ("_stats_tps_p6").innerText = "0.12";
+    document.getElementById ("_stats_tps_p7").innerText = "0.12";
     document.getElementById ("_stats_tps_p8").innerText = "0.13";
-    document.getElementById ("_stats_tps_p9").innerText = "0.14";
-    document.getElementById ("_stats_tps_p10").innerText = "0.16";
+    document.getElementById ("_stats_tps_p9").innerText = "0.15";
+    document.getElementById ("_stats_tps_p10").innerText = "0.19";
   }
 }
 function set_previous_ldbal_input_ () {
@@ -497,7 +497,7 @@ addLoadEvent(function(){
       <td><button type="button" style="cursor:pointer;" onclick="set_next_ldbal_input_sorted ();">&rarr;</button></td>
     </tr>
   </table>
-<div style="margin: 10px; overflow-x:auto; overflow-y:hidden;"><div id="chart_cat_2671" style="height:500px" ></div><div style="text-align:center;"></div></div>
+<div style="margin: 10px; overflow-x:auto; overflow-y:hidden;"><div id="chart_cat_2187" style="height:500px" ></div><div style="text-align:center;"></div></div>
 <script class="code">
 </script>
 <table class="_fixed_table _no_auto_sorting" style="width:100%;"><tr><th>min</th><th>med</th><th>avg</th><th>max</th>
@@ -524,7 +524,7 @@ addLoadEvent(function(){
 <td id="sorted_stats_cov_p9"></td>
 <td id="sorted_stats_cov_p10"></td>
 </tr></table><hr><hr>
-<div style="margin: 10px; overflow-x:auto; overflow-y:hidden;"><div id="chart_cat_2672" style="height:500px" ></div><div style="text-align:center;"></div></div>
+<div style="margin: 10px; overflow-x:auto; overflow-y:hidden;"><div id="chart_cat_2188" style="height:500px" ></div><div style="text-align:center;"></div></div>
 <script class="code">
 </script>
 <table class="_fixed_table _no_auto_sorting" style="width:100%;"><tr><th>min</th><th>med</th><th>avg</th><th>max</th>
@@ -555,15 +555,15 @@ addLoadEvent(function(){
 function set_ldbal_input_sorted () {
   var selector_run  = document.getElementById ("ldbal_select_run_sorted");
   // Clear placeholder content and update their size
-  document.getElementById("chart_cat_2671").innerHTML = "";
-  var _width = Math.floor(document.getElementById("chart_cat_2671").getBoundingClientRect().width);
-  document.getElementById("chart_cat_2672").innerHTML = "";
-  var _width = Math.floor(document.getElementById("chart_cat_2672").getBoundingClientRect().width);
+  document.getElementById("chart_cat_2187").innerHTML = "";
+  var _width = Math.floor(document.getElementById("chart_cat_2187").getBoundingClientRect().width);
+  document.getElementById("chart_cat_2188").innerHTML = "";
+  var _width = Math.floor(document.getElementById("chart_cat_2188").getBoundingClientRect().width);
   // According to selector, draw both charts
   if (selector_run.value  == "1") {
 $(document).ready(function(){
-  var ordinals = ['cpu-q-154_1513180_1513180','cpu-q-154_1513186_1513186','cpu-q-154_1513183_1513183','cpu-q-154_1513182_1513182','cpu-q-154_1513194_1513194','cpu-q-154_1513184_1513184','cpu-q-154_1513185_1513185','cpu-q-154_1513181_1513181','cpu-q-154_1513192_1513192','cpu-q-154_1513191_1513191','cpu-q-154_1513188_1513188','cpu-q-154_1513187_1513187','cpu-q-154_1513195_1513195','cpu-q-154_1513190_1513190','cpu-q-154_1513193_1513193','cpu-q-154_1513189_1513189'];
-  var data = [{value:0.50953453779221,offset:0, i:0,color:"#333399"},{value:0.4768950343132,offset:0, i:1,color:"#333399"},{value:0.44400605559349,offset:0, i:2,color:"#333399"},{value:0.44298642873764,offset:0, i:3,color:"#333399"},{value:0.42756155133247,offset:0, i:4,color:"#333399"},{value:0.42735135555267,offset:0, i:5,color:"#333399"},{value:0.41050997376442,offset:0, i:6,color:"#333399"},{value:0.38610404729843,offset:0, i:7,color:"#333399"},{value:0.36196199059486,offset:0, i:8,color:"#333399"},{value:0.36118999123573,offset:0, i:9,color:"#333399"},{value:0.34465795755386,offset:0, i:10,color:"#333399"},{value:0.32889333367348,offset:0, i:11,color:"#333399"},{value:0.32856944203377,offset:0, i:12,color:"#333399"},{value:0.32851654291153,offset:0, i:13,color:"#333399"},{value:0.31198787689209,offset:0, i:14,color:"#333399"},{value:0.22988523542881,offset:0, i:15,color:"#333399"}];
+  var ordinals = ['cpu-q-206_84850_84850','cpu-q-206_84846_84846','cpu-q-206_84849_84849','cpu-q-206_84853_84853','cpu-q-206_84842_84842','cpu-q-206_84852_84852','cpu-q-206_84843_84843','cpu-q-206_84848_84848','cpu-q-206_84844_84844','cpu-q-206_84847_84847','cpu-q-206_84845_84845','cpu-q-206_84851_84851','cpu-q-206_84855_84855','cpu-q-206_84854_84854','cpu-q-206_84840_84840','cpu-q-206_84841_84841'];
+  var data = [{value:0.60334414243698,offset:0, i:0,color:"#333399"},{value:0.49482107162476,offset:0, i:1,color:"#333399"},{value:0.46239250898361,offset:0, i:2,color:"#333399"},{value:0.44780871272087,offset:0, i:3,color:"#333399"},{value:0.39506506919861,offset:0, i:4,color:"#333399"},{value:0.38592174649239,offset:0, i:5,color:"#333399"},{value:0.38503023982048,offset:0, i:6,color:"#333399"},{value:0.37077099084854,offset:0, i:7,color:"#333399"},{value:0.35493940114975,offset:0, i:8,color:"#333399"},{value:0.35461133718491,offset:0, i:9,color:"#333399"},{value:0.35461083054543,offset:0, i:10,color:"#333399"},{value:0.33992597460747,offset:0, i:11,color:"#333399"},{value:0.33987349271774,offset:0, i:12,color:"#333399"},{value:0.3396637737751,offset:0, i:13,color:"#333399"},{value:0.33898410201073,offset:0, i:14,color:"#333399"},{value:0.3242743909359,offset:0, i:15,color:"#333399"}];
   var widthgl  = _width;
   var widthin  = _width;
   var heightgl = 480;
@@ -573,7 +573,7 @@ $(document).ready(function(){
   height = heightgl - margin.top - margin.bottom,
   radius = (Math.min(width, height) / 2) - 10,
   node;
-  const svg = d3.select('#chart_cat_2671')
+  const svg = d3.select('#chart_cat_2187')
       .append('svg')
       .attr('width', widthin)
       .attr('height', heightin)
@@ -630,13 +630,13 @@ $(document).ready(function(){
   let tooltip = d3.select("body").append("div").attr("class", "D3tooltip");
   let bars = svg.append('g')
     .attr('clip-path','url(#my-clip-path)')
-    .attr('id', 'zoom_chart_2671')
+    .attr('id', 'zoom_chart_2187')
     .selectAll('.bar')
     .data(data)
     .enter()
     .append('rect')
     .attr('class', 'bar')
-    .attr('id', function (d, i) {return 'zoom_chart_2671_'+i;})
+    .attr('id', function (d, i) {return 'zoom_chart_2187_'+i;})
     .attr('x',  function (d, i) {return xScale(d.i) - xBand.bandwidth()*0.9/2})
     .attr('y',  function (d, i) {return yScale (d.value + d.offset)})
     .attr('width', xBand.bandwidth()*0.9)
@@ -681,41 +681,41 @@ $(document).ready(function(){
       bars.attr("transform", "translate(" + d3.event.transform.x+",0)scale(" + d3.event.transform.k + ",1)")
   }
 });
-$("#zoom_chart_2671_0").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-154_1513180_1513180");});
-$("#zoom_chart_2671_1").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-154_1513186_1513186");});
-$("#zoom_chart_2671_2").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-154_1513183_1513183");});
-$("#zoom_chart_2671_3").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-154_1513182_1513182");});
-$("#zoom_chart_2671_4").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-154_1513194_1513194");});
-$("#zoom_chart_2671_5").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-154_1513184_1513184");});
-$("#zoom_chart_2671_6").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-154_1513185_1513185");});
-$("#zoom_chart_2671_7").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-154_1513181_1513181");});
-$("#zoom_chart_2671_8").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-154_1513192_1513192");});
-$("#zoom_chart_2671_9").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-154_1513191_1513191");});
-$("#zoom_chart_2671_10").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-154_1513188_1513188");});
-$("#zoom_chart_2671_11").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-154_1513187_1513187");});
-$("#zoom_chart_2671_12").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-154_1513195_1513195");});
-$("#zoom_chart_2671_13").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-154_1513190_1513190");});
-$("#zoom_chart_2671_14").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-154_1513193_1513193");});
-$("#zoom_chart_2671_15").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-154_1513189_1513189");});
-    document.getElementById ("sorted_stats_cov_min").innerText = "0.23";
-    document.getElementById ("sorted_stats_cov_med").innerText = "0.37";
-    document.getElementById ("sorted_stats_cov_avg").innerText = "0.38";
-    document.getElementById ("sorted_stats_cov_max").innerText = "0.51";
-    document.getElementById ("sorted_stats_cov_p1").innerText = "0.23";
-    document.getElementById ("sorted_stats_cov_p2").innerText = "0.33";
-    document.getElementById ("sorted_stats_cov_p3").innerText = "0.33";
-    document.getElementById ("sorted_stats_cov_p4").innerText = "0.34";
-    document.getElementById ("sorted_stats_cov_p5").innerText = "0.36";
-    document.getElementById ("sorted_stats_cov_p6").innerText = "0.39";
-    document.getElementById ("sorted_stats_cov_p7").innerText = "0.43";
-    document.getElementById ("sorted_stats_cov_p8").innerText = "0.43";
-    document.getElementById ("sorted_stats_cov_p9").innerText = "0.44";
-    document.getElementById ("sorted_stats_cov_p10").innerText = "0.51";
+$("#zoom_chart_2187_0").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-206_84850_84850");});
+$("#zoom_chart_2187_1").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-206_84846_84846");});
+$("#zoom_chart_2187_2").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-206_84849_84849");});
+$("#zoom_chart_2187_3").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-206_84853_84853");});
+$("#zoom_chart_2187_4").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-206_84842_84842");});
+$("#zoom_chart_2187_5").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-206_84852_84852");});
+$("#zoom_chart_2187_6").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-206_84843_84843");});
+$("#zoom_chart_2187_7").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-206_84848_84848");});
+$("#zoom_chart_2187_8").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-206_84844_84844");});
+$("#zoom_chart_2187_9").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-206_84847_84847");});
+$("#zoom_chart_2187_10").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-206_84845_84845");});
+$("#zoom_chart_2187_11").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-206_84851_84851");});
+$("#zoom_chart_2187_12").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-206_84855_84855");});
+$("#zoom_chart_2187_13").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-206_84854_84854");});
+$("#zoom_chart_2187_14").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-206_84840_84840");});
+$("#zoom_chart_2187_15").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-206_84841_84841");});
+    document.getElementById ("sorted_stats_cov_min").innerText = "0.32";
+    document.getElementById ("sorted_stats_cov_med").innerText = "0.36";
+    document.getElementById ("sorted_stats_cov_avg").innerText = "0.39";
+    document.getElementById ("sorted_stats_cov_max").innerText = "0.60";
+    document.getElementById ("sorted_stats_cov_p1").innerText = "0.32";
+    document.getElementById ("sorted_stats_cov_p2").innerText = "0.34";
+    document.getElementById ("sorted_stats_cov_p3").innerText = "0.34";
+    document.getElementById ("sorted_stats_cov_p4").innerText = "0.35";
+    document.getElementById ("sorted_stats_cov_p5").innerText = "0.35";
+    document.getElementById ("sorted_stats_cov_p6").innerText = "0.37";
+    document.getElementById ("sorted_stats_cov_p7").innerText = "0.39";
+    document.getElementById ("sorted_stats_cov_p8").innerText = "0.40";
+    document.getElementById ("sorted_stats_cov_p9").innerText = "0.46";
+    document.getElementById ("sorted_stats_cov_p10").innerText = "0.60";
   }
   if (selector_run.value  == "1") {
 $(document).ready(function(){
-  var ordinals = ['cpu-q-154_1513180_1513180','cpu-q-154_1513186_1513186','cpu-q-154_1513182_1513182','cpu-q-154_1513183_1513183','cpu-q-154_1513194_1513194','cpu-q-154_1513184_1513184','cpu-q-154_1513185_1513185','cpu-q-154_1513181_1513181','cpu-q-154_1513191_1513191','cpu-q-154_1513192_1513192','cpu-q-154_1513188_1513188','cpu-q-154_1513187_1513187','cpu-q-154_1513195_1513195','cpu-q-154_1513190_1513190','cpu-q-154_1513193_1513193','cpu-q-154_1513189_1513189'];
-  var data = [{value:0.15500000119209,offset:0, i:0,color:"#333399"},{value:0.14500001072884,offset:0, i:1,color:"#333399"},{value:0.13500000536442,offset:0, i:2,color:"#333399"},{value:0.13499999046326,offset:0, i:3,color:"#333399"},{value:0.12999999523163,offset:0, i:4,color:"#333399"},{value:0.12999999523163,offset:0, i:5,color:"#333399"},{value:0.125,offset:0, i:6,color:"#333399"},{value:0.11000001430511,offset:0, i:7,color:"#333399"},{value:0.11000001430511,offset:0, i:8,color:"#333399"},{value:0.11000000685453,offset:0, i:9,color:"#333399"},{value:0.10499999672174,offset:0, i:10,color:"#333399"},{value:0.10000000149012,offset:0, i:11,color:"#333399"},{value:0.10000000149012,offset:0, i:12,color:"#333399"},{value:0.10000000149012,offset:0, i:13,color:"#333399"},{value:0.094999998807907,offset:0, i:14,color:"#333399"},{value:0.070000007748604,offset:0, i:15,color:"#333399"}];
+  var ordinals = ['cpu-q-206_84850_84850','cpu-q-206_84846_84846','cpu-q-206_84849_84849','cpu-q-206_84853_84853','cpu-q-206_84852_84852','cpu-q-206_84843_84843','cpu-q-206_84848_84848','cpu-q-206_84842_84842','cpu-q-206_84847_84847','cpu-q-206_84845_84845','cpu-q-206_84844_84844','cpu-q-206_84851_84851','cpu-q-206_84840_84840','cpu-q-206_84854_84854','cpu-q-206_84855_84855','cpu-q-206_84841_84841'];
+  var data = [{value:0.19499999284744,offset:0, i:0,color:"#333399"},{value:0.15999999642372,offset:0, i:1,color:"#333399"},{value:0.15000002086163,offset:0, i:2,color:"#333399"},{value:0.14499999582767,offset:0, i:3,color:"#333399"},{value:0.12500001490116,offset:0, i:4,color:"#333399"},{value:0.12499999254942,offset:0, i:5,color:"#333399"},{value:0.11999999731779,offset:0, i:6,color:"#333399"},{value:0.11999999731779,offset:0, i:7,color:"#333399"},{value:0.11500000953674,offset:0, i:8,color:"#333399"},{value:0.11499999463558,offset:0, i:9,color:"#333399"},{value:0.114999987185,offset:0, i:10,color:"#333399"},{value:0.11000000685453,offset:0, i:11,color:"#333399"},{value:0.11000000685453,offset:0, i:12,color:"#333399"},{value:0.11000000685453,offset:0, i:13,color:"#333399"},{value:0.10999999195337,offset:0, i:14,color:"#333399"},{value:0.10500000417233,offset:0, i:15,color:"#333399"}];
   var widthgl  = _width;
   var widthin  = _width;
   var heightgl = 480;
@@ -725,7 +725,7 @@ $(document).ready(function(){
   height = heightgl - margin.top - margin.bottom,
   radius = (Math.min(width, height) / 2) - 10,
   node;
-  const svg = d3.select('#chart_cat_2672')
+  const svg = d3.select('#chart_cat_2188')
       .append('svg')
       .attr('width', widthin)
       .attr('height', heightin)
@@ -782,13 +782,13 @@ $(document).ready(function(){
   let tooltip = d3.select("body").append("div").attr("class", "D3tooltip");
   let bars = svg.append('g')
     .attr('clip-path','url(#my-clip-path)')
-    .attr('id', 'zoom_chart_2672')
+    .attr('id', 'zoom_chart_2188')
     .selectAll('.bar')
     .data(data)
     .enter()
     .append('rect')
     .attr('class', 'bar')
-    .attr('id', function (d, i) {return 'zoom_chart_2672_'+i;})
+    .attr('id', function (d, i) {return 'zoom_chart_2188_'+i;})
     .attr('x',  function (d, i) {return xScale(d.i) - xBand.bandwidth()*0.9/2})
     .attr('y',  function (d, i) {return yScale (d.value + d.offset)})
     .attr('width', xBand.bandwidth()*0.9)
@@ -833,36 +833,36 @@ $(document).ready(function(){
       bars.attr("transform", "translate(" + d3.event.transform.x+",0)scale(" + d3.event.transform.k + ",1)")
   }
 });
-$("#zoom_chart_2672_0").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-154_1513180_1513180");});
-$("#zoom_chart_2672_1").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-154_1513186_1513186");});
-$("#zoom_chart_2672_2").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-154_1513182_1513182");});
-$("#zoom_chart_2672_3").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-154_1513183_1513183");});
-$("#zoom_chart_2672_4").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-154_1513194_1513194");});
-$("#zoom_chart_2672_5").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-154_1513184_1513184");});
-$("#zoom_chart_2672_6").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-154_1513185_1513185");});
-$("#zoom_chart_2672_7").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-154_1513181_1513181");});
-$("#zoom_chart_2672_8").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-154_1513191_1513191");});
-$("#zoom_chart_2672_9").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-154_1513192_1513192");});
-$("#zoom_chart_2672_10").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-154_1513188_1513188");});
-$("#zoom_chart_2672_11").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-154_1513187_1513187");});
-$("#zoom_chart_2672_12").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-154_1513195_1513195");});
-$("#zoom_chart_2672_13").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-154_1513190_1513190");});
-$("#zoom_chart_2672_14").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-154_1513193_1513193");});
-$("#zoom_chart_2672_15").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-154_1513189_1513189");});
-    document.getElementById ("sorted_stats_tps_min").innerText = "0.07";
-    document.getElementById ("sorted_stats_tps_med").innerText = "0.11";
-    document.getElementById ("sorted_stats_tps_avg").innerText = "0.12";
-    document.getElementById ("sorted_stats_tps_max").innerText = "0.16";
-    document.getElementById ("sorted_stats_tps_p1").innerText = "0.07";
-    document.getElementById ("sorted_stats_tps_p2").innerText = "0.10";
-    document.getElementById ("sorted_stats_tps_p3").innerText = "0.10";
-    document.getElementById ("sorted_stats_tps_p4").innerText = "0.10";
-    document.getElementById ("sorted_stats_tps_p5").innerText = "0.11";
-    document.getElementById ("sorted_stats_tps_p6").innerText = "0.11";
-    document.getElementById ("sorted_stats_tps_p7").innerText = "0.13";
+$("#zoom_chart_2188_0").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-206_84850_84850");});
+$("#zoom_chart_2188_1").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-206_84846_84846");});
+$("#zoom_chart_2188_2").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-206_84849_84849");});
+$("#zoom_chart_2188_3").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-206_84853_84853");});
+$("#zoom_chart_2188_4").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-206_84852_84852");});
+$("#zoom_chart_2188_5").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-206_84843_84843");});
+$("#zoom_chart_2188_6").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-206_84848_84848");});
+$("#zoom_chart_2188_7").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-206_84842_84842");});
+$("#zoom_chart_2188_8").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-206_84847_84847");});
+$("#zoom_chart_2188_9").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-206_84845_84845");});
+$("#zoom_chart_2188_10").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-206_84844_84844");});
+$("#zoom_chart_2188_11").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-206_84851_84851");});
+$("#zoom_chart_2188_12").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-206_84840_84840");});
+$("#zoom_chart_2188_13").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-206_84854_84854");});
+$("#zoom_chart_2188_14").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-206_84855_84855");});
+$("#zoom_chart_2188_15").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-206_84841_84841");});
+    document.getElementById ("sorted_stats_tps_min").innerText = "0.11";
+    document.getElementById ("sorted_stats_tps_med").innerText = "0.12";
+    document.getElementById ("sorted_stats_tps_avg").innerText = "0.13";
+    document.getElementById ("sorted_stats_tps_max").innerText = "0.19";
+    document.getElementById ("sorted_stats_tps_p1").innerText = "0.11";
+    document.getElementById ("sorted_stats_tps_p2").innerText = "0.11";
+    document.getElementById ("sorted_stats_tps_p3").innerText = "0.11";
+    document.getElementById ("sorted_stats_tps_p4").innerText = "0.11";
+    document.getElementById ("sorted_stats_tps_p5").innerText = "0.12";
+    document.getElementById ("sorted_stats_tps_p6").innerText = "0.12";
+    document.getElementById ("sorted_stats_tps_p7").innerText = "0.12";
     document.getElementById ("sorted_stats_tps_p8").innerText = "0.13";
-    document.getElementById ("sorted_stats_tps_p9").innerText = "0.14";
-    document.getElementById ("sorted_stats_tps_p10").innerText = "0.16";
+    document.getElementById ("sorted_stats_tps_p9").innerText = "0.15";
+    document.getElementById ("sorted_stats_tps_p10").innerText = "0.19";
   }
 }
 function set_previous_ldbal_input_sorted () {
@@ -897,7 +897,7 @@ addLoadEvent(function(){
       <td><button type="button" style="cursor:pointer;" onclick="set_next_ldbal_input_all ();">&rarr;</button></td>
     </tr>
   </table>
-<div style="margin: 10px; overflow-x:auto; overflow-y:hidden;"><div id="chart_cat_2675" style="height:500px" ></div><div style="text-align:center;"></div></div>
+<div style="margin: 10px; overflow-x:auto; overflow-y:hidden;"><div id="chart_cat_2191" style="height:500px" ></div><div style="text-align:center;"></div></div>
 <script class="code">
 </script>
 <table class="_fixed_table _no_auto_sorting" style="width:100%;"><tr><th>min</th><th>med</th><th>avg</th><th>max</th>
@@ -924,7 +924,7 @@ addLoadEvent(function(){
 <td id="all_stats_cov_p9"></td>
 <td id="all_stats_cov_p10"></td>
 </tr></table><hr><hr>
-<div style="margin: 10px; overflow-x:auto; overflow-y:hidden;"><div id="chart_cat_2676" style="height:500px" ></div><div style="text-align:center;"></div></div>
+<div style="margin: 10px; overflow-x:auto; overflow-y:hidden;"><div id="chart_cat_2192" style="height:500px" ></div><div style="text-align:center;"></div></div>
 <script class="code">
 </script>
 <table class="_fixed_table _no_auto_sorting" style="width:100%;"><tr><th>min</th><th>med</th><th>avg</th><th>max</th>
@@ -955,15 +955,15 @@ addLoadEvent(function(){
 function set_ldbal_input_all () {
   var selector_run  = document.getElementById ("ldbal_select_run_all");
   // Clear placeholder content and update their size
-  document.getElementById("chart_cat_2675").innerHTML = "";
-  var _width = Math.floor(document.getElementById("chart_cat_2675").getBoundingClientRect().width);
-  document.getElementById("chart_cat_2676").innerHTML = "";
-  var _width = Math.floor(document.getElementById("chart_cat_2676").getBoundingClientRect().width);
+  document.getElementById("chart_cat_2191").innerHTML = "";
+  var _width = Math.floor(document.getElementById("chart_cat_2191").getBoundingClientRect().width);
+  document.getElementById("chart_cat_2192").innerHTML = "";
+  var _width = Math.floor(document.getElementById("chart_cat_2192").getBoundingClientRect().width);
   // According to selector, draw both charts
   if (selector_run.value  == "1") {
 $(document).ready(function(){
-  var ordinals = ['cpu-q-154_1513180_1513180','cpu-q-154_1513181_1513181','cpu-q-154_1513182_1513182','cpu-q-154_1513183_1513183','cpu-q-154_1513184_1513184','cpu-q-154_1513185_1513185','cpu-q-154_1513186_1513186','cpu-q-154_1513187_1513187','cpu-q-154_1513188_1513188','cpu-q-154_1513189_1513189','cpu-q-154_1513190_1513190','cpu-q-154_1513191_1513191','cpu-q-154_1513192_1513192','cpu-q-154_1513193_1513193','cpu-q-154_1513194_1513194','cpu-q-154_1513195_1513195'];
-  var data = [{value:0.50953453779221,offset:0, i:0,color:"#333399"},{value:0.38610404729843,offset:0, i:1,color:"#333399"},{value:0.44298642873764,offset:0, i:2,color:"#333399"},{value:0.44400605559349,offset:0, i:3,color:"#333399"},{value:0.42735135555267,offset:0, i:4,color:"#333399"},{value:0.41050997376442,offset:0, i:5,color:"#333399"},{value:0.4768950343132,offset:0, i:6,color:"#333399"},{value:0.32889333367348,offset:0, i:7,color:"#333399"},{value:0.34465795755386,offset:0, i:8,color:"#333399"},{value:0.22988523542881,offset:0, i:9,color:"#333399"},{value:0.32851654291153,offset:0, i:10,color:"#333399"},{value:0.36118999123573,offset:0, i:11,color:"#333399"},{value:0.36196199059486,offset:0, i:12,color:"#333399"},{value:0.31198787689209,offset:0, i:13,color:"#333399"},{value:0.42756155133247,offset:0, i:14,color:"#333399"},{value:0.32856944203377,offset:0, i:15,color:"#333399"}];
+  var ordinals = ['cpu-q-206_84840_84840','cpu-q-206_84841_84841','cpu-q-206_84842_84842','cpu-q-206_84843_84843','cpu-q-206_84844_84844','cpu-q-206_84845_84845','cpu-q-206_84846_84846','cpu-q-206_84847_84847','cpu-q-206_84848_84848','cpu-q-206_84849_84849','cpu-q-206_84850_84850','cpu-q-206_84851_84851','cpu-q-206_84852_84852','cpu-q-206_84853_84853','cpu-q-206_84854_84854','cpu-q-206_84855_84855'];
+  var data = [{value:0.33898410201073,offset:0, i:0,color:"#333399"},{value:0.3242743909359,offset:0, i:1,color:"#333399"},{value:0.39506506919861,offset:0, i:2,color:"#333399"},{value:0.38503023982048,offset:0, i:3,color:"#333399"},{value:0.35493940114975,offset:0, i:4,color:"#333399"},{value:0.35461083054543,offset:0, i:5,color:"#333399"},{value:0.49482107162476,offset:0, i:6,color:"#333399"},{value:0.35461133718491,offset:0, i:7,color:"#333399"},{value:0.37077099084854,offset:0, i:8,color:"#333399"},{value:0.46239250898361,offset:0, i:9,color:"#333399"},{value:0.60334414243698,offset:0, i:10,color:"#333399"},{value:0.33992597460747,offset:0, i:11,color:"#333399"},{value:0.38592174649239,offset:0, i:12,color:"#333399"},{value:0.44780871272087,offset:0, i:13,color:"#333399"},{value:0.3396637737751,offset:0, i:14,color:"#333399"},{value:0.33987349271774,offset:0, i:15,color:"#333399"}];
   var widthgl  = _width;
   var widthin  = _width;
   var heightgl = 480;
@@ -973,7 +973,7 @@ $(document).ready(function(){
   height = heightgl - margin.top - margin.bottom,
   radius = (Math.min(width, height) / 2) - 10,
   node;
-  const svg = d3.select('#chart_cat_2675')
+  const svg = d3.select('#chart_cat_2191')
       .append('svg')
       .attr('width', widthin)
       .attr('height', heightin)
@@ -1030,13 +1030,13 @@ $(document).ready(function(){
   let tooltip = d3.select("body").append("div").attr("class", "D3tooltip");
   let bars = svg.append('g')
     .attr('clip-path','url(#my-clip-path)')
-    .attr('id', 'zoom_chart_2675')
+    .attr('id', 'zoom_chart_2191')
     .selectAll('.bar')
     .data(data)
     .enter()
     .append('rect')
     .attr('class', 'bar')
-    .attr('id', function (d, i) {return 'zoom_chart_2675_'+i;})
+    .attr('id', function (d, i) {return 'zoom_chart_2191_'+i;})
     .attr('x',  function (d, i) {return xScale(d.i) - xBand.bandwidth()*0.9/2})
     .attr('y',  function (d, i) {return yScale (d.value + d.offset)})
     .attr('width', xBand.bandwidth()*0.9)
@@ -1081,41 +1081,41 @@ $(document).ready(function(){
       bars.attr("transform", "translate(" + d3.event.transform.x+",0)scale(" + d3.event.transform.k + ",1)")
   }
 });
-$("#zoom_chart_2675_0").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-154_1513180_1513180");});
-$("#zoom_chart_2675_1").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-154_1513181_1513181");});
-$("#zoom_chart_2675_2").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-154_1513182_1513182");});
-$("#zoom_chart_2675_3").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-154_1513183_1513183");});
-$("#zoom_chart_2675_4").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-154_1513184_1513184");});
-$("#zoom_chart_2675_5").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-154_1513185_1513185");});
-$("#zoom_chart_2675_6").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-154_1513186_1513186");});
-$("#zoom_chart_2675_7").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-154_1513187_1513187");});
-$("#zoom_chart_2675_8").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-154_1513188_1513188");});
-$("#zoom_chart_2675_9").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-154_1513189_1513189");});
-$("#zoom_chart_2675_10").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-154_1513190_1513190");});
-$("#zoom_chart_2675_11").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-154_1513191_1513191");});
-$("#zoom_chart_2675_12").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-154_1513192_1513192");});
-$("#zoom_chart_2675_13").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-154_1513193_1513193");});
-$("#zoom_chart_2675_14").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-154_1513194_1513194");});
-$("#zoom_chart_2675_15").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-154_1513195_1513195");});
-    document.getElementById ("all_stats_cov_min").innerText = "0.23";
-    document.getElementById ("all_stats_cov_med").innerText = "0.37";
-    document.getElementById ("all_stats_cov_avg").innerText = "0.38";
-    document.getElementById ("all_stats_cov_max").innerText = "0.51";
-    document.getElementById ("all_stats_cov_p1").innerText = "0.23";
-    document.getElementById ("all_stats_cov_p2").innerText = "0.33";
-    document.getElementById ("all_stats_cov_p3").innerText = "0.33";
-    document.getElementById ("all_stats_cov_p4").innerText = "0.34";
-    document.getElementById ("all_stats_cov_p5").innerText = "0.36";
-    document.getElementById ("all_stats_cov_p6").innerText = "0.39";
-    document.getElementById ("all_stats_cov_p7").innerText = "0.43";
-    document.getElementById ("all_stats_cov_p8").innerText = "0.43";
-    document.getElementById ("all_stats_cov_p9").innerText = "0.44";
-    document.getElementById ("all_stats_cov_p10").innerText = "0.51";
+$("#zoom_chart_2191_0").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-206_84840_84840");});
+$("#zoom_chart_2191_1").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-206_84841_84841");});
+$("#zoom_chart_2191_2").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-206_84842_84842");});
+$("#zoom_chart_2191_3").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-206_84843_84843");});
+$("#zoom_chart_2191_4").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-206_84844_84844");});
+$("#zoom_chart_2191_5").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-206_84845_84845");});
+$("#zoom_chart_2191_6").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-206_84846_84846");});
+$("#zoom_chart_2191_7").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-206_84847_84847");});
+$("#zoom_chart_2191_8").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-206_84848_84848");});
+$("#zoom_chart_2191_9").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-206_84849_84849");});
+$("#zoom_chart_2191_10").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-206_84850_84850");});
+$("#zoom_chart_2191_11").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-206_84851_84851");});
+$("#zoom_chart_2191_12").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-206_84852_84852");});
+$("#zoom_chart_2191_13").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-206_84853_84853");});
+$("#zoom_chart_2191_14").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-206_84854_84854");});
+$("#zoom_chart_2191_15").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-206_84855_84855");});
+    document.getElementById ("all_stats_cov_min").innerText = "0.32";
+    document.getElementById ("all_stats_cov_med").innerText = "0.36";
+    document.getElementById ("all_stats_cov_avg").innerText = "0.39";
+    document.getElementById ("all_stats_cov_max").innerText = "0.60";
+    document.getElementById ("all_stats_cov_p1").innerText = "0.32";
+    document.getElementById ("all_stats_cov_p2").innerText = "0.34";
+    document.getElementById ("all_stats_cov_p3").innerText = "0.34";
+    document.getElementById ("all_stats_cov_p4").innerText = "0.35";
+    document.getElementById ("all_stats_cov_p5").innerText = "0.35";
+    document.getElementById ("all_stats_cov_p6").innerText = "0.37";
+    document.getElementById ("all_stats_cov_p7").innerText = "0.39";
+    document.getElementById ("all_stats_cov_p8").innerText = "0.40";
+    document.getElementById ("all_stats_cov_p9").innerText = "0.46";
+    document.getElementById ("all_stats_cov_p10").innerText = "0.60";
   }
   if (selector_run.value  == "1") {
 $(document).ready(function(){
-  var ordinals = ['cpu-q-154_1513180_1513180','cpu-q-154_1513181_1513181','cpu-q-154_1513182_1513182','cpu-q-154_1513183_1513183','cpu-q-154_1513184_1513184','cpu-q-154_1513185_1513185','cpu-q-154_1513186_1513186','cpu-q-154_1513187_1513187','cpu-q-154_1513188_1513188','cpu-q-154_1513189_1513189','cpu-q-154_1513190_1513190','cpu-q-154_1513191_1513191','cpu-q-154_1513192_1513192','cpu-q-154_1513193_1513193','cpu-q-154_1513194_1513194','cpu-q-154_1513195_1513195'];
-  var data = [{value:0.15500000119209,offset:0, i:0,color:"#333399"},{value:0.11000001430511,offset:0, i:1,color:"#333399"},{value:0.13500000536442,offset:0, i:2,color:"#333399"},{value:0.13499999046326,offset:0, i:3,color:"#333399"},{value:0.12999999523163,offset:0, i:4,color:"#333399"},{value:0.125,offset:0, i:5,color:"#333399"},{value:0.14500001072884,offset:0, i:6,color:"#333399"},{value:0.10000000149012,offset:0, i:7,color:"#333399"},{value:0.10499999672174,offset:0, i:8,color:"#333399"},{value:0.070000007748604,offset:0, i:9,color:"#333399"},{value:0.10000000149012,offset:0, i:10,color:"#333399"},{value:0.11000001430511,offset:0, i:11,color:"#333399"},{value:0.11000000685453,offset:0, i:12,color:"#333399"},{value:0.094999998807907,offset:0, i:13,color:"#333399"},{value:0.12999999523163,offset:0, i:14,color:"#333399"},{value:0.10000000149012,offset:0, i:15,color:"#333399"}];
+  var ordinals = ['cpu-q-206_84840_84840','cpu-q-206_84841_84841','cpu-q-206_84842_84842','cpu-q-206_84843_84843','cpu-q-206_84844_84844','cpu-q-206_84845_84845','cpu-q-206_84846_84846','cpu-q-206_84847_84847','cpu-q-206_84848_84848','cpu-q-206_84849_84849','cpu-q-206_84850_84850','cpu-q-206_84851_84851','cpu-q-206_84852_84852','cpu-q-206_84853_84853','cpu-q-206_84854_84854','cpu-q-206_84855_84855'];
+  var data = [{value:0.11000000685453,offset:0, i:0,color:"#333399"},{value:0.10500000417233,offset:0, i:1,color:"#333399"},{value:0.11999999731779,offset:0, i:2,color:"#333399"},{value:0.12499999254942,offset:0, i:3,color:"#333399"},{value:0.114999987185,offset:0, i:4,color:"#333399"},{value:0.11499999463558,offset:0, i:5,color:"#333399"},{value:0.15999999642372,offset:0, i:6,color:"#333399"},{value:0.11500000953674,offset:0, i:7,color:"#333399"},{value:0.11999999731779,offset:0, i:8,color:"#333399"},{value:0.15000002086163,offset:0, i:9,color:"#333399"},{value:0.19499999284744,offset:0, i:10,color:"#333399"},{value:0.11000000685453,offset:0, i:11,color:"#333399"},{value:0.12500001490116,offset:0, i:12,color:"#333399"},{value:0.14499999582767,offset:0, i:13,color:"#333399"},{value:0.11000000685453,offset:0, i:14,color:"#333399"},{value:0.10999999195337,offset:0, i:15,color:"#333399"}];
   var widthgl  = _width;
   var widthin  = _width;
   var heightgl = 480;
@@ -1125,7 +1125,7 @@ $(document).ready(function(){
   height = heightgl - margin.top - margin.bottom,
   radius = (Math.min(width, height) / 2) - 10,
   node;
-  const svg = d3.select('#chart_cat_2676')
+  const svg = d3.select('#chart_cat_2192')
       .append('svg')
       .attr('width', widthin)
       .attr('height', heightin)
@@ -1182,13 +1182,13 @@ $(document).ready(function(){
   let tooltip = d3.select("body").append("div").attr("class", "D3tooltip");
   let bars = svg.append('g')
     .attr('clip-path','url(#my-clip-path)')
-    .attr('id', 'zoom_chart_2676')
+    .attr('id', 'zoom_chart_2192')
     .selectAll('.bar')
     .data(data)
     .enter()
     .append('rect')
     .attr('class', 'bar')
-    .attr('id', function (d, i) {return 'zoom_chart_2676_'+i;})
+    .attr('id', function (d, i) {return 'zoom_chart_2192_'+i;})
     .attr('x',  function (d, i) {return xScale(d.i) - xBand.bandwidth()*0.9/2})
     .attr('y',  function (d, i) {return yScale (d.value + d.offset)})
     .attr('width', xBand.bandwidth()*0.9)
@@ -1233,36 +1233,36 @@ $(document).ready(function(){
       bars.attr("transform", "translate(" + d3.event.transform.x+",0)scale(" + d3.event.transform.k + ",1)")
   }
 });
-$("#zoom_chart_2676_0").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-154_1513180_1513180");});
-$("#zoom_chart_2676_1").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-154_1513181_1513181");});
-$("#zoom_chart_2676_2").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-154_1513182_1513182");});
-$("#zoom_chart_2676_3").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-154_1513183_1513183");});
-$("#zoom_chart_2676_4").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-154_1513184_1513184");});
-$("#zoom_chart_2676_5").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-154_1513185_1513185");});
-$("#zoom_chart_2676_6").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-154_1513186_1513186");});
-$("#zoom_chart_2676_7").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-154_1513187_1513187");});
-$("#zoom_chart_2676_8").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-154_1513188_1513188");});
-$("#zoom_chart_2676_9").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-154_1513189_1513189");});
-$("#zoom_chart_2676_10").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-154_1513190_1513190");});
-$("#zoom_chart_2676_11").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-154_1513191_1513191");});
-$("#zoom_chart_2676_12").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-154_1513192_1513192");});
-$("#zoom_chart_2676_13").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-154_1513193_1513193");});
-$("#zoom_chart_2676_14").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-154_1513194_1513194");});
-$("#zoom_chart_2676_15").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-154_1513195_1513195");});
-    document.getElementById ("all_stats_tps_min").innerText = "0.07";
-    document.getElementById ("all_stats_tps_med").innerText = "0.11";
-    document.getElementById ("all_stats_tps_avg").innerText = "0.12";
-    document.getElementById ("all_stats_tps_max").innerText = "0.16";
-    document.getElementById ("all_stats_tps_p1").innerText = "0.07";
-    document.getElementById ("all_stats_tps_p2").innerText = "0.10";
-    document.getElementById ("all_stats_tps_p3").innerText = "0.10";
-    document.getElementById ("all_stats_tps_p4").innerText = "0.10";
-    document.getElementById ("all_stats_tps_p5").innerText = "0.11";
-    document.getElementById ("all_stats_tps_p6").innerText = "0.11";
-    document.getElementById ("all_stats_tps_p7").innerText = "0.13";
+$("#zoom_chart_2192_0").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-206_84840_84840");});
+$("#zoom_chart_2192_1").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-206_84841_84841");});
+$("#zoom_chart_2192_2").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-206_84842_84842");});
+$("#zoom_chart_2192_3").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-206_84843_84843");});
+$("#zoom_chart_2192_4").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-206_84844_84844");});
+$("#zoom_chart_2192_5").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-206_84845_84845");});
+$("#zoom_chart_2192_6").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-206_84846_84846");});
+$("#zoom_chart_2192_7").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-206_84847_84847");});
+$("#zoom_chart_2192_8").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-206_84848_84848");});
+$("#zoom_chart_2192_9").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-206_84849_84849");});
+$("#zoom_chart_2192_10").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-206_84850_84850");});
+$("#zoom_chart_2192_11").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-206_84851_84851");});
+$("#zoom_chart_2192_12").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-206_84852_84852");});
+$("#zoom_chart_2192_13").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-206_84853_84853");});
+$("#zoom_chart_2192_14").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-206_84854_84854");});
+$("#zoom_chart_2192_15").click( function () {window.open("../topo/redirect.html?thread=0_cpu-q-206_84855_84855");});
+    document.getElementById ("all_stats_tps_min").innerText = "0.11";
+    document.getElementById ("all_stats_tps_med").innerText = "0.12";
+    document.getElementById ("all_stats_tps_avg").innerText = "0.13";
+    document.getElementById ("all_stats_tps_max").innerText = "0.19";
+    document.getElementById ("all_stats_tps_p1").innerText = "0.11";
+    document.getElementById ("all_stats_tps_p2").innerText = "0.11";
+    document.getElementById ("all_stats_tps_p3").innerText = "0.11";
+    document.getElementById ("all_stats_tps_p4").innerText = "0.11";
+    document.getElementById ("all_stats_tps_p5").innerText = "0.12";
+    document.getElementById ("all_stats_tps_p6").innerText = "0.12";
+    document.getElementById ("all_stats_tps_p7").innerText = "0.12";
     document.getElementById ("all_stats_tps_p8").innerText = "0.13";
-    document.getElementById ("all_stats_tps_p9").innerText = "0.14";
-    document.getElementById ("all_stats_tps_p10").innerText = "0.16";
+    document.getElementById ("all_stats_tps_p9").innerText = "0.15";
+    document.getElementById ("all_stats_tps_p10").innerText = "0.19";
   }
 }
 function set_previous_ldbal_input_all () {
@@ -1288,13 +1288,13 @@ addLoadEvent(function(){
 <table style="width:100%;"><tr><td style="text-align:center;"><select id="callchains_select_run" size="1" onchange="set_callchains_input ();" autocomplete="off" style="cursor:pointer;">
            <option value="1">Run 1
 </select></td></tr></table>
-<div id="div_callchains_1"><div class="_div_table" ><table id="_tree_table_389" class="_tree_table"><tr><th class="_freezed_row  _left  tooltip-maqao" title="" tooltip_id="0" style="width:20%;"><span></span>Coverage (%)</th><th class="_freezed_row  tooltip-maqao" title="" tooltip_id="1" style="width:30%;"><span></span>Name</th><th class="_freezed_row  tooltip-maqao" title="" tooltip_id="2" style="width:30%;"><span></span>Source Location</th><th class="_freezed_row  tooltip-maqao" title="" tooltip_id="3" style="width:20%;"><span></span>Module</th></tr>
-<tr class=" _outer_row"  id="_tr_389_1"  ondblclick="_action_277(this,1,-1, '../functions/cp2k.psmp_6324.html');"  style="cursor:pointer;"><td id="_tr_389_1-1"  data-_i="1" data-_j="1"  class=" _left" ><span onclick="_click_tree(this)" style="margin-right:5px;margin-left:0px;cursor:pointer;" >&#x25BA;</span>100.00<span onclick="_click_expand(this)" class="span_expand">&#43;</span></td><td id="_tr_389_1-2"  data-_i="1" data-_j="2" >nnp_calc_energy_force</td><td id="_tr_389_1-3"  data-_i="1" data-_j="3"  title="" tooltip_id="4" class=" tooltip-maqao" >nnp_force.F:163</td><td id="_tr_389_1-4"  data-_i="1" data-_j="4"  class=" _centered" >cp2k.psmp</td></tr>
-<tr class="_tree_hidden _tr_389_1"  id="_tr_389_1_1"  ondblclick="_action_277(this,2,-1, '../functions/cp2k.psmp_6324.html');"  style="cursor:pointer;"><td id="_tr_389_1_1-1"  data-_i="2" data-_j="1"  class=" _left" ><span style="margin-right:10px;margin-left:18px;" >&#x25CB;</span></td><td id="_tr_389_1_1-2"  data-_i="2" data-_j="2" >force_env_calc_energy_force</td><td id="_tr_389_1_1-3"  data-_i="2" data-_j="3"  title="" tooltip_id="5" class=" tooltip-maqao" >force_env_methods.F:289</td><td id="_tr_389_1_1-4"  data-_i="2" data-_j="4"  class=" _centered" >cp2k.psmp</td></tr>
-<tr class="_tree_hidden _tr_389_1"  id="_tr_389_1_2"  ondblclick="_action_277(this,3,-1, '../functions/cp2k.psmp_6324.html');"  style="cursor:pointer;"><td id="_tr_389_1_2-1"  data-_i="3" data-_j="1"  class=" _left" ><span style="margin-right:10px;margin-left:18px;" >&#x25CB;</span></td><td id="_tr_389_1_2-2"  data-_i="3" data-_j="2" >nvt</td><td id="_tr_389_1_2-3"  data-_i="3" data-_j="3"  title="" tooltip_id="6" class=" tooltip-maqao" >integrator.F:1109</td><td id="_tr_389_1_2-4"  data-_i="3" data-_j="4"  class=" _centered" >cp2k.psmp</td></tr>
+<div id="div_callchains_1"><div class="_div_table" ><table id="_tree_table_319" class="_tree_table"><tr><th class="_freezed_row  _left  tooltip-maqao" title="" tooltip_id="0" style="width:20%;"><span></span>Coverage (%)</th><th class="_freezed_row  tooltip-maqao" title="" tooltip_id="1" style="width:30%;"><span></span>Name</th><th class="_freezed_row  tooltip-maqao" title="" tooltip_id="2" style="width:30%;"><span></span>Source Location</th><th class="_freezed_row  tooltip-maqao" title="" tooltip_id="3" style="width:20%;"><span></span>Module</th></tr>
+<tr class=" _outer_row"  id="_tr_319_1"  ondblclick="_action_230(this,1,-1, '../functions/cp2k.psmp_6324.html');"  style="cursor:pointer;"><td id="_tr_319_1-1"  data-_i="1" data-_j="1"  class=" _left" ><span onclick="_click_tree(this)" style="margin-right:5px;margin-left:0px;cursor:pointer;" >&#x25BA;</span>100.00<span onclick="_click_expand(this)" class="span_expand">&#43;</span></td><td id="_tr_319_1-2"  data-_i="1" data-_j="2" >nnp_calc_energy_force</td><td id="_tr_319_1-3"  data-_i="1" data-_j="3"  title="" tooltip_id="4" class=" tooltip-maqao" >nnp_force.F:163</td><td id="_tr_319_1-4"  data-_i="1" data-_j="4"  class=" _centered" >cp2k.psmp</td></tr>
+<tr class="_tree_hidden _tr_319_1"  id="_tr_319_1_1"  ondblclick="_action_230(this,2,-1, '../functions/cp2k.psmp_6324.html');"  style="cursor:pointer;"><td id="_tr_319_1_1-1"  data-_i="2" data-_j="1"  class=" _left" ><span style="margin-right:10px;margin-left:18px;" >&#x25CB;</span></td><td id="_tr_319_1_1-2"  data-_i="2" data-_j="2" >force_env_calc_energy_force</td><td id="_tr_319_1_1-3"  data-_i="2" data-_j="3"  title="" tooltip_id="5" class=" tooltip-maqao" >force_env_methods.F:289</td><td id="_tr_319_1_1-4"  data-_i="2" data-_j="4"  class=" _centered" >cp2k.psmp</td></tr>
+<tr class="_tree_hidden _tr_319_1"  id="_tr_319_1_2"  ondblclick="_action_230(this,3,-1, '../functions/cp2k.psmp_6324.html');"  style="cursor:pointer;"><td id="_tr_319_1_2-1"  data-_i="3" data-_j="1"  class=" _left" ><span style="margin-right:10px;margin-left:18px;" >&#x25CB;</span></td><td id="_tr_319_1_2-2"  data-_i="3" data-_j="2" >nvt</td><td id="_tr_319_1_2-3"  data-_i="3" data-_j="3"  title="" tooltip_id="6" class=" tooltip-maqao" >integrator.F:1109</td><td id="_tr_319_1_2-4"  data-_i="3" data-_j="4"  class=" _centered" >cp2k.psmp</td></tr>
 </table></div>
 <script>
-function _action_277 (obj, i, j, p){open(""+p+"");}
+function _action_230 (obj, i, j, p){open(""+p+"");}
 </script>
 </div>
 <script>

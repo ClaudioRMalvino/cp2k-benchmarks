@@ -1,0 +1,14 @@
+# branch:      upstream-master
+# exe:         /rds/user/crm98/hpc-work/cp2k_binaries/csd3/master/cp2k.psmp
+# MPI ranks:   76
+# OMP threads: 1
+# total cores: 76
+# steps:       100
+# reps:        5 timed (+1 discarded warm-up) per size
+# n_molecules,n_reps,time_per_step_mean_s,time_per_step_std_s,time_per_step_min_s,walltime_mean_s,walltime_std_s,walltime_min_s
+64,5,0.036224,0.003805,0.032430,3.907800,0.405510,3.559000
+256,5,0.046774,0.001670,0.045050,5.359800,0.144997,5.154000
+512,5,0.079372,0.006465,0.072150,10.191000,0.777745,9.372000
+1024,5,0.190342,0.001187,0.189140,19.255600,0.183606,19.090000
+2048,5,0.775656,0.002750,0.771220,77.781600,0.289850,77.309000
+4096,5,3.413018,0.029117,3.374040,341.573400,2.883127,337.723000

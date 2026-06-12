@@ -7,7 +7,9 @@
 #SBATCH -p icelake
 #SBATCH --nodes=1
 #SBATCH --ntasks=16
-#SBATCH --time=01:00:00
+# 3 h: equil measured 0.0153 s/step at 32 ranks; production is 200k steps
+# at 16 ranks + per-step stress I/O => ~2 h projected.  1 h was a sure kill.
+#SBATCH --time=03:00:00
 #SBATCH --array=25-29%5
 #SBATCH --mail-type=NONE
 #SBATCH --output=/home/crm98/cp2k-benchmarks/logs/figS4_prod_N64_%A_%a.out
@@ -25,12 +27,18 @@ source "$BIN_ROOT/setup"
 
 set -euo pipefail
 
+# Bash expands here-docs/here-strings via temp files in TMPDIR; node-local
+# /tmp can be full (job 30395309 died on cpu-q-179 with ENOSPC at a
+# here-string).  Point TMPDIR at scratch so a full node disk cannot kill us.
+export TMPDIR=/rds/user/$USER/hpc-work/tmp
+mkdir -p "$TMPDIR"
+
 PROD_PS=${PROD_PS:-100}
 TIMESTEP_FS=0.5
 PROD_STEPS=$(python3 -c "print(int(${PROD_PS}/${TIMESTEP_FS}*1000))")
 
 idx=$SLURM_ARRAY_TASK_ID
-BRANCH_LIST=(master feature-nnp-native-spline)
+BRANCH_LIST=(master feature-nnp-chebyshev)
 SIZE_LIST=(64 128 256 512 1024)
 branch=${BRANCH_LIST[$(( idx / 25 ))]}
 size=${SIZE_LIST[$(( (idx % 25) / 5 ))]}
@@ -38,7 +46,7 @@ seg=$(( (idx % 25) % 5 + 1 ))
 
 case "$branch" in
   master)                    CP2K_EXE="$BIN_ROOT/master/cp2k.psmp";                   LIB="$BIN_ROOT/master/lib";                   LABEL=upstream-master ;;
-  feature-nnp-native-spline) CP2K_EXE="$BIN_ROOT/feature-nnp-native-spline/cp2k.psmp"; LIB="$BIN_ROOT/feature-nnp-native-spline/lib"; LABEL=feature-nnp-native-spline ;;
+  feature-nnp-chebyshev) CP2K_EXE="$BIN_ROOT/feature-nnp-chebyshev/cp2k.psmp"; LIB="$BIN_ROOT/feature-nnp-chebyshev/lib"; LABEL=feature-nnp-chebyshev ;;
 esac
 export LD_LIBRARY_PATH="$LIB:${LD_LIBRARY_PATH:-}"
 export OMP_NUM_THREADS=1

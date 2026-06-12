@@ -1,0 +1,2 @@
+branch,label,n_molecules,segment,mpi_ranks,prod_steps,time_per_step_s,md_loop_s,total_walltime_s
+master,upstream-master,64,4,16,200000,0.017187,3437.459,3437.721

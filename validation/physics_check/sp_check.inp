@@ -1,0 +1,30 @@
+&GLOBAL
+  PRINT_LEVEL LOW
+  PROJECT sp_check
+  RUN_TYPE ENERGY_FORCE
+&END GLOBAL
+
+&FORCE_EVAL
+  METHOD NNP
+  &PRINT
+    &FORCES ON
+      NDIGITS 12
+    &END FORCES
+  &END PRINT
+  &NNP
+    NNP_INPUT_FILE_NAME /home/crm98/cp2k_optimized/data/NNP/bulkH2O-jcp2020-cnnp/nnp-1/input.nn
+    SCALE_FILE_NAME /home/crm98/cp2k_optimized/data/NNP/bulkH2O-jcp2020-cnnp/nnp-1/scaling.data
+    &MODEL
+      WEIGHTS /home/crm98/cp2k_optimized/data/NNP/bulkH2O-jcp2020-cnnp/nnp-1/weights
+    &END MODEL
+  &END NNP
+  &SUBSYS
+    &CELL
+      ABC [angstrom] 12.42 12.42 12.42
+      PERIODIC XYZ
+    &END CELL
+    &COORD
+      @INCLUDE coord_H2O-64.inc
+    &END COORD
+  &END SUBSYS
+&END FORCE_EVAL

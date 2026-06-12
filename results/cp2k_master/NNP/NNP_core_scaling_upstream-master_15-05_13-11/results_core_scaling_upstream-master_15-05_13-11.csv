@@ -1,0 +1,6 @@
+# branch:      upstream-master
+# exe:         /rds/user/crm98/hpc-work/cp2k_binaries/csd3/master/cp2k.psmp
+# N_molecules: 1024
+# steps:       100
+# reps:        5 timed (+1 discarded warm-up) per core count
+# mpi_ranks,omp_threads,total_cores,n_reps,time_per_step_mean_s,time_per_step_std_s,time_per_step_min_s,walltime_mean_s,walltime_std_s,walltime_min_s,speedup,parallel_efficiency

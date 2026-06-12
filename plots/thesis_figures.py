@@ -361,8 +361,10 @@ def fig2_strong_scaling(data, omp):
     # optimised branch shows a lower speedup ratio just because its 1-core
     # baseline is already faster.
     master_t1 = None
+    master_t1_ci95 = 0.0
     if data["upstream master"]["core"] is not None and not data["upstream master"]["core"].empty:
         master_t1 = data["upstream master"]["core"]["tps_mean"].iloc[0]
+        master_t1_ci95 = data["upstream master"]["core"]["tps_ci95"].iloc[0]
 
     drawn_branches = []
     for name in ("upstream master", "native-spline", "native-spline-omp"):
@@ -372,21 +374,50 @@ def fig2_strong_scaling(data, omp):
         drawn_branches.append((name, d))
         ax_a.errorbar(c["total_cores"], c["tps_mean"], yerr=c["tps_ci95"],
                       marker=d["marker"], color=d["color"], capsize=2, lw=1.6, ms=5.5)
+        # Index of the baseline (lowest core count) row; robust to row order.
+        base_idx = int(np.asarray(c["total_cores"]).argmin())
+        # Speedup uses a common (master 1-core) baseline.  For N>1 the
+        # numerator and denominator are independent runs, so propagate CI95 of
+        # both in quadrature (delta method).  master's own 1-core point is a
+        # self-ratio (speedup == 1 exactly), so its interval is zero there.
         common_speedup = (master_t1 / c["tps_mean"]) if master_t1 is not None else c["speedup"]
-        ax_b.plot(c["total_cores"], common_speedup,
-                  marker=d["marker"], color=d["color"], lw=1.7, ms=6.5)
-        ax_c.plot(c["total_cores"], c["efficiency"],
-                  marker=d["marker"], color=d["color"], lw=1.7, ms=6.5)
+        if master_t1 is not None and master_t1 > 0:
+            rel_speedup = np.sqrt((master_t1_ci95/master_t1)**2 +
+                                  (c["tps_ci95"]/c["tps_mean"])**2)
+            speedup_ci = np.array(common_speedup*rel_speedup, dtype=float)
+            if name == "upstream master":
+                speedup_ci[base_idx] = 0.0   # master_t1 / master_t1 is exact
+        else:
+            speedup_ci = None
+        ax_b.errorbar(c["total_cores"], common_speedup, yerr=speedup_ci,
+                      marker=d["marker"], color=d["color"], capsize=2, lw=1.7, ms=6.5)
+        # Efficiency uses the per-branch 1-core baseline.  At the baseline core
+        # count efficiency is exactly 100% (self-ratio, zero variance); for
+        # N>1 the 1-core and N-core runs are independent.
+        branch_t1 = c["tps_mean"].iloc[base_idx]
+        branch_t1_ci95 = c["tps_ci95"].iloc[base_idx]
+        rel_eff = np.sqrt((branch_t1_ci95/branch_t1)**2 +
+                          (c["tps_ci95"]/c["tps_mean"])**2)
+        eff_ci = np.array(c["efficiency"]*rel_eff, dtype=float)
+        eff_ci[base_idx] = 0.0           # baseline efficiency == 100% exactly
+        ax_c.errorbar(c["total_cores"], c["efficiency"], yerr=eff_ci,
+                      marker=d["marker"], color=d["color"], capsize=2, lw=1.7, ms=6.5)
         # Estimated overhead per step = t(N) - t(1)/N: absolute residual above
         # ideal strong-scaling (communication + serial + NUMA noise). Not
         # strictly t_comm but the dominant term at high N is collective MPI.
         # Skip the baseline point (trivially overhead=0 by construction); on
-        # a log-y axis it would render as a spurious vertical drop.
-        t1 = c["tps_mean"].iloc[0]
-        c_tail = c.iloc[1:]
+        # a log-y axis it would render as a spurious vertical drop.  This is a
+        # difference of two independent runs, so the interval propagates as
+        # sqrt(CI_tN^2 + (CI_t1/N)^2) (absolute, not relative).
+        t1 = c["tps_mean"].iloc[base_idx]
+        t1_ci95 = c["tps_ci95"].iloc[base_idx]
+        c_tail = c.drop(index=c.index[base_idx])
         overhead = c_tail["tps_mean"] - t1 / c_tail["total_cores"]
-        ax_d.plot(c_tail["total_cores"], overhead.clip(lower=1e-4),
-                  marker=d["marker"], color=d["color"], lw=1.7, ms=6.5)
+        overhead_ci = np.sqrt(c_tail["tps_ci95"]**2 +
+                              (t1_ci95 / c_tail["total_cores"])**2)
+        ax_d.errorbar(c_tail["total_cores"], overhead.clip(lower=1e-4),
+                      yerr=np.array(overhead_ci, dtype=float),
+                      marker=d["marker"], color=d["color"], capsize=2, lw=1.7, ms=6.5)
     # Dense sampling: on log-x linear-y axes y=x is a curve; 7 points would
     # render as visible chord segments.
     x_ideal = np.linspace(1, max(N_TICKS), 200)

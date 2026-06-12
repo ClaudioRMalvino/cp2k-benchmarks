@@ -42,6 +42,14 @@ case "$TARGET_BRANCH" in
       OUTDIR_PARENT="cp2k_feature_native_spline_omp"
       OMP_THREADS=2
       ;;
+  feature-nnp-chebyshev)
+      CP2K_EXE="$BIN_ROOT/feature-nnp-chebyshev/cp2k.psmp"
+      INSTALL_LIB="$BIN_ROOT/feature-nnp-chebyshev/lib"
+      LABEL="feature-nnp-chebyshev"
+      PROJECT_ROOT="/home/crm98/cp2k_optimized"
+      OUTDIR_PARENT="cp2k_feature_chebyshev"
+      OMP_THREADS=1
+      ;;
   master|*)
       CP2K_EXE="$BIN_ROOT/master/cp2k.psmp"
       INSTALL_LIB="$BIN_ROOT/master/lib"

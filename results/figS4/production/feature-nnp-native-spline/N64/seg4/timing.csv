@@ -1,0 +1,2 @@
+branch,label,n_molecules,segment,mpi_ranks,prod_steps,time_per_step_s,md_loop_s,total_walltime_s
+feature-nnp-native-spline,feature-nnp-native-spline,64,4,16,200000,0.014212,2842.458,2842.753

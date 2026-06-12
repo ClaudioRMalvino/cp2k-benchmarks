@@ -1,0 +1,14 @@
+# branch:      feature-nnp-native-spline
+# exe:         /rds/user/crm98/hpc-work/cp2k_binaries/csd3/feature-nnp-native-spline/cp2k.psmp
+# MPI ranks:   76
+# OMP threads: 1
+# total cores: 76
+# steps:       100
+# reps:        5 timed (+1 discarded warm-up) per size
+# n_molecules,n_reps,time_per_step_mean_s,time_per_step_std_s,time_per_step_min_s,walltime_mean_s,walltime_std_s,walltime_min_s
+64,5,0.035728,0.002494,0.034240,3.800400,0.290683,3.629000
+256,5,0.040568,0.002906,0.038080,4.725200,0.274746,4.444000
+512,5,0.048904,0.005030,0.045620,7.006800,0.480941,6.663000
+1024,5,0.070056,0.001475,0.068450,7.207000,0.166942,7.005000
+2048,5,0.113260,0.002659,0.110770,11.546600,0.272895,11.318000
+4096,5,0.204042,0.001983,0.202100,20.647000,0.217576,20.439000
