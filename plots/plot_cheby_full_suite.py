@@ -9,7 +9,7 @@ import os, numpy as np
 import matplotlib; matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
-OUT = os.path.expanduser("~/cp2k-benchmarks/results/cheby_benchmark_figs")
+OUT = os.path.expanduser("~/cp2k-benchmarks/plots/cheby_benchmark_figs")
 os.makedirs(OUT, exist_ok=True)
 C = {"master": "#777777", "native-spline": "#1f77b4", "chebyshev": "#d62728"}
 M = {"master": "s", "native-spline": "o", "chebyshev": "^"}

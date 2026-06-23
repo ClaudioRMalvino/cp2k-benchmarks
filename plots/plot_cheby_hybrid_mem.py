@@ -8,7 +8,7 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
-OUT = os.path.expanduser("~/cp2k-benchmarks/results/cheby_benchmark_figs")
+OUT = os.path.expanduser("~/cp2k-benchmarks/plots/cheby_benchmark_figs")
 os.makedirs(OUT, exist_ok=True)
 
 # ----- decomposition order: MPI-heavy -> OMP-heavy -----

@@ -23,7 +23,10 @@ The repository holds:
 ```
 cp2k-benchmarks/
 ├── H2O-64_NNP_MD.inp          headline benchmark input
-├── NNPs/, NNPs.tar            bulk-H2O committee NN potentials
+├── potentials/                external reference NN potentials (see potentials/README.md)
+│   ├── morawietz-water-2016/  bulk-H2O committee NNPs (was NNPs/)
+│   ├── RPBE-vdW-2016/         runnable RPBE-vdW potential (with input.nn)
+│   └── oneill-nacl-water-2024/ NaCl-in-water committee models (was nacl/)
 ├── diffusion/                 fig S4 inputs (MSD / diffusion / viscosity)
 │
 ├── cp2k_master/               build scripts for the upstream CP2K tree
@@ -196,8 +199,10 @@ optimised branch's Fortran level to `-O2` (versus master at `-O3`).
 ## Provenance and reproducibility
 
 - The H₂O-64 input deck (`H2O-64_NNP_MD.inp`) references the cnnp
-  potential at `NNPs/RPBE-vdW/nnp-1` (the first committee member from
-  Schran et al., JCP 2020).
+  potential at `NNP/bulkH2O-jcp2020-cnnp/nnp-1` (the first committee
+  member from Schran et al., JCP 2020), staged into run directories at
+  runtime. The Morawietz reference NNPs live at
+  `potentials/morawietz-water-2016/`.
 - The compiler-flags table (fig 8) captures everything the build
   scripts choose; the trailing flags appended by CMake's `Release`
   preset and by CP2K's own `CMakeLists.txt` are build-system plumbing

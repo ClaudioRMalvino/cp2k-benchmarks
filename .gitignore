@@ -27,13 +27,13 @@ diffusion/
 
 # NNP parameter files are ignored in run directories (they are copies)...
 *.data
-# ...but the canonical potentials needed to run the NNP are kept:
+# ...but the canonical potentials needed to run the NNP are kept
+# (this now also covers potentials/oneill-nacl-water-2024/models/**/*.data):
 !potentials/**/*.data
-!nacl/nacl-water/models/**/*.data
 
 # NaCl training/validation datasets (251 MB) stay out of the repo;
-# nacl/nacl-water/PROVENANCE.md records the exact upstream commit.
-nacl/nacl-water/data-sets/
+# potentials/oneill-nacl-water-2024/PROVENANCE.md records the upstream commit.
+potentials/oneill-nacl-water-2024/data-sets/
 
 # Tar files
 *.tar
