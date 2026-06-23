@@ -74,6 +74,13 @@ branches) into separate per-branch directories so `LD_LIBRARY_PATH` cannot
 accidentally pick up the wrong `libcp2k.so`.  Each branch is then run through
 the same size-scaling and core-scaling sweeps.
 
+(A fourth optimisation branch, `feature/nnp-chebyshev`, supersedes
+`nnp-native-spline-omp` and is the active development line — Branch 4 below.
+Separately, `feature/nnp-mace` — Branch 5 — is **not** part of this
+three-binary optimisation comparison: it adds a new MACE ML-potential
+backend rather than optimising the existing NNP, and is validated against
+the symmetrix reference and Morawietz physics, not against master t/step.)
+
 ---
 
 ## Branch 1 — `upstream/master` (baseline)
@@ -878,7 +885,162 @@ NNP/regtest-1 passes on the minimax commit.  Physics gate for the whole
 pass: `~/cp2k-benchmarks/validation/physics_check/run_check.sh` (sbatch)
 — single-point master-vs-branch force diff + 2 ps NVE conserved-quantity
 drift on H2O-64, both binaries.  4.4 changes summation order, so expect
-agreement to ε, not bitwise.
+agreement to ε, not bitwise.  Post-rework force diff vs master:
+**2.56e-13 Ha/bohr** (physics_check 30451382, binary `e13295fb77`).
+
+#### Performance — post-rework suite (June 20–21 2026, job 30565007, icelake)
+
+The §4.9 centre-level OMP rework reversed the earlier small-N deficit; the
+inner-OMP atomic tax is gone and the branch is now faster than master at
+every size and a clean OMP scaler.
+
+- **Strong scaling, N=1024 H₂O (t/step):** chebyshev 3.007 s @1 core →
+  0.0742 s @64 cores; master 8.001 s → 0.1827 s.  **~2.66× at 1 core,
+  ~2.46× at 64 cores.**  OMP efficiency 100→63 % (chebyshev) vs 100→68 %
+  (master): the absolute win is large, the relative scaling slightly worse
+  because per-step work shrank.
+- **OMP thread scaling, N=64, 1 rank:** 1.97×@2 (98.7 %), 6.95×@8 (86.9 %),
+  11.9×@16 (74.3 %) — no per-pair atomics, one PARALLEL region per force
+  eval, scales as intended.
+- **Size scaling, 76 MPI×1 (t/step):** N64 0.036 s, N256 0.050 s, N512
+  0.063 s, N1024 0.092 s, N2048 0.155 s, N4096 0.294 s.
+
+#### Physics — Fig. S4 (Morawietz) reproduction, chebyshev-only
+
+Production (5 sizes × 5 segments × 100 ps NVE, post-fix snapshots) analysed
+with `aggregate_figS4.py` (MSD diffusion + Green–Kubo η, Yeh–Hummer
+correction).  Summary in `results/figS4/analysis/figS4_summary.csv`.
+**Reference is the Morawietz RPBE-vdW NNP itself (Fig S4 C/D), NOT
+experimental water** — RPBE-vdW is intentionally over-mobile / under-viscous
+(experiment D≈0.23, η≈0.85; the NNP gives D₀≈0.31, η≈0.65):
+
+| N | D₀ chebyshev | D₀ Morawietz | η chebyshev (mPa·s) | η Morawietz |
+|---|---|---|---|---|
+| 64 | 0.311 | ~0.31 | 0.83 ± 0.13 | ~0.68 |
+| 128 | 0.326 | ~0.31 | 0.65 ± 0.03 | ~0.69 |
+| 256 | 0.314 | ~0.31 | 0.67 ± 0.02 | ~0.665 |
+| 512 | 0.309 | ~0.31 | 0.64 ± 0.05 | ~0.655 |
+| 1024 | (pending) | ~0.31 | (pending) | ~0.66 |
+
+D₀ is size-independent at ~0.31 Å²/ps and matches exactly; η lands on the
+0.64–0.70 band for N128–512.  N64 η is high but is the noisiest box
+(Green–Kubo η scatter is largest at small N; ±0.13 bracket overlaps).
+Stokes–Einstein cross-check: D₀·η ≈ 0.31×0.65 ≈ 0.20 ≈ experiment's
+0.23×0.85 ≈ 0.20.  Master MD is *not* re-run — chebyshev≡master physics is
+established by the single-point/force equivalence table (1.6e-11 Ha at
+N128) and NVE stability (|drift| < 1.2 µHa/atom over 100 ps, N64–512).
+N1024 production array still queued.
+
+---
+
+## Branch 5 — `feature/nnp-mace` (MACE foundation-model backend)
+
+A separate line of work from the NNP optimisation: a **new ML-potential
+backend** that runs a MACE message-passing model as a FIST `&NONBONDED`
+manybody term, via the header-only **symmetrix** library (tensor-free CPU
+C++ evaluator over a CSR neighbour graph).  Built as if going for upstream
+PR — clean, gated, NequIP/Allegro-structured.  Three commits on
+`feature/nnp-mace`:
+
+| Commit | Scope |
+|---|---|
+| `198408e1bd` | Level 0/1 — C/Fortran binding + unit test |
+| `a83ef8eb15` | Level 2 — `&MACE` FIST integration (`manybody_mace.F`) |
+| `c3e371043d` | units-consistency guard |
+
+### 5.1 Binding layer (Level 0/1, `198408e1bd`)
+
+- `src/mace_api.F` + `src/mace_c_api.cpp` — `ISO_C_BINDING` wrapper around
+  symmetrix, gated behind `__MACE`; opaque `mace_model_type` holding a
+  `C_PTR` handle.  Entry points: `mace_model_load`, `mace_model_r_cut`,
+  `mace_model_num_elements`, `mace_model_atomic_numbers`,
+  `mace_model_compute`, `mace_model_release`.
+- `cmake/modules/FindSymmetrix.cmake` → `cp2k::symmetrix`
+  (libsymmetrix + libsphericart + OpenMP, C++20 `std::span`,
+  `SYMMETRIX_ROOT`).  `-DCP2K_USE_MACE=ON`.  Toolchain installer
+  `tools/toolchain/scripts/stage6/install_mace.sh`.
+- `src/mace_unittest.F` — direct symmetrix eval, no CP2K input.
+- Test fixture `data/MACE/mace-tiny-1-8.json` — tiny untrained
+  ScaleShiftMACE (8 channels, H/O, max_ell 3, 64 spline pts, 1.1 MB);
+  reference raw-output energy `0.031956406755371`.
+
+### 5.2 `&MACE` FIST integration (Level 2, `a83ef8eb15`)
+
+New evaluator `src/manybody_mace.F` (clones `manybody_nequip.F` structure,
+swaps torch → symmetrix CSR).  Public `mace_energy_store_force_virial` /
+`mace_add_force_virial`.  Flow per force eval:
+
+1. build local edge list from the neighbour list (centre=a, neighbour=b,
+   xyz = r_b − r_a + cell_v, filtered by `cutoff_matrix`);
+2. pack to symmetrix **CSR** (counting-sort group-by-centre: `node_types`,
+   `num_neigh`, `neigh_indices`, `csr_xyz`, `csr_r`);
+3. `mace_model_compute`;
+4. scatter per-edge node forces (`f[centre] -= fe`, `f[neigh] += fe`),
+   `virial += outer(xyz, node_forces)`, energy = Σ node_energies;
+5. divide energy/force/virial by `num_pe` (graph is replicated on every
+   rank via allgatherv — **MPI gives no speedup; OpenMP in symmetrix is the
+   only parallel lever**).
+
+Element index mapping comes from the model's own `atomic_numbers` via the
+periodic table, so the `ATOMS` keyword order is irrelevant to correctness.
+
+Scaffolding (all NequIP/Allegro-patterned): `pair_potential_types.F`
+(`mace_type = 22`, `mace_pot_type`), **`pair_potential.F`** (the 5
+`nequip_type` sites — USE import, `no_pp`/`no_mb` flags, `nvar` storage,
+filename packing; *omitting these aborts at runtime in
+`get_nonbond_storage`*), `fist_nonbond_env_types.F` (`mace_data_type`
+caching the loaded model), `force_fields_input.F` (`read_mace_section` /
+`read_mace_data`), `input_cp2k_mm.F` (`create_MACE_section`),
+`force_fields_all.F`, `fist_neighbor_list_control.F`,
+`fist_nonbond_force.F`, `manybody_potential.F`, `CMakeLists.txt`.
+
+### 5.3 Units-consistency guard (`c3e371043d`)
+
+`read_mace_data` warns when `UNIT_FORCES ≠ UNIT_ENERGY / UNIT_LENGTH`.
+The energy single-point only uses `UNIT_ENERGY`, so an inconsistent force
+unit is **silent there** but breaks F = −dE/dx and ruins MD energy
+conservation.  For a standard MACE model use the self-consistent triple
+`eV / angstrom / eV*angstrom^-1`.
+
+### Validation status (MACE)
+
+- **Level 2 — energy + forces (tiny model):** 3-atom O-H-H ENERGY_FORCE
+  reproduces the symmetrix reference `0.031956406755371 Ha` to all 15
+  digits; forces sum to zero (momentum conservation); z-forces vanish for
+  the planar geometry.
+- **Level 2 — NVE drift:** 64-water timestep ladder (dt 0.2/0.1/0.05 fs,
+  from rest) shows conserved-quantity drift scaling as **dt² (ratios 3.98×,
+  4.00×)** — proves the forces are the exact analytic gradient.  (This is
+  what caught the units bug above: with `hartree*bohr^-1` the drift was
+  dt-*independent*.)
+- **Level 3 — real foundation model (PASSED, 2026-06-22):** MACE-MP-0b3-medium
+  (H/O, 128 ch, r_cut 6 Å, ZBL), `~/symmetrix/models/mace-mp-0b3-medium-1-8.json`.
+  Full **15 ps NVT production**, 64-water (192 atoms), 300 K, 0.5 fs ×
+  30 000 steps, OMP=76 (job `30880707`, exit 0, ~8h47m).  Results in
+  `~/mace_validation/l3_run/`:
+  - **Thermostat / equipartition correct:** ⟨T⟩ = 300.5 K, sd = 18.1 K vs
+    the equipartition expectation `300·√(2/3N) ≈ 17.7 K` for 192 atoms.
+  - **Force/energy consistency at scale:** conserved-quantity drift
+    = **3.9×10⁻⁶ Ha/atom over 15 ps** (essentially flat) — proves the MACE
+    forces remain the analytic gradient of the MACE energy across a long
+    trajectory, not just at a single point.
+  - **Physics observable:** water-O self-diffusion from MSD (2–8 ps fit)
+    **D ≈ 0.15×10⁻⁵ cm²/s** (PBC, uncorrected). ~15× below experiment
+    (2.3×10⁻⁵) — this is the *known* over-structured/sluggish water of
+    MACE-MP-0, **not** an integration artefact. The pipeline faithfully
+    reproduces the foundation model's own (poor) aqueous dynamics, which
+    is exactly the short-range-MLP limitation flagged for the ion-transport
+    work (Yue/Fong).  *Indicative only:* single NVT run, no replicas, no
+    Yeh–Hummer finite-size correction, thermostat perturbs dynamics vs NVE.
+
+  **Milestone: the `&MACE` FIST path is validated end-to-end (L0→L3).**
+  It sustains production-scale MD and yields transport observables — the
+  remaining work is scientific, not mechanical.
+
+Build: `~/cp2k-benchmarks/.../CSD3_build_scripts/cp2k_CSD3_opt_build.sh`
+with `SYMMETRIX_ROOT` set; symmetrix/sphericart are **static `.a`** so the
+binary needs no symmetrix `LD_LIBRARY_PATH` at runtime — only the standard
+toolchain env (`cp2k_CSD3_env.sh`).  Test inputs under `~/mace_validation/`.
 
 ---
 

@@ -1,0 +1,13 @@
+# branch:       feature-nnp-chebyshev
+# exe:          /rds/user/crm98/hpc-work/cp2k_binaries/csd3/feature-nnp-chebyshev/cp2k.psmp
+# N_molecules:  4096
+# total_cores:  76
+# steps:        20
+# reps:         2 timed (+1 warm-up) per decomposition
+# mpi_ranks,omp_threads,total_cores,n_reps,tps_mean_s,tps_std_s,tps_min_s,peakmem_per_proc_mib,aggregate_mem_mib
+76,1,76,2,0.295375,0.003076,0.293200,352,26752
+38,2,76,2,0.251750,0.001202,0.250900,316,12027
+19,4,76,2,0.246825,0.000247,0.246650,312,5918
+4,19,76,2,0.255075,0.006116,0.250750,478,1912
+2,38,76,2,0.231575,0.000672,0.231100,689,1378
+1,76,76,2,0.212475,0.000035,0.212450,1105,1105

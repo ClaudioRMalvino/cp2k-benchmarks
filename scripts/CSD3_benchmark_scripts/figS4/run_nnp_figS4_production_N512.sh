@@ -7,7 +7,13 @@
 #SBATCH -p icelake
 #SBATCH --nodes=1
 #SBATCH --ntasks=64
-#SBATCH --time=04:00:00
+# 64 ranks on purpose, NOT 76: chebyshev core scaling shows 76 ranks is
+# ~20% SLOWER than 64 (0.1245 vs 0.1041 s/step at N=1024) due to the NUMA /
+# memory-bandwidth saturation when both 38-core sockets are filled.
+# 6 h walltime: equil ran 0.0698 s/step at 76 ranks; at 64 (faster) ranks
+# production is ~0.060 s/step => ~3.3 h compute + per-step stress I/O =>
+# ~4-4.5 h projected. The old 4 h was cutting it too close.
+#SBATCH --time=06:00:00
 #SBATCH --array=40-44%5
 #SBATCH --mail-type=NONE
 #SBATCH --output=/home/crm98/cp2k-benchmarks/logs/figS4_prod_N512_%A_%a.out

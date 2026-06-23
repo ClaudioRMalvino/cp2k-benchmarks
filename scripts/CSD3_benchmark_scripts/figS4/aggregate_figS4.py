@@ -60,8 +60,11 @@ def main():
     ap.add_argument("--prod-root", required=True,
                     help="<...>/results/figS4/production")
     ap.add_argument("--out-dir", required=True)
+    # Report 2 validates chebyshev only: master's N>=128 production is stale
+    # (May, pre-fix snapshots) and master==chebyshev physics is established by
+    # the single-point/force equivalence table instead, not by re-run MD.
     ap.add_argument("--branches", nargs="+",
-                    default=["master", "feature-nnp-native-spline"])
+                    default=["feature-nnp-chebyshev"])
     ap.add_argument("--sizes", nargs="+", type=int,
                     default=[64, 128, 256, 512, 1024])
     ap.add_argument("--discard-ps", type=float, default=10.0)

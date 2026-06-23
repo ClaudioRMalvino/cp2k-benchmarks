@@ -1,0 +1,10 @@
+# branch: upstream-master
+# exe:    /rds/user/crm98/hpc-work/cp2k_binaries/csd3/master/cp2k.psmp (c849f194711c5af4c0945d94a221331d)
+# steps:  100   reps: 3 (+1 warm-up)
+# n_molecules,nodes,mpi_ranks,n_reps,time_per_step_mean_s,time_per_step_std_s,time_per_step_min_s,speedup_vs_1node,parallel_efficiency_pct
+1024,1,76,3,0.180377,0.001725,0.178420,1.000,100.0
+1024,2,152,3,0.106880,0.001838,0.104760,1.688,84.4
+1024,4,304,3,0.071587,0.002897,0.068260,2.520,63.0
+4096,1,76,3,3.258930,0.053756,3.221780,1.000,100.0
+4096,2,152,3,1.715460,0.067889,1.672550,1.900,95.0
+4096,4,304,3,0.885183,0.024566,0.868190,3.682,92.0

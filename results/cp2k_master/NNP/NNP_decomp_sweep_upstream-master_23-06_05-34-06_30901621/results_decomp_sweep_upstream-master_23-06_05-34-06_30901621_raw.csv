@@ -1,0 +1,19 @@
+# branch:       upstream-master
+# exe:          /rds/user/crm98/hpc-work/cp2k_binaries/csd3/master/cp2k.psmp
+# N_molecules:  1024
+# total_cores:  76
+# steps:        20
+# reps:         2 timed (+1 warm-up) per decomposition
+# mpi_ranks,omp_threads,total_cores,rep,tps_s,peakmem_per_proc_mib
+76,1,76,1,0.191300,315
+76,1,76,2,0.191700,316
+38,2,76,1,0.284450,270
+38,2,76,2,0.284450,269
+19,4,76,1,0.474400,241
+19,4,76,2,0.473350,242
+4,19,76,1,2.194500,243
+4,19,76,2,2.213350,242
+2,38,76,1,4.466950,251
+2,38,76,2,4.474250,254
+1,76,76,1,8.150450,254
+1,76,76,2,8.155900,254

@@ -1,0 +1,2 @@
+branch,label,n_molecules,segment,mpi_ranks,prod_steps,time_per_step_s,md_loop_s,total_walltime_s
+feature-nnp-chebyshev,feature-nnp-chebyshev,512,3,64,200000,0.042843,8568.676,8570.812

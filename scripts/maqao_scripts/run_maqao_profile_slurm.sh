@@ -103,10 +103,14 @@ run_oneview () {
    fi
 }
 
-# Report 2 scope: upstream master vs feature/nnp-chebyshev only (the
-# native-spline profiles are in Report 1).  The chebyshev binary is
-# profiled twice: pure-MPI 16x1 (comparable to master) and hybrid 8x2
-# (exposes the OpenMP runtime share).
+# Report 2 scope: three profiles, mirroring Report 1's three-branch layout
+# but for ONE branch under different parallelisation:
+#   1. master            16x1  (pure-MPI baseline)
+#   2. chebyshev         16x1  (pure MPI)
+#   3. chebyshev (omp)    8x2  (OMP threads = 2, same 16 cores)
+# The OMP chebyshev run is intentionally NEVER diffed against master:
+# different parallelisation makes the per-function delta meaningless.  The
+# two comparisons below are each like-for-like (see compare section).
 run_oneview master                 cp2k_master-config.json
 run_oneview feature-nnp-chebyshev  cp2k_chebyshev-config.json
 XP_CHEBY_OMP="$XP_ROOT/xp_feature-nnp-chebyshev-omp"
@@ -123,24 +127,43 @@ else
 fi
 export LD_LIBRARY_PATH="$ORIG_LD"
 
-# Both binaries are pure-MPI (OMP=1) with identical NNP source symbol names,
-# so MAQAO's function/loop name matching lines the kernels up directly.
+# Two like-for-like comparisons.  NEITHER diffs the OMP run against master.
+#   1. BRANCH    : master 16x1 vs chebyshev 16x1 -- both pure MPI (OMP=1),
+#                  identical NNP symbol names, so MAQAO lines the kernels up
+#                  directly.  This is the "is chebyshev faster than master"
+#                  story (the one that showed 1.42x slower pre-rework).
+#   2. THREADING : chebyshev 16x1 (pure MPI) vs chebyshev 8x2 (OMP=2) -- ONE
+#                  branch, same 16 cores, two parallelisation strategies.
+#                  Shows what the OMP layer costs/saves vs pure MPI.
 echo
-echo "=== MAQAO ONE View compare : master  vs  feature-nnp-chebyshev"
+echo "=== MAQAO compare 1/2 (BRANCH): master 16x1  vs  chebyshev 16x1 (both pure MPI) ==="
 if "$MAQAO" oneview --compare-reports \
          --inputs="$XP_ROOT/xp_master,$XP_ROOT/xp_feature-nnp-chebyshev" \
          --include-detailed \
-         --experiment-path="$XP_ROOT/xp_compare" \
+         --experiment-path="$XP_ROOT/xp_compare_branch" \
          --replace; then
-   echo "--- compare report written to $XP_ROOT/xp_compare/RESULTS"
+   echo "--- branch compare written to $XP_ROOT/xp_compare_branch/RESULTS"
 else
-   echo "!!! compare step failed -- the individual reports above are still intact"
+   echo "!!! branch compare failed -- the individual reports above are still intact"
+fi
+
+echo
+echo "=== MAQAO compare 2/2 (THREADING): chebyshev pure-MPI 16x1  vs  OMP 8x2 ==="
+if "$MAQAO" oneview --compare-reports \
+         --inputs="$XP_ROOT/xp_feature-nnp-chebyshev,$XP_CHEBY_OMP" \
+         --include-detailed \
+         --experiment-path="$XP_ROOT/xp_compare_threading" \
+         --replace; then
+   echo "--- threading compare written to $XP_ROOT/xp_compare_threading/RESULTS"
+else
+   echo "!!! threading compare failed -- the individual reports above are still intact"
 fi
 
 # Raw LProf/CQA data stays on /rds scratch; only HTML reports go to /home.
 echo
 echo "==> Syncing HTML reports to $HOME_REPORTS"
-for d in xp_master xp_feature-nnp-chebyshev xp_feature-nnp-chebyshev-omp xp_compare; do
+for d in xp_master xp_feature-nnp-chebyshev xp_feature-nnp-chebyshev-omp \
+         xp_compare_branch xp_compare_threading; do
    if [[ -d "$XP_ROOT/$d/RESULTS" ]]; then
       mkdir -p "$HOME_REPORTS/$d"
       rsync -a "$XP_ROOT/$d/RESULTS/" "$HOME_REPORTS/$d/"
@@ -150,6 +173,7 @@ done
 
 echo
 echo "Done. View the reports in a browser, e.g.:"
-echo "  firefox $HOME_REPORTS/xp_compare/index.html"
-echo "  firefox $HOME_REPORTS/xp_master/index.html"
+echo "  firefox $HOME_REPORTS/xp_compare_threading/index.html   # MPI vs OMP (chebyshev)"
+echo "  firefox $HOME_REPORTS/xp_compare_branch/index.html      # chebyshev vs master (pure MPI)"
+echo "  firefox $HOME_REPORTS/xp_feature-nnp-chebyshev-omp/index.html"
 echo "Raw experiment directories remain on $XP_ROOT"

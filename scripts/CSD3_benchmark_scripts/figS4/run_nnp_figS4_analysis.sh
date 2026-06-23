@@ -4,8 +4,11 @@
 #SBATCH -A NIKIFORAKIS-CSC-FUNDS-SL3-CPU
 #SBATCH -p icelake
 #SBATCH --nodes=1
-#SBATCH --ntasks=4
-#SBATCH --time=00:30:00
+#SBATCH --ntasks=8
+# 1 h (was 30 min): aggregate_figS4.py parses trajectories SERIALLY; the 1.9 GB
+# N512 (and the 3.8 GB N1024 once it lands) FFT-MSD passes need the headroom.
+# ntasks=8 reserves ~27 GB on icelake so the largest trajectory loads safely.
+#SBATCH --time=01:00:00
 #SBATCH --mail-type=NONE
 #SBATCH --output=/home/crm98/cp2k-benchmarks/logs/figS4_analysis_%j.out
 
@@ -22,10 +25,11 @@ SCRIPTS="$BENCH/scripts/CSD3_benchmark_scripts/figS4"
 python3 -c "import numpy" 2>/dev/null || {
    echo "numpy not in module python - installing to --user"; pip install --user numpy; }
 
-echo "=== aggregating production segments ==="
+echo "=== aggregating production segments (chebyshev only; see equivalence table) ==="
 python3 "$SCRIPTS/aggregate_figS4.py" \
    --prod-root "$SCRATCH/production" \
-   --out-dir   "$SCRATCH/analysis"
+   --out-dir   "$SCRATCH/analysis" \
+   --branches  feature-nnp-chebyshev
 
 HOME_ANALYSIS="$BENCH/results/figS4/analysis"
 mkdir -p "$HOME_ANALYSIS"
@@ -36,9 +40,14 @@ rsync -a --include='*/' --include='timing.csv' --include='viscosity.csv' \
       "$SCRATCH/production/" "$BENCH/results/figS4/production/"
 
 echo "=== plotting ==="
-python3 "$BENCH/plots/plot_figS4.py" \
-   --analysis-dir "$HOME_ANALYSIS" \
-   --plot-dir     "$BENCH/plots"
+# The cluster module python lacks matplotlib/packaging; ~/.fortran_env has them.
+# Subshell so activating the venv does not disturb the numpy/module python above.
+(
+   source "$HOME/.fortran_env/bin/activate"
+   python3 "$BENCH/plots/plot_figS4.py" \
+      --analysis-dir "$HOME_ANALYSIS" \
+      --plot-dir     "$BENCH/plots"
+)
 
 echo
 echo "=== Fig. S4 replication complete ==="

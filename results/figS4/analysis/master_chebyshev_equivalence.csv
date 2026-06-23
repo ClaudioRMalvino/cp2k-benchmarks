@@ -1,0 +1,4 @@
+system,n_atoms,E_master_Ha,E_chebyshev_Ha,abs_dE_Ha,abs_dE_per_atom_Ha,max_dF_Ha_per_bohr,source
+N64 (cubic),192,,,,,2.560e-13,physics_check (job 30451382)
+N128 explicit cell,384,-90.254750953763988,-90.254750953779833,1.585e-11,4.126e-14,1.000e-11,diag/n128_pbc single-point
+N128 MUC 2x1x1,384,-90.254750953763988,-90.254750953779833,1.585e-11,4.126e-14,1.000e-11,diag/n128_pbc single-point
