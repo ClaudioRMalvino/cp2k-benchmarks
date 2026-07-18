@@ -8,9 +8,15 @@ cp2k_known_scratch_roots() {
     "$scratch_root/$scratch_user/new_cp2k" \
     "$scratch_root/$scratch_user/original_cp2k" \
     "$scratch_root/$scratch_user/cp2k-buildtree" \
+    "$scratch_root/$scratch_user/cp2k_optimized" \
     "/local/data/public/$scratch_user/new_cp2k" \
     "/local/data/public/$scratch_user/original_cp2k" \
     "/local/data/public/$scratch_user/cp2k-buildtree" \
+    "/local/data/public/$scratch_user/cp2k_optimized" \
+    "/data/cerberus1/$scratch_user/new_cp2k" \
+    "/data/cerberus1/$scratch_user/original_cp2k" \
+    "/data/cerberus1/$scratch_user/cp2k-buildtree" \
+    "/data/cerberus1/$scratch_user/cp2k_optimized" \
     "/data/lovelace/public/$scratch_user/new_cp2k" \
     "/data/lovelace/public/$scratch_user/original_cp2k" \
     "/data/lovelace/public/$scratch_user/cp2k-buildtree" \

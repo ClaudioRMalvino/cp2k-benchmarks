@@ -1,0 +1,40 @@
+# Madrid-2019 NaCl(aq) interactions: TIP4P/2005 water + scaled-charge (0.85) ions.
+# Params verbatim from Zeron, Abascal & Vega, JCP 151, 134504 (2019), Tables III/IV,
+# cross-checked against the GROMACS topol_madrid_2019_force_field.txt in the SI.
+#
+# Included by BOTH in.madrid_nacl (MSD) and in.madrid_vacf (VACF). Edit here only:
+# the whole point of this file is that the two never disagree on the force field.
+# Requires: read_data already done. Types 1=O 2=H 3=Na 4=Cl.
+
+# TIP4P requires bond+angle styles to exist; SHAKE constrains to these r0/theta0
+# (the force constants are irrelevant under SHAKE), and the pair style uses the
+# O-H bond type + H-O-H angle type to locate the M-site.
+bond_style      harmonic
+angle_style     harmonic
+bond_coeff      1 1000.0 0.9572      # r0 = TIP4P/2005 O-H
+angle_coeff     1 100.0  104.52      # theta0 = TIP4P/2005 H-O-H
+
+# lj/cut/tip4p/long  Otype Htype OHbond HOHangle qdist(O-M) cutoff
+pair_style      lj/cut/tip4p/long 1 2 1 1 0.1546 10.0
+kspace_style    pppm/tip4p 1.0e-4
+pair_modify     mix arithmetic tail no
+
+# eps[kcal/mol]  sigma[A]  -- cross terms are explicit fits, NOT Lorentz-Berthelot
+pair_coeff      1 1  0.185208  3.15890        # Ow-Ow
+pair_coeff      3 3  0.351902  2.21737        # Na-Na
+pair_coeff      4 4  0.018385  4.69906        # Cl-Cl
+pair_coeff      1 3  0.189625  2.60838        # Na-Ow (fit)
+pair_coeff      1 4  0.014814  4.23867        # Cl-Ow (fit)
+pair_coeff      3 4  0.343904  3.00512        # Na-Cl (fit)
+pair_coeff      2 2  0.0       0.0            # H: no LJ (cross terms mix to 0)
+
+# rigid TIP4P/2005 water via SHAKE on O-H bonds + H-O-H angle
+fix             rigid all shake 1.0e-5 30 0 b 1 a 1
+
+neighbor        2.0 bin
+neigh_modify    every 1 delay 0 check yes
+comm_modify     cutoff 3.5          # cover the rigid O-H bond for ghost comm
+
+group           water type 1
+group           na    type 3
+group           cl    type 4

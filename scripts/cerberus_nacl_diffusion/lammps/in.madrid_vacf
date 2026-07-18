@@ -1,0 +1,46 @@
+# Madrid-2019 NaCl(aq) VACF benchmark run.
+# Restarts from an equilibrated MSD-production final.data, re-thermalizes briefly
+# in NVT, then measures in NVE: a thermostat perturbs exactly the short-time
+# velocity correlations the VACF integrates, so production must be Hamiltonian.
+# D = (1/3) int_0^inf <v(0).v(t)> dt, evaluated offline from the velocity dump.
+# Variables: data (an equilibrated *.final.data), settings, T, tag, seed
+variable data     index eq.data
+variable settings index madrid.settings
+variable T        index 298.15
+variable seed     index 4321
+variable tag      index vacf
+variable retherm_ps index 20       # NVT re-thermalization
+variable prod_ps    index 40       # NVE measurement (VACF decays in <~2 ps)
+
+units           real
+atom_style      full
+boundary        p p p
+
+# final.data embeds a Pair Coeffs section, so the styles must exist before
+# read_data. But write_data stores only the i-i coeffs — the Madrid fitted
+# cross terms are NOT in the data file — so the settings include afterwards
+# re-issues pair_style (wiping the partial coeffs) and sets the full set.
+bond_style      harmonic
+angle_style     harmonic
+pair_style      lj/cut/tip4p/long 1 2 1 1 0.1546 10.0
+read_data       ${data}
+include         ${settings}        # pair/bond/angle styles + coeffs, SHAKE, groups
+
+timestep        2.0
+thermo          500
+thermo_style    custom step temp press density pe ke etotal
+
+velocity        all create ${T} ${seed} mom yes rot yes dist gaussian
+fix             th all nvt temp ${T} ${T} 100.0
+run             $(v_retherm_ps*500)
+unfix           th
+
+# --- NVE measurement: dump velocities every 2 steps (4 fs) ---
+reset_timestep  0
+fix             prod all nve
+group           mobile type 1 3 4
+dump            vel mobile custom 2 ${tag}.vel.lammpstrj id type vx vy vz
+dump_modify     vel sort id format line "%d %d %.6e %.6e %.6e"
+
+run             $(v_prod_ps*500)
+print           "DONE ${tag}"
