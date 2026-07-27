@@ -50,6 +50,22 @@ case "$TARGET_BRANCH" in
       OUTDIR_PARENT="cp2k_feature_chebyshev"
       OMP_THREADS=1
       ;;
+  dhruv-cell-list)
+      CP2K_EXE="$BIN_ROOT/dhruv-cell-list/cp2k.psmp"
+      INSTALL_LIB="$BIN_ROOT/dhruv-cell-list/lib"
+      LABEL="dhruv-cell-list"
+      PROJECT_ROOT="/home/crm98/cp2k_dhruv"
+      OUTDIR_PARENT="cp2k_dhruv_cell_list"
+      OMP_THREADS=1
+      ;;
+  feature-nnp-mace)
+      CP2K_EXE="$BIN_ROOT/feature-nnp-mace/cp2k.psmp"
+      INSTALL_LIB="$BIN_ROOT/feature-nnp-mace/lib"
+      LABEL="feature-nnp-mace"
+      PROJECT_ROOT="/home/crm98/cp2k_optimized"
+      OUTDIR_PARENT="cp2k_feature_mace"
+      OMP_THREADS=1
+      ;;
   master|*)
       CP2K_EXE="$BIN_ROOT/master/cp2k.psmp"
       INSTALL_LIB="$BIN_ROOT/master/lib"
@@ -67,6 +83,12 @@ if [[ -n "${CP2K_EXE_OVERRIDE:-}" ]]; then
    CP2K_EXE="$CP2K_EXE_OVERRIDE"
    [[ -n "${INSTALL_LIB_OVERRIDE:-}" ]] && INSTALL_LIB="$INSTALL_LIB_OVERRIDE"
 fi
+# Label / data-root / results-dir overrides (mirror run_nnp_omp_thread_scaling),
+# so a one-off binary (e.g. dhruv-omp-bitexact from a worktree) can be benchmarked
+# without adding a case branch.
+[[ -n "${LABEL_OVERRIDE:-}" ]] && LABEL="$LABEL_OVERRIDE"
+[[ -n "${PROJECT_ROOT_OVERRIDE:-}" ]] && PROJECT_ROOT="$PROJECT_ROOT_OVERRIDE"
+[[ -n "${OUTDIR_PARENT_OVERRIDE:-}" ]] && OUTDIR_PARENT="$OUTDIR_PARENT_OVERRIDE"
 
 N_MOLECULES=${N_MOLECULES:-1024}
 STEPS=${STEPS:-100}

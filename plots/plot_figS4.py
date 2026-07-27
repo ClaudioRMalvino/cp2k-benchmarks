@@ -100,7 +100,7 @@ def wls_fit(x, y, yerr):
     return beta[0], beta[1], np.sqrt(cov[0, 0])
 
 
-def fig_replication(rows, branch, out_dir, ref_eta, ref_d0):
+def fig_replication(rows, branch, out_dir, ref_eta, ref_d0, ref_eta_nnp, ref_d0_nnp):
     rows = [r for r in rows if r["branch"] == branch]
     rows.sort(key=lambda r: r["n_molecules"])
     sizes = [r["n_molecules"] for r in rows]
@@ -127,9 +127,12 @@ def fig_replication(rows, branch, out_dir, ref_eta, ref_d0):
         ax1.plot(xs, a + b * xs, color=CAMBRIDGE["blue_dark"], lw=1.3, ls="-",
                  label=rf"fit: $D_0$={a:.3f}$\pm${sa:.3f}")
         ax1.axhline(a, color=CAMBRIDGE["blue_dark"], lw=0.7, ls=":")
+    if ref_d0_nnp:
+        ax1.axhline(ref_d0_nnp, color=CAMBRIDGE["purple"], lw=1.3, ls="-.",
+                    label=f"Morawietz NNP $D_0$={ref_d0_nnp:.2f}")
     if ref_d0:
         ax1.axhline(ref_d0, color=CAMBRIDGE["cherry"], lw=1.2, ls="--",
-                    label=f"ref $D_0$={ref_d0:.3f}")
+                    label=f"experiment $D_0$={ref_d0:.3f}")
     ax1.set_xlabel(r"$1/L$  [$\mathrm{\AA}^{-1}$]")
     ax1.set_ylabel(r"$D$  [$\mathrm{\AA}^2$/ps]")
     ax1.set_xlim(left=0)
@@ -145,9 +148,12 @@ def fig_replication(rows, branch, out_dir, ref_eta, ref_d0):
         m = np.nanmean(eta)
         ax2.axhline(m, color=CAMBRIDGE["slate_3"], lw=0.9, ls=":",
                     label=rf"mean={m:.3f} mPa$\cdot$s")
+    if ref_eta_nnp:
+        ax2.axhline(ref_eta_nnp, color=CAMBRIDGE["purple"], lw=1.3, ls="-.",
+                    label=f"Morawietz NNP={ref_eta_nnp:.2f} mPa$\\cdot$s")
     if ref_eta:
         ax2.axhline(ref_eta, color=CAMBRIDGE["cherry"], lw=1.2, ls="--",
-                    label=f"ref={ref_eta:.3f} mPa$\\cdot$s")
+                    label=f"experiment={ref_eta:.3f} mPa$\\cdot$s")
     ax2.set_xscale("log", base=2)
     ax2.set_xlabel("number of molecules")
     ax2.set_ylabel(r"shear viscosity $\eta$  [mPa$\cdot$s]")
@@ -228,6 +234,10 @@ def main():
     # eta ~ 0.896 mPa.s.  Override with the Morawietz RPBE-vdW model values.
     ap.add_argument("--ref-d0", type=float, default=0.23)
     ap.add_argument("--ref-eta", type=float, default=0.896)
+    # Morawietz et al. 2016 RPBE-vdW NNP reference (Fig S4): D_0 ~ 0.31 Ang^2/ps,
+    # eta ~ 0.66 mPa.s.  This is the value we actually validate against.
+    ap.add_argument("--ref-d0-nnp", type=float, default=0.31)
+    ap.add_argument("--ref-eta-nnp", type=float, default=0.66)
     args = ap.parse_args()
     os.makedirs(args.plot_dir, exist_ok=True)
 
@@ -237,7 +247,8 @@ def main():
         print(f"!! no usable rows in {summary_path}; nothing to plot")
         return 1
     print(f"  {len(rows)} (branch,size) rows from {summary_path}")
-    fig_replication(rows, args.branch, args.plot_dir, args.ref_eta, args.ref_d0)
+    fig_replication(rows, args.branch, args.plot_dir, args.ref_eta, args.ref_d0,
+                    args.ref_eta_nnp, args.ref_d0_nnp)
     fig_accuracy(rows, args.branch, args.analysis_dir, args.plot_dir)
     fig_performance(rows, args.branch, args.plot_dir)
     print(f"  wrote figS4_replication / figS4_accuracy / figS4_performance "

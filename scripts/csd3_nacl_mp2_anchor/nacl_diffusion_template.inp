@@ -1,0 +1,178 @@
+! NaCl-in-water diffusion deck for the cerberus finite-size (Yeh-Hummer) study.
+! Bridges the O'Neill committee-NNP + Coulomb-baseline setup
+! (potentials/oneill-nacl-water-2024/input/nvt.inp) with the figS4 water
+! pipeline requirements (XYZ trajectory every 10 steps, per-step stress,
+! STRESS_TENSOR ANALYTICAL) so compute_viscosity.py / compute_diffusion.py
+! work unchanged.
+!
+! Placeholders substituted by run_equil.sh / run_production.sh:
+!   __PROJECT__  __STEPS__  __SNAPSTEPS__  __MODEL__  __COORD__
+!   __MX__ __MY__ __MZ__    __GMAXX__ __GMAXY__ __GMAXZ__
+!   __NNPRANKS__ __FISTRANKS__
+@SET PATH __MODEL__
+&GLOBAL
+  PREFERRED_FFT_LIBRARY FFTW3
+  FFTW_PLAN_TYPE MEASURE
+  PRINT_LEVEL LOW
+  PROJECT_NAME __PROJECT__
+  RUN_TYPE MD
+&END GLOBAL
+
+&MOTION
+  &MD
+    ENSEMBLE NVT
+    STEPS __STEPS__
+    ! 0.5 fs with natural H mass, matching the figS4 water pipeline.
+    ! O'Neill et al. instead used TIMESTEP 1.0 with KIND H MASS 2.0
+    ! (deuterated); see the KIND H block below if that protocol is wanted.
+    TIMESTEP 0.5
+    TEMPERATURE 300
+    &THERMOSTAT
+      TYPE CSVR
+      REGION GLOBAL
+      &CSVR
+        TIMECON 200
+      &END CSVR
+    &END THERMOSTAT
+    &PRINT
+      &ENERGY
+        &EACH
+          MD 100
+        &END EACH
+      &END ENERGY
+    &END PRINT
+  &END MD
+  &PRINT
+    &TRAJECTORY
+      FORMAT XYZ
+      &EACH
+        MD 10
+      &END EACH
+    &END TRAJECTORY
+    &STRESS
+      &EACH
+        MD 1
+      &END EACH
+    &END STRESS
+    &RESTART
+      ADD_LAST NUMERIC
+      &EACH
+        MD __SNAPSTEPS__
+      &END EACH
+    &END RESTART
+    &RESTART_HISTORY
+      &EACH
+        MD __SNAPSTEPS__
+      &END EACH
+    &END RESTART_HISTORY
+  &END PRINT
+&END MOTION
+
+&MULTIPLE_FORCE_EVALS
+  FORCE_EVAL_ORDER 2 3
+  MULTIPLE_SUBSYS F
+&END
+
+&FORCE_EVAL
+  METHOD MIXED
+  STRESS_TENSOR ANALYTICAL
+  &MIXED
+    MIXING_TYPE GENMIX
+    GROUP_PARTITION __NNPRANKS__ __FISTRANKS__
+    &GENERIC
+      MIXING_FUNCTION a+b
+      VARIABLES a b
+    &END GENERIC
+  &END MIXED
+  &SUBSYS
+    &CELL
+      ABC [angstrom] __ABCX__ __ABCY__ __ABCZ__
+      MULTIPLE_UNIT_CELL __MX__ __MY__ __MZ__
+    &END CELL
+    &TOPOLOGY
+      MULTIPLE_UNIT_CELL __MX__ __MY__ __MZ__
+    &END TOPOLOGY
+    &COORD
+      @INCLUDE __COORD__
+    &END COORD
+    ! O'Neill et al. protocol: deuterated H for a 1 fs timestep. Off by
+    ! default here (natural H, 0.5 fs). Uncomment to reproduce the paper.
+    ! &KIND H
+    !   MASS 2.0000000000000000E+00
+    ! &END KIND
+  &END SUBSYS
+&END FORCE_EVAL
+
+&FORCE_EVAL
+  METHOD NNP
+  STRESS_TENSOR ANALYTICAL
+  &NNP
+    NNP_INPUT_FILE_NAME ${PATH}/train_001/input.nn
+    SCALE_FILE_NAME     ${PATH}/train_001/scaling.data
+    &MODEL
+      WEIGHTS ${PATH}/train_001/weights
+    &END MODEL
+    &MODEL
+      WEIGHTS ${PATH}/train_002/weights
+    &END MODEL
+    &MODEL
+      WEIGHTS ${PATH}/train_003/weights
+    &END MODEL
+    &MODEL
+      WEIGHTS ${PATH}/train_004/weights
+    &END MODEL
+    &MODEL
+      WEIGHTS ${PATH}/train_005/weights
+    &END MODEL
+    &MODEL
+      WEIGHTS ${PATH}/train_006/weights
+    &END MODEL
+    &MODEL
+      WEIGHTS ${PATH}/train_007/weights
+    &END MODEL
+    &MODEL
+      WEIGHTS ${PATH}/train_008/weights
+    &END MODEL
+    &PRINT
+      &ENERGIES SILENT
+        &EACH
+          MD 1
+        &END EACH
+      &END ENERGIES
+    &END PRINT
+  &END NNP
+&END FORCE_EVAL
+
+&FORCE_EVAL
+  METHOD Fist
+  STRESS_TENSOR ANALYTICAL
+  &MM
+    &FORCEFIELD
+      IGNORE_MISSING_CRITICAL_PARAMS
+      &CHARGE
+        ATOM O
+        CHARGE -0.834
+      &END CHARGE
+      &CHARGE
+        ATOM H
+        CHARGE 0.417
+      &END CHARGE
+      &CHARGE
+        ATOM Na
+        CHARGE +1.000
+      &END CHARGE
+      &CHARGE
+        ATOM Cl
+        CHARGE -1.000
+      &END CHARGE
+    &END FORCEFIELD
+    &POISSON
+      &EWALD
+        EWALD_TYPE spme
+        ALPHA .35
+        GMAX __GMAXX__ __GMAXY__ __GMAXZ__
+        O_SPLINE 6
+      &END EWALD
+    &END POISSON
+  &END MM
+&END FORCE_EVAL
