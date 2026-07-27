@@ -123,7 +123,7 @@
   pages   = {45--52},
   year    = {1984},
   doi     = {10.1021/je00035a016},
-  note    = {Standard experimental kappa(m) source at 298.15 K (likely Blazquez's ref 143 -- verify the NaCl table covers m = 0.25/0.5 for our dilute anchors)}
+  note    = {WARNING (verified against PDF, 2026-07-27): this paper contains NO NaCl data (alkaline-earth chlorides, LaCl3, Na2SO4, NaNO3, NaBr, KNO3, KBr, Cd(NO3)2 only). It is NOT Blazquez's ref 143 -- that is chambers1956conductances. Do not cite for the kappa anchors; kept only for the water viscosity/density Table I}
 }
 
 @article{chambers1956conductances,
@@ -134,7 +134,7 @@
   pages   = {985--986},
   year    = {1956},
   doi     = {10.1021/j150541a040},
-  note    = {Classic precision conductance dataset, dilute-to-concentrated; candidate source for the m = 0.25/0.5 kappa anchors (paywalled -- values not yet extracted)}
+  note    = {THE experimental kappa source (= Blazquez 2023 ref 143; their m=2/4/6 quotes reproduce exactly from Table II). Anchors extracted 2026-07-27 from Table II (equivalent conductance Lambda at round molarities, Int-ohm units, +-0.03 percent): kappa(m) = Lambda(c) c/10 S/m with c from experimental densities; m = 0.25/0.5/1/2/4 -> 2.48/4.63/8.42/14.50/22.04 S/m. Note Blazquez quote 8.48 at m=1 sits 0.7 percent above the like-for-like conversion (8.42)}
 }
 
 @article{smits1966transport,
@@ -145,7 +145,18 @@
   pages   = {2747--2753},
   year    = {1966},
   doi     = {10.1021/j100881a007},
-  note    = {Experimental t_Na(c) at 25 C -- the citation for the "expt approx 0.39" line in Fig. 4b (paywalled -- pull the exact value at our concentrations before submission)}
+  note    = {Experimental Hittorf (solvent-frame) t_Na at 25 C, 0.024-6.144 m, emf method. Their eq 3: t_Na = 0.3720 - 0.0118 log10(a+-), with log10(a+-) tabulated in their Table I (activities from Robinson-Stokes). At m = 0.25/0.5/1/2/4: 0.381/0.378/0.374/0.370/0.366 (extracted 2026-07-27, used in Fig. 4b). MD barycentric t_Na must be frame-transformed before comparing -- see shao2022transference}
+}
+
+@article{shao2022transference,
+  title   = {Transference Number in Polymer Electrolytes: Mind the Reference-Frame Gap},
+  author  = {Shao, Yunqi and Gudla, Harish and Brandell, Daniel and Zhang, Chao},
+  journal = {Journal of the American Chemical Society},
+  volume  = {144},
+  pages   = {7583--7587},
+  year    = {2022},
+  doi     = {10.1021/jacs.2c02389},
+  note    = {Reference-frame transformation for transference numbers (= Gullbrekken 2023 ref 55). Our barycentric-to-Hittorf transform in make\_figures.py follows the mass-constraint route (solvent Onsager row from sum_i M_i L\^{}ij = 0, cf. Fong 2020 Eq. 130)}
 }
 
 % ------------------------------------------------------------------ optional

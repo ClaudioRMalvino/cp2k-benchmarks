@@ -68,3 +68,4 @@ __pycache__/
 # local working notes, never committed
 CLAUDE.md
 docs/claude-notes/
+claude-notes/

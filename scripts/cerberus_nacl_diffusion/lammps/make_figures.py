@@ -9,9 +9,12 @@ Reads only finished analysis products + raw .rdf/.vacf files:
 
 Outputs PNG (400 dpi, slides) + PDF (vector, paper) per figure into --out.
 
-Experimental kappa anchors (298.15 K): m = 1, 2, 4 -> 8.48, 14.49, 22.04 S/m
-as compiled in Blazquez et al., J. Phys. Chem. B 2023 ("Two Surfaces, One
-Property"); dilute molalities left unpinned until we fix a citable source.
+Experimental anchors (298.15 K), pinned 2026-07-27 from the primary sources:
+kappa at m = 0.25-4 from Chambers, Stokes & Stokes 1956 Table II (the actual
+source behind the Blazquez 2023 compilation = their ref 143); Hittorf t_Na
+from Smits & Duyvis 1966 (their eq 3 + Table I activities). Fig. 4b also
+shows our t_Na transformed to the solvent (Hittorf) frame so the comparison
+is like-for-like (cf. Shao et al. 2022, "Mind the Reference-Frame Gap").
 """
 import argparse
 import glob
@@ -40,8 +43,32 @@ C_NA, C_CL, C_O = "#2a78d6", "#008300", "#e87ba4"   # slots 1-3
 INK, INK2, MUTED, GRID = "#0b0b0b", "#52514e", "#898781", "#e1e0d9"
 SPECIES_COLOR = {"Na": C_NA, "Cl": C_CL, "O": C_O}
 
-MOL_TO_M = {0.25: 0.231, 0.5: 0.491, 1.0: 0.960, 2.0: 1.915, 4.0: 3.666}
-EXPT_KAPPA = {1.0: 8.48, 2.0: 14.49, 4.0: 22.04}    # S/m, Blazquez 2023 compilation
+MOL_TO_M = {0.25: 0.231, 0.5: 0.491, 1.0: 0.960, 2.0: 1.915, 4.0: 3.666}  # sim c
+
+# --- pinned experimental anchors, 298.15 K ---------------------------------
+# kappa: Chambers, Stokes & Stokes 1956 (J. Phys. Chem. 60, 985), Table II
+# equivalent conductances Lambda(c) (Int-ohm units, stated error <=0.03%);
+# kappa[S/m] = Lambda*c/10. c(m) from experimental densities 997.04/1036.21/
+# 1072.27/1136.91 kg/m^3 at m=0/1/2/4 (expt column, Blazquez 2023 Table 1;
+# m=0.25/0.5 interpolated, <0.1% error in c). Blazquez's own m=2/4 quotes
+# (14.49/22.04) reproduce exactly; their m=1 quote (8.48) sits 0.7% above
+# this like-for-like conversion (8.42).
+EXPT_C     = {0.25: 0.248, 0.5: 0.494, 1.0: 0.979, 2.0: 1.920, 4.0: 3.686}
+EXPT_KAPPA = {0.25: 2.48, 0.5: 4.63, 1.0: 8.42, 2.0: 14.50, 4.0: 22.04}
+
+# t_Na, Hittorf (solvent) frame: Smits & Duyvis 1966 (J. Phys. Chem. 70,
+# 2747) eq 3, t_Na = 0.3720 - 0.0118*log10(a+-), valid 0.024-6.144 mol/kg,
+# with log10(a+-) from their Table I (Robinson-Stokes activities).
+SD66_M    = np.array([0.024, 0.048, 0.096, 0.192, 0.384, 0.768,
+                      1.536, 3.072, 6.144])
+SD66_LOGA = np.array([-1.683, -1.403, -1.126, -0.848, -0.573, -0.292,
+                      0.0036, 0.3436, 0.7897])
+M_NA, M_CL = 0.0229898, 0.0354530        # kg/mol (frame transform)
+
+
+def tna_expt_hittorf(mol):
+    loga = np.interp(np.log(np.asarray(mol, float)), np.log(SD66_M), SD66_LOGA)
+    return 0.3720 - 0.0118 * loga
 
 
 def style(ax, xlabel=None, ylabel=None, title=None):
@@ -196,9 +223,12 @@ def fig_kappa(out, kap):
     ax.errorbar(c, kOns * 0.7225, yerr=kOns_s * 0.7225, fmt="s-", ms=6, color=C_CL,
                 mfc="white", mew=1.6, lw=1.4, elinewidth=1.0, capsize=2,
                 label=r"Onsager, $z=\pm0.85$ (scaled)")
-    ce = [MOL_TO_M[m] for m in EXPT_KAPPA]
+    ce = [EXPT_C[m] for m in EXPT_KAPPA]
     ax.plot(ce, list(EXPT_KAPPA.values()), marker="*", ms=13, ls="", color=INK,
-            label="Experiment (298 K)", zorder=5)
+            label="Experiment (Chambers–Stokes 1956)", zorder=5)
+    print("  fig3 expt anchors (Chambers-Stokes 1956): " +
+          "  ".join(f"m={m:g}: {k:.2f} S/m @ c={EXPT_C[m]:.3f}"
+                    for m, k in EXPT_KAPPA.items()))
     ax.legend(fontsize=8.5, frameon=False, loc="upper left", labelcolor=INK2)
     ax.set_xlim(0, 3.9)
     ax.set_ylim(0, 24)
@@ -209,10 +239,22 @@ def fig_kappa(out, kap):
 
 def fig_transport(out, kap):
     mol = kap["runs_mol"]
-    c = np.array([MOL_TO_M[m] for m in sorted(set(mol))])
+    mols = np.array(sorted(set(mol)))
+    c = np.array([MOL_TO_M[m] for m in mols])
     ratio = 1.0 - kap["runs_kOns"] / kap["runs_kNE"]
     _, dNE, dNE_s = pooled(mol, ratio)
     _, tNa, tNa_s = pooled(mol, kap["runs_tNa"])
+    # barycentric -> Hittorf (solvent frame), per run. The solvent Onsager
+    # row follows from the mass constraint sum_i M_i L^ij = 0 (Fong 2020
+    # Eq. 130), so with collective slopes s_ij (conductivity prefactors
+    # cancel) and molality in mol/kg, masses in kg/mol:
+    #   t^H = t^b + m*[M_Na(s++ - s+-) - M_Cl(s-- - s+-)] / s_sum
+    # cf. Shao et al. 2022 (JACS 144, 7583) on the reference-frame gap.
+    sNN, sCC, sNC = kap["runs_sNaNa"], kap["runs_sClCl"], kap["runs_sNaCl"]
+    s_sum = sNN + sCC - 2.0 * sNC
+    tH_runs = (kap["runs_tNa"]
+               + mol * (M_NA * (sNN - sNC) - M_CL * (sCC - sNC)) / s_sum)
+    _, tH, tH_s = pooled(mol, tH_runs)
     fig, (a, b) = plt.subplots(1, 2, figsize=(9.0, 3.6))
 
     a.axhline(0, color=MUTED, lw=0.8)
@@ -224,18 +266,25 @@ def fig_transport(out, kap):
           "a  Ion-correlation reduction of κ")
 
     b.errorbar(c, tNa, yerr=tNa_s, fmt="o-", ms=6.5, color=C_NA, mfc="white",
-               mew=1.6, lw=1.8, elinewidth=1.0, capsize=2, label="Madrid-2019 (this work)")
-    b.axhline(0.39, color=INK2, lw=1.2, ls=":")
-    b.annotate("expt ≈ 0.39", (3.85, 0.393), color=INK2, fontsize=8.5, ha="right")
-    b.axhline(0.37, color=MUTED, lw=1.0, ls="--")
-    b.annotate("Gullbrekken 2023 (sim) 0.37", (3.85, 0.352), color=MUTED,
-               fontsize=8.5, ha="right")
-    b.set_ylim(0.25, 0.60)
+               mew=1.6, lw=1.8, elinewidth=1.0, capsize=2,
+               label="Madrid-2019, barycentric")
+    b.errorbar(c, tH, yerr=tH_s, fmt="D--", ms=5.5, color=C_NA, mfc="white",
+               mew=1.3, lw=1.3, elinewidth=1.0, capsize=2, alpha=0.85,
+               label="Madrid-2019, Hittorf (solvent) frame")
+    ce = [EXPT_C[m] for m in mols]
+    b.plot(ce, tna_expt_hittorf(mols), marker="*", ms=13, ls="", color=INK,
+           label="Experiment, Hittorf (Smits–Duyvis 1966)", zorder=5)
+    b.set_ylim(0.28, 0.56)
     b.set_xlim(0, 3.9)
     b.legend(fontsize=8.5, frameon=False, loc="upper left", labelcolor=INK2)
     style(b, "c (mol/L)", r"$t_{\mathrm{Na}^+}$", "b  Cation transport number")
     fig.tight_layout(w_pad=3)
     savefig(fig, out, "fig4_ne_deviation_tNa")
+    print("  fig4 t_Na (pooled):")
+    for m_, tb, tbs, th, ths in zip(mols, tNa, tNa_s, tH, tH_s):
+        print(f"    m={m_:4.2f}  bary {tb:.3f}±{tbs:.3f}  "
+              f"Hittorf {th:.3f}±{ths:.3f}  expt(SD66) "
+              f"{tna_expt_hittorf(m_):.3f}")
 
 
 def fig_onsager_decomp(out, kap):
