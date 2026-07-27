@@ -1,0 +1,162 @@
+% Verified references for the NaCl(aq) transport study (checked against
+% Crossref, July 21 2026). Roles noted per entry.
+
+% ------------------------------------------------------------------ force fields
+@article{zeron2019madrid,
+  title   = {A force field of {Li}$^+$, {Na}$^+$, {K}$^+$, {Mg}$^{2+}$, {Ca}$^{2+}$, {Cl}$^-$, and {SO}$_4^{2-}$ in aqueous solution based on the {TIP4P/2005} water model and scaled charges for the ions},
+  author  = {Zer{\'o}n, I. M. and Abascal, J. L. F. and Vega, C.},
+  journal = {The Journal of Chemical Physics},
+  volume  = {151},
+  pages   = {134504},
+  year    = {2019},
+  doi     = {10.1063/1.5121392},
+  note    = {The Madrid-2019 force field used throughout; source of the scaled-charge (z = 0.85) conductivity caveat and Table VII self-diffusion benchmarks}
+}
+
+@article{abascal2005tip4p,
+  title   = {A general purpose model for the condensed phases of water: {TIP4P/2005}},
+  author  = {Abascal, J. L. F. and Vega, C.},
+  journal = {The Journal of Chemical Physics},
+  volume  = {123},
+  pages   = {234505},
+  year    = {2005},
+  doi     = {10.1063/1.2121687}
+}
+
+% ------------------------------------------------------------- methods / theory
+@article{yeh2004system,
+  title   = {System-size dependence of diffusion coefficients and viscosities from molecular dynamics simulations with periodic boundary conditions},
+  author  = {Yeh, In-Chul and Hummer, Gerhard},
+  journal = {The Journal of Physical Chemistry B},
+  volume  = {108},
+  pages   = {15873--15879},
+  year    = {2004},
+  doi     = {10.1021/jp0477147},
+  note    = {The 1/L finite-size correction (cubic xi = 2.837297)}
+}
+
+@article{celebi2021finite,
+  title   = {Finite-size effects of diffusion coefficients computed from molecular dynamics: a review of what we have learned so far},
+  author  = {Celebi, Alper T. and Jamali, Seyed Hossein and Bardow, Andr{\'e} and Vlugt, Thijs J. H. and Moultos, Othonas A.},
+  journal = {Molecular Simulation},
+  volume  = {47},
+  number  = {10--11},
+  pages   = {831--845},
+  year    = {2021},
+  doi     = {10.1080/08927022.2020.1810685},
+  note    = {Slope-eta method; viscosity is size-free; Onsager L_ij also size-affected}
+}
+
+@article{fong2020transport,
+  title   = {Transport phenomena in electrolyte solutions: Nonequilibrium thermodynamics and statistical mechanics},
+  author  = {Fong, Kara D. and Bergstrom, Helen K. and McCloskey, Bryan D. and Mandadapu, Kranthi K.},
+  journal = {AIChE Journal},
+  volume  = {66},
+  number  = {12},
+  pages   = {e17091},
+  year    = {2020},
+  doi     = {10.1002/aic.17091},
+  note    = {Onsager L_ij Green--Kubo framework; kappa, t_+, D_el formulas. Our PDF is arXiv:2006.16164v2 -- equation numbers in notes follow the arXiv copy}
+}
+
+@article{thompson2022lammps,
+  title   = {{LAMMPS} -- a flexible simulation tool for particle-based materials modeling at the atomic, meso, and continuum scales},
+  author  = {Thompson, Aidan P. and Aktulga, H. Metin and Berger, Richard and Bolintineanu, Dan S. and Brown, W. Michael and Crozier, Paul S. and in 't Veld, Pieter J. and Kohlmeyer, Axel and Moore, Stan G. and Nguyen, Trung Dac and Shan, Ray and Stevens, Mark J. and Tranchida, Julien and Trott, Christian and Plimpton, Steven J.},
+  journal = {Computer Physics Communications},
+  volume  = {271},
+  pages   = {108171},
+  year    = {2022},
+  doi     = {10.1016/j.cpc.2021.108171}
+}
+
+% ------------------------------------------------- closest prior work (simulation)
+@article{gullbrekken2023charge,
+  title   = {Charge Transport in Water--{NaCl} Electrolytes with Molecular Dynamics Simulations},
+  author  = {Gullbrekken, {\O}ystein and R{\o}e, Ingeborg Treu and Selbach, Sverre Magnus and Schnell, Sondre Kvalv{\aa}g},
+  journal = {The Journal of Physical Chemistry B},
+  volume  = {127},
+  number  = {12},
+  pages   = {2729--2738},
+  year    = {2023},
+  doi     = {10.1021/acs.jpcb.2c08047},
+  note    = {NE vs Onsager for NaCl(aq) (OPLS ions, not Madrid); t_Na approx 0.37; kappa size-flatness we confirm for Madrid-2019}
+}
+
+@article{blazquez2023two,
+  title   = {Computation of Electrical Conductivities of Aqueous Electrolyte Solutions: Two Surfaces, One Property},
+  author  = {Blazquez, S. and Abascal, J. L. F. and Lagerweij, J. and Habibi, P. and Dey, P. and Vlugt, T. J. H. and Moultos, O. A. and Vega, C.},
+  journal = {Journal of Chemical Theory and Computation},
+  volume  = {19},
+  pages   = {5380--5393},
+  year    = {2023},
+  doi     = {10.1021/acs.jctc.3c00562},
+  note    = {PRIOR ART on integer-vs-scaled charges in the conductivity flux for Madrid-2019 -- frame our result as confirming/extending. Also our source of experimental kappa anchors at m = 1, 2, 4 (their ref for experiment: Isono 1984)}
+}
+
+@article{oneill2024pair,
+  title   = {To Pair or not to Pair? Machine-Learned Explicitly-Correlated Electronic Structure for {NaCl} in Water},
+  author  = {O'Neill, Niamh and Shi, Benjamin X. and Fong, Kara and Michaelides, Angelos and Schran, Christoph},
+  journal = {The Journal of Physical Chemistry Letters},
+  volume  = {15},
+  pages   = {6081--6091},
+  year    = {2024},
+  doi     = {10.1021/acs.jpclett.4c01030},
+  note    = {MP2/RPA MLP benchmark: CIP and SSIP equistable within 0.2 kcal/mol at 1 m -- the benchmark our Fig. 5 compares against; Madrid not among their tested force fields}
+}
+
+@mastersthesis{sharma2026hdnnp,
+  title  = {An optimised {HDNNP} implementation for {CP2K}},
+  author = {Sharma, Dhruv},
+  school = {Department of Physics, University of Cambridge},
+  type   = {{MPhil} dissertation},
+  year   = {2026},
+  month  = {5},
+  note   = {CP2K committee-NNP optimization (PR 5295); water-O-only diffusion demo with slope-eta Yeh--Hummer; supervisors C. Schran and P. Cooke}
+}
+
+% ------------------------------------------------------- experimental anchors
+@article{isono1984density,
+  title   = {Density, viscosity, and electrolytic conductivity of concentrated aqueous electrolyte solutions at several temperatures. Alkaline-earth chlorides, {LaCl}$_3$, {Na}$_2${SO}$_4$, {NaNO}$_3$, {NaBr}, {KNO}$_3$, {KBr}, and {Cd(NO}$_3$)$_2$},
+  author  = {Isono, Toshiaki},
+  journal = {Journal of Chemical and Engineering Data},
+  volume  = {29},
+  pages   = {45--52},
+  year    = {1984},
+  doi     = {10.1021/je00035a016},
+  note    = {Standard experimental kappa(m) source at 298.15 K (likely Blazquez's ref 143 -- verify the NaCl table covers m = 0.25/0.5 for our dilute anchors)}
+}
+
+@article{chambers1956conductances,
+  title   = {Conductances of Concentrated Aqueous Sodium and Potassium Chloride Solutions at 25{\textdegree}},
+  author  = {Chambers, J. F. and Stokes, J. M. and Stokes, R. H.},
+  journal = {The Journal of Physical Chemistry},
+  volume  = {60},
+  pages   = {985--986},
+  year    = {1956},
+  doi     = {10.1021/j150541a040},
+  note    = {Classic precision conductance dataset, dilute-to-concentrated; candidate source for the m = 0.25/0.5 kappa anchors (paywalled -- values not yet extracted)}
+}
+
+@article{smits1966transport,
+  title   = {Transport Numbers of Concentrated Sodium Chloride Solutions at 25{\textdegree}},
+  author  = {Smits, L. J. M. and Duyvis, E. M.},
+  journal = {The Journal of Physical Chemistry},
+  volume  = {70},
+  pages   = {2747--2753},
+  year    = {1966},
+  doi     = {10.1021/j100881a007},
+  note    = {Experimental t_Na(c) at 25 C -- the citation for the "expt approx 0.39" line in Fig. 4b (paywalled -- pull the exact value at our concentrations before submission)}
+}
+
+% ------------------------------------------------------------------ optional
+@misc{madrid_transport,
+  title  = {Madrid-Transport force field (scaled charge q = 0.75 refit for transport properties)},
+  note   = {arXiv:2512.22571 (verify identifier). Follow-up refit of Madrid ions targeting diffusion/conductivity; candidate addition if time permits},
+  year   = {2025}
+}
+
+@misc{crc_conductivity_table,
+  title        = {Electrical Conductivity of Aqueous Solutions},
+  howpublished = {CRC Handbook of Chemistry and Physics, section 5-71},
+  note         = {NaCl kappa vs mass percent AT 20 C -- context only, not usable as a 298 K anchor}
+}
