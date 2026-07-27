@@ -59,3 +59,8 @@ potentials/oneill-nacl-water-2024/data-sets/
 # .out files are KEPT (benchmark/validation outputs are small and cited in
 # the reports); per-run giants are already excluded by the results/** rule.
 __pycache__/
+
+# NaCl paper: bundled figure inputs (small analysis products, no raw
+# trajectories) + final figures — regenerate anywhere via
+# scripts/cerberus_nacl_diffusion/lammps/make_figures.py
+!results/lammps_madrid/**

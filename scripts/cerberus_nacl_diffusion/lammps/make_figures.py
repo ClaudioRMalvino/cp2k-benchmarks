@@ -23,7 +23,16 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
-ROOT = "/data/cerberus1/crm98/nacl_diffusion/lammps_madrid"
+# Data root: cerberus live tree if present, else the analysis products bundled
+# in the repo (results/lammps_madrid), so figures regenerate on any machine.
+# Override with LAMMPS_MADRID_ROOT.
+_REPO = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                      "..", "..", ".."))
+ROOT = next(p for p in (
+    os.environ.get("LAMMPS_MADRID_ROOT"),
+    "/data/cerberus1/crm98/nacl_diffusion/lammps_madrid",
+    os.path.join(_REPO, "results", "lammps_madrid"),
+) if p and os.path.isdir(p))
 KT_KCAL = 0.0019872041 * 298.15          # k_B T in kcal/mol at 298.15 K
 
 # validated categorical palette (dataviz reference, light mode, fixed order)
@@ -351,7 +360,7 @@ def fig_pmf(out):
           f"SSIP {w_ssip:+.3f} @ {r_ssip:.2f} | dW(CIP-SSIP) {dW:+.3f} kcal/mol")
 
 
-ANCHOR = os.path.expanduser("~/cp2k-benchmarks/results/nacl_mp2_anchor")
+ANCHOR = os.path.join(_REPO, "results", "nacl_mp2_anchor")
 
 
 def _madrid_pmf():
