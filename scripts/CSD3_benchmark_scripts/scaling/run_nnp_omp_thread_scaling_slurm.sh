@@ -21,8 +21,11 @@ set -u
 LABEL="${TARGET_LABEL:-feature-nnp-chebyshev}"
 CP2K_EXE="$BIN_ROOT/$LABEL/cp2k.psmp"
 INSTALL_LIB="$BIN_ROOT/$LABEL/lib"
-PROJECT_ROOT="/home/crm98/cp2k_optimized"
-OUTDIR_PARENT="cp2k_feature_chebyshev"
+# PROJECT_ROOT only supplies data/NNP (identical water potential across trees);
+# OUTDIR_PARENT names the results dir. Both overridable so a non-chebyshev
+# branch (e.g. dhruv-cell-list) writes to a correctly-named location.
+PROJECT_ROOT="${PROJECT_ROOT_OVERRIDE:-/home/crm98/cp2k_optimized}"
+OUTDIR_PARENT="${OUTDIR_PARENT_OVERRIDE:-cp2k_feature_chebyshev}"
 
 MPI_RANKS=${MPI_RANKS:-1}
 N_MOLECULES=${N_MOLECULES:-64}

@@ -1,18 +1,75 @@
 #!/usr/bin/env python3
-"""Complete chebyshev benchmark figure suite for supervisor meeting.
+"""Complete chebyshev benchmark figure suite (size / multi-node / core scaling).
 Sources (all CSD3 icelake, H2O-N NNP MD, 76 cores/node):
-  size scaling   : chebyshev/master 76x1 (jobs 20-06 / 10-06); native-spline 76x1 (15-05)
-  core scaling   : chebyshev + master SAME JOB 30565007 (20-06); native-spline job 30901621
-  multi-node     : chebyshev + master SAME JOB 30565008 (14-06)
+  size scaling : chebyshev/master 76x1 (jobs 20-06 / 10-06); native-spline 76x1 (15-05)
+  core scaling : chebyshev + master SAME JOB 30565007 (20-06); native-spline job 30901621
+  multi-node   : chebyshev + master SAME JOB 30565008 (14-06)
+Styled to match plots/thesis_figures.py (Cambridge palette, serif, grid choices).
 """
-import os, numpy as np
-import matplotlib; matplotlib.use("Agg")
+import os
+import numpy as np
+import matplotlib
+matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
 OUT = os.path.expanduser("~/cp2k-benchmarks/plots/cheby_benchmark_figs")
 os.makedirs(OUT, exist_ok=True)
-C = {"master": "#777777", "native-spline": "#1f77b4", "chebyshev": "#d62728"}
-M = {"master": "s", "native-spline": "o", "chebyshev": "^"}
+
+# ---------------- thesis aesthetic (mirrors thesis_figures.py) ----------------
+CAM = {
+    "blue_warm": "#00BDB6", "blue_dark": "#133844",
+    "crest": "#FD8153", "crest_dark": "#DD3025",
+    "indigo": "#5366E0", "green_dark": "#13553A", "purple": "#A368DF",
+    "slate_2": "#B5BDC8", "slate_3": "#546072", "slate_4": "#232830",
+}
+plt.rcParams.update({
+    "font.family": "serif",
+    "font.serif": ["DejaVu Serif", "Liberation Serif", "Bitstream Vera Serif", "serif"],
+    "font.size": 12, "axes.labelsize": 13, "axes.titlesize": 13,
+    "xtick.labelsize": 11, "ytick.labelsize": 11, "legend.fontsize": 11,
+    "figure.titlesize": 14,
+    "text.color": CAM["slate_4"], "axes.edgecolor": CAM["slate_4"],
+    "axes.labelcolor": CAM["slate_4"], "xtick.color": CAM["slate_4"],
+    "ytick.color": CAM["slate_4"], "axes.linewidth": 0.8,
+    "axes.grid": True, "grid.color": CAM["slate_2"], "grid.linestyle": "--",
+    "grid.linewidth": 0.5, "grid.alpha": 0.55,
+    "lines.linewidth": 1.7, "lines.markersize": 6.5, "lines.markeredgewidth": 0.8,
+    "mathtext.fontset": "cm", "figure.dpi": 100, "savefig.dpi": 300,
+    "savefig.bbox": "tight", "savefig.pad_inches": 0.05,
+    "pdf.fonttype": 42, "ps.fonttype": 42,
+})
+W_TEXT = 6.3
+C = {"master": CAM["slate_3"], "native-spline": CAM["blue_warm"], "chebyshev": CAM["crest_dark"]}
+M = {"master": "o", "native-spline": "^", "chebyshev": "D"}
+# Full branch names in legends, as in thesis_figures.py BRANCH_STYLE.
+LBL = {"master": "master", "native-spline": "feature/nnp-native-spline",
+       "chebyshev": "feature/nnp-chebyshev"}
+
+
+def branch_handles(branches, ls="-"):
+    return [plt.Line2D([0], [0], color=C[b], marker=M[b], ls=ls, lw=1.7,
+                       ms=6.5, label=LBL[b]) for b in branches]
+
+
+def top_legend(fig, handles, ncol, top=0.90):
+    # Thesis-style series legend: single figure-level, top-centre, frameless.
+    fig.legend(handles=handles, loc="upper center", bbox_to_anchor=(0.5, 1.00),
+               ncol=ncol, frameon=False, fontsize=12, columnspacing=2.0,
+               handlelength=2.6, handletextpad=0.6)
+    fig.tight_layout(rect=[0, 0, 1, top])
+
+
+def panel_letter(ax, letter):
+    # top-left, above the axes, so it never collides with the centred title
+    ax.text(-0.02, 1.07, f"({letter})", transform=ax.transAxes, fontsize=12,
+            fontweight="bold", va="bottom", ha="left", color=CAM["slate_4"])
+
+
+def save(fig, name):
+    for ext in ("png", "pdf"):
+        fig.savefig(f"{OUT}/{name}.{ext}")
+    plt.close(fig)
+
 
 # ---------- SIZE SCALING (76x1) ----------
 Nsz = np.array([64, 256, 512, 1024, 2048, 4096])
@@ -38,57 +95,80 @@ mn = {
 }
 
 # ===== FIG 5: size scaling (2 panels: t/step + speedup vs master) =====
-fig, (a1, a2) = plt.subplots(1, 2, figsize=(12, 5))
-for b in ["master", "native-spline", "chebyshev"]:
-    a1.plot(Nsz, sz[b], M[b]+"-", color=C[b], lw=2, ms=8, label=b)
+fig, (a1, a2) = plt.subplots(1, 2, figsize=(W_TEXT * 1.85, 4.7))
+for b in ("master", "native-spline", "chebyshev"):
+    a1.plot(Nsz, sz[b], M[b] + "-", color=C[b])
 a1.set_xscale("log", base=2); a1.set_yscale("log")
 a1.set_xticks(Nsz); a1.set_xticklabels(Nsz)
-a1.set_xlabel("System size (water molecules)"); a1.set_ylabel("Time per MD step (s)")
-a1.set_title("Size scaling, 76 MPI x 1 OMP, 1 node"); a1.grid(True, which="both", ls=":", alpha=0.4); a1.legend()
-for b in ["native-spline", "chebyshev"]:
-    a2.plot(Nsz, sz["master"]/sz[b], M[b]+"-", color=C[b], lw=2, ms=8, label=b)
-a2.axhline(1, color="k", ls="--", lw=1, alpha=0.6)
+a1.set_xlabel(r"System size ($N$ water molecules)"); a1.set_ylabel("Time per MD step (s)")
+a1.set_title(r"Size scaling, 76 MPI $\times$ 1 OMP, 1 node")
+a1.grid(True, which="both"); panel_letter(a1, "a")
+for b in ("native-spline", "chebyshev"):
+    a2.plot(Nsz, sz["master"] / sz[b], M[b] + "-", color=C[b])
+baseline = a2.axhline(1, color=CAM["slate_3"], ls="--", lw=1.0)
+a2.legend([baseline], [r"Master baseline ($1\times$)"],
+          loc="upper left", fontsize=10, frameon=True, framealpha=0.93)
 a2.set_xscale("log", base=2); a2.set_xticks(Nsz); a2.set_xticklabels(Nsz)
-a2.set_xlabel("System size (water molecules)"); a2.set_ylabel("Speedup vs master")
-a2.set_title("Speedup over master grows with system size"); a2.grid(True, ls=":", alpha=0.4); a2.legend()
-for n, b in zip(Nsz, sz["master"]/sz["chebyshev"]):
-    a2.annotate(f"{b:.1f}x", (n, b), textcoords="offset points", xytext=(0, 6), fontsize=8, ha="center", color=C["chebyshev"])
-fig.tight_layout(); fig.savefig(f"{OUT}/fig5_size_scaling.png", dpi=160); plt.close(fig)
+a2.set_xlabel(r"System size ($N$ water molecules)"); a2.set_ylabel("Speedup vs master")
+a2.set_title("Speedup over master grows with system size")
+a2.grid(True); panel_letter(a2, "b")
+for n, b in zip(Nsz, sz["master"] / sz["chebyshev"]):
+    a2.annotate(f"{b:.1f}$\\times$", (n, b), textcoords="offset points", xytext=(0, 7),
+                fontsize=9, ha="center", color=C["chebyshev"])
+top_legend(fig, branch_handles(("master", "native-spline", "chebyshev")), ncol=3)
+save(fig, "fig5_size_scaling")
 
 # ===== FIG 6: multi-node (t/step + parallel efficiency) =====
-fig, (a1, a2) = plt.subplots(1, 2, figsize=(12, 5))
+fig, (a1, a2) = plt.subplots(1, 2, figsize=(W_TEXT * 1.85, 4.7))
 for N in (1024, 4096):
     for b in ("master", "chebyshev"):
         ls = "-" if N == 1024 else "--"
-        a1.plot(nodes, mn[N][b], M[b]+ls, color=C[b], lw=2, ms=8, label=f"{b} N={N}")
+        a1.plot(nodes, mn[N][b], M[b] + ls, color=C[b])
 a1.set_yscale("log"); a1.set_xticks(nodes); a1.set_xticklabels([f"{n}\n({n*76})" for n in nodes])
 a1.set_xlabel("Nodes (MPI ranks)"); a1.set_ylabel("Time per MD step (s)")
-a1.set_title("Multi-node strong scaling (chebyshev vs master)"); a1.grid(True, which="both", ls=":", alpha=0.4); a1.legend(fontsize=8)
+a1.set_title("Multi-node strong scaling")
+a1.grid(True, which="both"); panel_letter(a1, "a")
 for N in (1024, 4096):
     for b in ("master", "chebyshev"):
         eff = 100 * mn[N][b][0] / (mn[N][b] * nodes)
         ls = "-" if N == 1024 else "--"
-        a2.plot(nodes, eff, M[b]+ls, color=C[b], lw=2, ms=8, label=f"{b} N={N}")
-a2.axhline(100, color="k", ls=":", lw=1); a2.set_xticks(nodes); a2.set_xticklabels(nodes)
+        a2.plot(nodes, eff, M[b] + ls, color=C[b])
+ideal_eff = a2.axhline(100, color=CAM["slate_3"], ls=":", lw=1.0)
+a2.legend([ideal_eff], ["Ideal (100%)"],
+          loc="lower left", fontsize=10, frameon=True, framealpha=0.93)
+a2.set_xticks(nodes); a2.set_xticklabels(nodes)
 a2.set_xlabel("Nodes"); a2.set_ylabel("Parallel efficiency (%)")
-a2.set_title("Multi-node parallel efficiency"); a2.grid(True, ls=":", alpha=0.4); a2.legend(fontsize=8)
-fig.tight_layout(); fig.savefig(f"{OUT}/fig6_multinode.png", dpi=160); plt.close(fig)
+a2.set_title("Multi-node parallel efficiency")
+a2.grid(True); panel_letter(a2, "b")
+# ncol=2 column-major -> row per branch, column per system size.
+mn_handles = [plt.Line2D([0], [0], color=C[b], marker=M[b],
+                         ls=("-" if N == 1024 else "--"), lw=1.7, ms=6.5,
+                         label=f"{LBL[b]}, $N$={N}")
+              for N in (1024, 4096) for b in ("master", "chebyshev")]
+top_legend(fig, mn_handles, ncol=2, top=0.87)
+save(fig, "fig6_multinode")
 
-# ===== FIG 7: core scaling (strong scaling speedup + efficiency), pure MPI N=1024 =====
-fig, (a1, a2) = plt.subplots(1, 2, figsize=(12, 5))
+# ===== FIG 7: pure-MPI strong scaling (speedup + efficiency), N=1024 =====
+fig, (a1, a2) = plt.subplots(1, 2, figsize=(W_TEXT * 1.85, 4.7))
 for b in ("master", "native-spline", "chebyshev"):
-    sp = cs[b][0] / cs[b]
-    a1.plot(cores, sp, M[b]+"-", color=C[b], lw=2, ms=7, label=b)
-a1.plot(cores, cores, "k--", lw=1, alpha=0.5, label="ideal")
+    a1.plot(cores, cs[b][0] / cs[b], M[b] + "-", color=C[b])
+h_ideal, = a1.plot(cores, cores, "--", color=CAM["slate_3"], lw=1.0)
+a1.legend([h_ideal], ["Ideal (linear)"],
+          loc="upper left", fontsize=10, frameon=True, framealpha=0.93)
 a1.set_xlabel("MPI ranks (1 OMP each)"); a1.set_ylabel("Speedup vs 1 core")
-a1.set_title("Pure-MPI strong scaling, N=1024"); a1.grid(True, ls=":", alpha=0.4); a1.legend()
+a1.set_title(r"Pure-MPI strong scaling, $N=1024$")
+a1.grid(True); panel_letter(a1, "a")
 for b in ("master", "native-spline", "chebyshev"):
     eff = 100 * cs[b][0] / (cs[b] * cores)
-    a2.plot(cores, eff, M[b]+"-", color=C[b], lw=2, ms=7, label=b)
-a2.axhline(100, color="k", ls=":", lw=1)
+    a2.plot(cores, eff, M[b] + "-", color=C[b])
+ideal_100 = a2.axhline(100, color=CAM["slate_3"], ls=":", lw=1.0)
+a2.legend([ideal_100], ["Ideal (100%)"],
+          loc="lower left", fontsize=10, frameon=True, framealpha=0.93)
 a2.set_xlabel("MPI ranks"); a2.set_ylabel("Parallel efficiency (%)")
-a2.set_title("Pure-MPI parallel efficiency, N=1024"); a2.grid(True, ls=":", alpha=0.4); a2.legend()
-fig.tight_layout(); fig.savefig(f"{OUT}/fig7_core_scaling.png", dpi=160); plt.close(fig)
+a2.set_title(r"Pure-MPI parallel efficiency, $N=1024$")
+a2.grid(True); panel_letter(a2, "b")
+top_legend(fig, branch_handles(("master", "native-spline", "chebyshev")), ncol=3)
+save(fig, "fig7_core_scaling")
 
 # ===== combined CSV =====
 with open(f"{OUT}/combined_full_suite.csv", "w") as f:
@@ -101,11 +181,5 @@ with open(f"{OUT}/combined_full_suite.csv", "w") as f:
         for b in mn[N]:
             for nd, t in zip(nodes, mn[N][b]): f.write(f"multinode,{b},{N},{nd},{nd*76},1,{t}\n")
 
-print("Wrote suite to", OUT)
-for fn in sorted(os.listdir(OUT)):
-    if fn.endswith(".png") or fn.endswith(".csv"): print("  ", fn)
-print("\n=== KEY NUMBERS ===")
-print("Size scaling cheby-vs-master:", {int(n): round(sz['master'][i]/sz['chebyshev'][i],2) for i,n in enumerate(Nsz)})
-print("Multinode N=4096 cheby vs master @4 nodes:", round(mn[4096]['master'][2]/mn[4096]['chebyshev'][2],2), "x")
-print("Core-scaling serial (1 core) cheby vs nspline:", round(cs['chebyshev'][0]/cs['native-spline'][0],2),
-      "x slower (minimax overhead at OMP=1)")
+print("Wrote suite (png+pdf) to", OUT)
+print("Size scaling cheby-vs-master:", {int(n): round(sz['master'][i]/sz['chebyshev'][i], 2) for i, n in enumerate(Nsz)})

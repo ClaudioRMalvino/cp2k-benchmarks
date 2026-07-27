@@ -1,0 +1,14 @@
+# branch:      dhruv-cell-list
+# exe:         /rds/user/crm98/hpc-work/cp2k_binaries/csd3/dhruv-cell-list/cp2k.psmp
+# MPI ranks:   76
+# OMP threads: 1
+# total cores: 76
+# steps:       100
+# reps:        5 timed (+1 discarded warm-up) per size
+# n_molecules,n_reps,time_per_step_mean_s,time_per_step_std_s,time_per_step_min_s,walltime_mean_s,walltime_std_s,walltime_min_s
+64,5,0.035010,0.001989,0.032540,3.718400,0.188099,3.443000
+256,5,0.048442,0.002729,0.046540,5.507000,0.230256,5.318000
+512,5,0.056302,0.001142,0.054540,7.888800,0.211768,7.649000
+1024,5,0.086594,0.003783,0.081960,8.875800,0.345699,8.448000
+2048,5,0.155784,0.003199,0.150920,15.813200,0.312150,15.400000
+4096,5,0.373616,0.001798,0.371340,37.738600,0.183715,37.454000

@@ -1,0 +1,14 @@
+# branch:      feature-nnp-mace
+# exe:         /rds/user/crm98/hpc-work/cp2k_binaries/csd3/feature-nnp-mace/cp2k.psmp
+# MPI ranks:   76
+# OMP threads: 1
+# total cores: 76
+# steps:       100
+# reps:        5 timed (+1 discarded warm-up) per size
+# n_molecules,n_reps,time_per_step_mean_s,time_per_step_std_s,time_per_step_min_s,walltime_mean_s,walltime_std_s,walltime_min_s
+64,5,0.036000,0.004156,0.030550,3.855800,0.438136,3.326000
+256,5,0.047332,0.004435,0.042240,5.442000,0.416453,4.962000
+512,5,0.060148,0.002177,0.057930,8.315200,0.301692,8.015000
+1024,5,0.092522,0.003126,0.089950,9.420200,0.318275,9.155000
+2048,5,0.156182,0.003718,0.153480,15.879200,0.434079,15.544000
+4096,5,0.297794,0.002928,0.292970,30.166200,0.412125,29.545000

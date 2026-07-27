@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
-"""Chebyshev hybrid-MPI/OMP + memory benchmark figures for supervisor meeting.
+"""Chebyshev hybrid-MPI/OMP + memory benchmark figures.
 Data: SLURM job 30901621 (NNP_hybrid_mem), CSD3 icelake, 76 cores/node, H2O-N NNP MD.
+Styled to match plots/thesis_figures.py (Cambridge palette, serif, grid choices).
 """
 import os
 import numpy as np
@@ -10,6 +11,44 @@ import matplotlib.pyplot as plt
 
 OUT = os.path.expanduser("~/cp2k-benchmarks/plots/cheby_benchmark_figs")
 os.makedirs(OUT, exist_ok=True)
+
+# ---------------- thesis aesthetic (mirrors thesis_figures.py) ----------------
+CAM = {
+    "blue_warm": "#00BDB6", "blue_dark": "#133844",
+    "crest": "#FD8153", "crest_dark": "#DD3025",
+    "indigo": "#5366E0", "green_dark": "#13553A", "purple": "#A368DF",
+    "slate_2": "#B5BDC8", "slate_3": "#546072", "slate_4": "#232830",
+}
+plt.rcParams.update({
+    "font.family": "serif",
+    "font.serif": ["DejaVu Serif", "Liberation Serif", "Bitstream Vera Serif", "serif"],
+    "font.size": 12, "axes.labelsize": 13, "axes.titlesize": 13,
+    "xtick.labelsize": 11, "ytick.labelsize": 11, "legend.fontsize": 11,
+    "figure.titlesize": 14,
+    "text.color": CAM["slate_4"], "axes.edgecolor": CAM["slate_4"],
+    "axes.labelcolor": CAM["slate_4"], "xtick.color": CAM["slate_4"],
+    "ytick.color": CAM["slate_4"], "axes.linewidth": 0.8,
+    "axes.grid": True, "grid.color": CAM["slate_2"], "grid.linestyle": "--",
+    "grid.linewidth": 0.5, "grid.alpha": 0.55,
+    "lines.linewidth": 1.7, "lines.markersize": 6.5, "lines.markeredgewidth": 0.8,
+    "mathtext.fontset": "cm", "figure.dpi": 100, "savefig.dpi": 300,
+    "savefig.bbox": "tight", "savefig.pad_inches": 0.05,
+    "pdf.fonttype": 42, "ps.fonttype": 42,
+})
+W_TEXT = 6.3
+# master = neutral slate, native-spline = Cambridge warm blue, chebyshev = Cambridge red
+C = {"master": CAM["slate_3"], "native-spline": CAM["blue_warm"], "chebyshev": CAM["crest_dark"]}
+M = {"master": "o", "native-spline": "^", "chebyshev": "D"}
+# Full branch names in legends, as in thesis_figures.py BRANCH_STYLE.
+LBL = {"master": "master", "native-spline": "feature/nnp-native-spline",
+       "chebyshev": "feature/nnp-chebyshev"}
+
+
+def save(fig, name):
+    for ext in ("png", "pdf"):
+        fig.savefig(f"{OUT}/{name}.{ext}")
+    plt.close(fig)
+
 
 # ----- decomposition order: MPI-heavy -> OMP-heavy -----
 decomp_labels = ["76x1", "38x2", "19x4", "4x19", "2x38", "1x76"]
@@ -41,75 +80,75 @@ ns_cores    = np.array([1, 2, 4, 8, 16, 32, 64, 76])
 ns_speedup  = np.array([1.000, 1.754, 3.175, 6.191, 11.983, 20.922, 31.886, 18.832])
 ns_eff      = np.array([100.0, 87.7, 79.4, 77.4, 74.9, 65.4, 49.8, 24.8])
 
-colors = {"master": "#777777", "native-spline": "#1f77b4", "chebyshev": "#d62728"}
-mark   = {"master": "s", "native-spline": "o", "chebyshev": "^"}
-
 # ===== FIG 1: hybrid decomposition sweep, t/step, N=1024 (headline) =====
-fig, ax = plt.subplots(figsize=(7.2, 5.0))
-for b, y in tps_1024.items():
-    ax.plot(x, y, mark[b]+"-", color=colors[b], lw=2, ms=8, label=b)
+fig, ax = plt.subplots(figsize=(W_TEXT, 4.4))
+for b in ("master", "native-spline", "chebyshev"):
+    ax.plot(x, tps_1024[b], M[b] + "-", color=C[b], label=LBL[b])
 ax.set_yscale("log")
 ax.set_xticks(x); ax.set_xticklabels(decomp_labels)
-ax.set_xlabel("Decomposition  (MPI ranks x OMP threads,  76 cores fixed)")
-ax.set_ylabel("Time per MD step (s, log scale)")
-ax.set_title("Hybrid MPI/OMP scaling, 1024 water (N=3072 atoms), 1 node")
-ax.axvspan(-0.3, 0.3, color="navy", alpha=0.05)
-ax.annotate("pure MPI", (0, ax.get_ylim()[0]), color="navy", ha="center", va="bottom", fontsize=8)
-ax.annotate("pure OMP", (5, ax.get_ylim()[0]), color="navy", ha="center", va="bottom", fontsize=8)
-ax.grid(True, which="both", ls=":", alpha=0.4)
-ax.legend(title="branch", frameon=True)
-fig.tight_layout(); fig.savefig(f"{OUT}/fig1_hybrid_sweep_N1024.png", dpi=160); plt.close(fig)
+ax.set_xlabel(r"Decomposition (MPI ranks $\times$ OMP threads, 76 cores fixed)")
+ax.set_ylabel("Time per MD step (s)")
+ax.set_title(r"Hybrid MPI/OMP scaling, 1024 H$_2$O (3072 atoms), 1 node")
+ax.axvspan(-0.3, 0.3, color=CAM["blue_dark"], alpha=0.05)
+ax.annotate("pure MPI", (0, ax.get_ylim()[0]), color=CAM["slate_4"], ha="center", va="bottom", fontsize=9)
+ax.annotate("pure OMP", (5, ax.get_ylim()[0]), color=CAM["slate_4"], ha="center", va="bottom", fontsize=9)
+ax.grid(True, which="both")
+ax.legend(title="Branch", title_fontsize=9, frameon=True, framealpha=0.93)
+fig.tight_layout(); save(fig, "fig1_hybrid_sweep_N1024")
 
 # ===== FIG 2: speed-memory tradeoff, N=1024 =====
-fig, ax = plt.subplots(figsize=(7.2, 5.0))
-for b in tps_1024:
-    ax.plot(tps_1024[b], mem_1024[b], mark[b]+"-", color=colors[b], lw=1.5, ms=8, label=b, alpha=0.9)
-# annotate chebyshev sweet spot (1x76) and native-spline best (38x2)
-ax.annotate("cheby 1x76\n0.057 s, 476 MiB", (0.057025, 476), textcoords="offset points",
-            xytext=(40, 10), fontsize=8, color=colors["chebyshev"],
-            arrowprops=dict(arrowstyle="->", color=colors["chebyshev"]))
-ax.annotate("n-spline 38x2\n0.056 s, 10450 MiB", (0.055525, 10450), textcoords="offset points",
-            xytext=(40, -5), fontsize=8, color=colors["native-spline"],
-            arrowprops=dict(arrowstyle="->", color=colors["native-spline"]))
+fig, ax = plt.subplots(figsize=(W_TEXT, 4.6))
+for b in ("master", "native-spline", "chebyshev"):
+    ax.plot(tps_1024[b], mem_1024[b], M[b] + "-", color=C[b], label=LBL[b], alpha=0.95)
+ax.annotate("chebyshev 1$\\times$76\n0.057 s, 476 MiB", (0.057025, 476), textcoords="offset points",
+            xytext=(42, 12), fontsize=9, color=C["chebyshev"],
+            arrowprops=dict(arrowstyle="->", color=C["chebyshev"], lw=1.0))
+ax.annotate("native-spline 38$\\times$2\n0.056 s, 10450 MiB", (0.055525, 10450), textcoords="offset points",
+            xytext=(42, -6), fontsize=9, color=C["native-spline"],
+            arrowprops=dict(arrowstyle="->", color=C["native-spline"], lw=1.0))
 ax.set_xscale("log"); ax.set_yscale("log")
-ax.set_xlabel("Time per MD step (s, log scale)  --  faster left")
-ax.set_ylabel("Aggregate node memory (MiB, log scale)  --  lower better")
-ax.set_title("Speed vs node memory, 1024 water, 1 node\n(each point = one MPIxOMP decomposition)")
-ax.grid(True, which="both", ls=":", alpha=0.4)
-ax.legend(title="branch"); fig.tight_layout()
-fig.savefig(f"{OUT}/fig2_speed_vs_memory_N1024.png", dpi=160); plt.close(fig)
+ax.set_xlabel(r"Time per MD step (s) $\longleftarrow$ faster")
+ax.set_ylabel(r"Aggregate node memory (MiB) $\longleftarrow$ lower")
+ax.set_title("Speed vs node memory, 1024 H$_2$O, 1 node\n(each point = one MPI$\\times$OMP decomposition)")
+ax.grid(True, which="both")
+ax.legend(title="Branch", title_fontsize=9, frameon=True, framealpha=0.93)
+fig.tight_layout(); save(fig, "fig2_speed_vs_memory_N1024")
 
 # ===== FIG 3: chebyshev OMP scaling ladder =====
-fig, ax = plt.subplots(figsize=(7.2, 5.0))
+fig, ax = plt.subplots(figsize=(W_TEXT, 4.4))
 speedup = omp_tps[0] / omp_tps
-ax.plot(omp_threads, speedup, "^-", color=colors["chebyshev"], lw=2, ms=9, label="chebyshev (measured)")
-ax.plot(omp_threads, omp_threads, "k--", lw=1, alpha=0.6, label="ideal linear")
+ax.plot(omp_threads, speedup, M["chebyshev"] + "-", color=C["chebyshev"],
+        label="feature/nnp-chebyshev (measured)")
+ax.plot(omp_threads, omp_threads, "--", color=CAM["slate_3"], lw=1.0, label="Ideal (linear)")
 for t, s in zip(omp_threads, speedup):
-    ax.annotate(f"{s:.1f}x", (t, s), textcoords="offset points", xytext=(6, -2), fontsize=8)
+    ax.annotate(f"{s:.1f}$\\times$", (t, s), textcoords="offset points", xytext=(7, -3),
+                fontsize=9, color=CAM["slate_4"])
 ax.set_xlabel("OpenMP threads (1 MPI rank)")
-ax.set_ylabel("Speedup vs 1 thread")
-ax.set_title("Chebyshev centre-level OpenMP scaling, 1024 water\n(this is the parallelism master/native-spline lack)")
-ax.grid(True, ls=":", alpha=0.4); ax.legend()
-fig.tight_layout(); fig.savefig(f"{OUT}/fig3_cheby_omp_scaling.png", dpi=160); plt.close(fig)
+ax.set_ylabel(r"Speedup vs 1 thread")
+ax.set_title("Chebyshev centre-level OpenMP scaling, 1024 H$_2$O")
+ax.grid(True); ax.legend(frameon=True, framealpha=0.93)
+fig.tight_layout(); save(fig, "fig3_cheby_omp_scaling")
 
 # ===== FIG 4: speedup vs master bar chart (pure MPI 76x1, both sizes) =====
-fig, ax = plt.subplots(figsize=(7.2, 5.0))
-sizes = ["N=1024\n(76x1)", "N=4096\n(76x1)"]
-xb = np.arange(len(sizes)); w = 0.35
+fig, ax = plt.subplots(figsize=(W_TEXT, 4.4))
+sizes = [r"$N=1024$" "\n" r"(76$\times$1)", r"$N=4096$" "\n" r"(76$\times$1)"]
+xb = np.arange(len(sizes)); w = 0.36
 cheby_vs_master = [tps_1024["master"][0]/tps_1024["chebyshev"][0],
                    tps_4096["master"][0]/tps_4096["chebyshev"][0]]
 nspline_vs_master = [tps_1024["master"][0]/tps_1024["native-spline"][0],
                      tps_4096["master"][0]/tps_4096["native-spline"][0]]
-ax.bar(xb - w/2, nspline_vs_master, w, color=colors["native-spline"], label="native-spline")
-ax.bar(xb + w/2, cheby_vs_master, w, color=colors["chebyshev"], label="chebyshev")
-for i, v in enumerate(nspline_vs_master): ax.text(i - w/2, v+0.1, f"{v:.1f}x", ha="center", fontsize=9)
-for i, v in enumerate(cheby_vs_master):  ax.text(i + w/2, v+0.1, f"{v:.1f}x", ha="center", fontsize=9)
-ax.axhline(1.0, color="k", ls="--", lw=1, alpha=0.6)
+ax.bar(xb - w/2, nspline_vs_master, w, color=C["native-spline"],
+       label=LBL["native-spline"], edgecolor=CAM["slate_4"], linewidth=0.8)
+ax.bar(xb + w/2, cheby_vs_master, w, color=C["chebyshev"],
+       label=LBL["chebyshev"], edgecolor=CAM["slate_4"], linewidth=0.8)
+for i, v in enumerate(nspline_vs_master): ax.text(i - w/2, v+0.12, f"{v:.1f}$\\times$", ha="center", fontsize=10)
+for i, v in enumerate(cheby_vs_master):  ax.text(i + w/2, v+0.12, f"{v:.1f}$\\times$", ha="center", fontsize=10)
+ax.axhline(1.0, color=CAM["slate_3"], ls="--", lw=1.0)
 ax.set_xticks(xb); ax.set_xticklabels(sizes)
-ax.set_ylabel("Speedup vs upstream master (pure MPI)")
+ax.set_ylabel("Speedup vs upstream master")
 ax.set_title("Throughput vs master at matched pure-MPI config")
-ax.legend(); ax.grid(True, axis="y", ls=":", alpha=0.4)
-fig.tight_layout(); fig.savefig(f"{OUT}/fig4_speedup_vs_master.png", dpi=160); plt.close(fig)
+ax.legend(frameon=True, framealpha=0.93); ax.grid(True, axis="y")
+fig.tight_layout(); save(fig, "fig4_speedup_vs_master")
 
 # ===== combined tidy CSV =====
 with open(f"{OUT}/combined_hybrid_mem_30901621.csv", "w") as f:
@@ -127,11 +166,9 @@ with open(f"{OUT}/combined_hybrid_mem_30901621.csv", "w") as f:
     for c, sp, ef in zip(ns_cores, ns_speedup, ns_eff):
         f.write(f"nspline_core_scaling,native-spline,1024,{c},1,,\n")
 
-print("Wrote figures + CSV to", OUT)
+print("Wrote figures (png+pdf) + CSV to", OUT)
 for fn in sorted(os.listdir(OUT)):
     print("  ", fn)
-
-# headline numbers for the talk track
 print("\n=== HEADLINE NUMBERS ===")
 print(f"N=1024 chebyshev vs master @76x1:   {tps_1024['master'][0]/tps_1024['chebyshev'][0]:.2f}x")
 print(f"N=4096 chebyshev vs master @76x1:   {tps_4096['master'][0]/tps_4096['chebyshev'][0]:.2f}x")
