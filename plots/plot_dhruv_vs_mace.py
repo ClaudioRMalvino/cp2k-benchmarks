@@ -18,8 +18,8 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
-R = os.path.expanduser("~/cp2k-benchmarks/results")
-OUT = os.path.expanduser("~/cp2k-benchmarks/plots/dhruv_vs_mace")
+R = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../results")
+OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../plots/dhruv_vs_mace")
 os.makedirs(OUT, exist_ok=True)
 
 CAM = {

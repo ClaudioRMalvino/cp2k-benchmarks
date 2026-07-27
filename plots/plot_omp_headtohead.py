@@ -20,8 +20,8 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
-R = os.path.expanduser("~/cp2k-benchmarks/results/cp2k_omp_headtohead/NNP")
-OUT = os.path.expanduser("~/cp2k-benchmarks/plots/omp_headtohead")
+R = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../results/cp2k_omp_headtohead/NNP")
+OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../plots/omp_headtohead")
 os.makedirs(OUT, exist_ok=True)
 
 CAM = {

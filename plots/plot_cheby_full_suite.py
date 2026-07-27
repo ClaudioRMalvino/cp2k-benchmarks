@@ -12,7 +12,7 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
-OUT = os.path.expanduser("~/cp2k-benchmarks/plots/cheby_benchmark_figs")
+OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../plots/cheby_benchmark_figs")
 os.makedirs(OUT, exist_ok=True)
 
 # ---------------- thesis aesthetic (mirrors thesis_figures.py) ----------------

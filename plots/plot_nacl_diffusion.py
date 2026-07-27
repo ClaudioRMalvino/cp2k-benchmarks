@@ -17,8 +17,8 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
-R = os.path.expanduser("~/cp2k-benchmarks/results/nacl_mp2_anchor")
-OUT = os.path.expanduser("~/cp2k-benchmarks/plots/nacl_mp2_anchor")
+R = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../results/nacl_mp2_anchor")
+OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../plots/nacl_mp2_anchor")
 os.makedirs(OUT, exist_ok=True)
 
 CAM = {
