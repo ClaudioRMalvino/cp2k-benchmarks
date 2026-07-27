@@ -64,3 +64,7 @@ __pycache__/
 # trajectories) + final figures — regenerate anywhere via
 # scripts/cerberus_nacl_diffusion/lammps/make_figures.py
 !results/lammps_madrid/**
+
+# local working notes, never committed
+CLAUDE.md
+docs/claude-notes/
