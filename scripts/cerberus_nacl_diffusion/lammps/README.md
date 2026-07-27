@@ -54,6 +54,18 @@ so the NE deviation comes from like-ion (mostly Na–Na) anticorrelation.
 under-paired PMF: ~2.5% contact pairs at 1 m → predicted pairing contribution
 to Δ_NE of a few %, below our seed noise.
 
+fig7 is the first-principles anchor (CP2K MP2 committee-NNP, CSD3 runs;
+extraction in `../csd3_nacl_mp2_anchor/analyze_ions_rdf.py`, CSVs in
+`~/cp2k-benchmarks/results/nacl_mp2_anchor/`): (a) the MP2 Na–Cl PMF at 1 m
+has CIP ≈ SSIP (ΔW = +0.12 kcal/mol; halves of the run give +0.19/+0.05),
+reproducing the O'Neill 2024 benchmark with their own models and confirming
+Madrid's ΔW ≈ +0.7 under-pairing in a like-for-like pipeline; (b) ion/water
+diffusion ratios — MP2 D_Cl/D_w (0.76 at L=37.3 Å) sits between Madrid (0.68)
+and experiment (0.88), i.e. the NNP corrects part of Madrid's slow-Cl
+deficiency. Absolute MP2 D values are ~3x below experiment; this is the known
+MP2/classical-nuclei timescale error (Lan/Li et al. CiCC 2025: 0.63–0.69e-9
+for pure water; Del Ben 2015: 0.67e-9), so only ratios are compared.
+
 ## Shared inputs
 - `madrid.settings` — Madrid-2019 force field: pair/bond/angle coeffs incl.
   fitted cross terms, SHAKE, groups. Included by every `in.*` file.

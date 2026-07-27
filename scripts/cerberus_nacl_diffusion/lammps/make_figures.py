@@ -351,6 +351,140 @@ def fig_pmf(out):
           f"SSIP {w_ssip:+.3f} @ {r_ssip:.2f} | dW(CIP-SSIP) {dW:+.3f} kcal/mol")
 
 
+ANCHOR = os.path.expanduser("~/cp2k-benchmarks/results/nacl_mp2_anchor")
+
+
+def _madrid_pmf():
+    """Seed-averaged Madrid w(r) at 1 m (same loader as fig_pmf)."""
+    gs, r = [], None
+    for f in sorted(glob.glob(os.path.join(ROOT, "conductivity", "m1.0", "L*_s*", "*.rdf"))):
+        dat = np.loadtxt(f, skiprows=4)
+        if r is None:
+            r = dat[:, 1]
+        elif not np.allclose(dat[:, 1], r):
+            dat = np.column_stack([dat[:, 0], r,
+                                   np.interp(r, dat[:, 1], dat[:, 2]), dat[:, 3]])
+        gs.append(dat[:, 2])
+    g = np.mean(gs, axis=0)
+    w = np.full_like(g, np.nan)
+    m = g > 0.02
+    w[m] = -KT_KCAL * np.log(g[m])
+    w -= np.nanmean(w[(r > 9.0) & (r < r.max())])
+    return r, w
+
+
+def _extrema(r, w):
+    def ext(lo, hi, kind):
+        m = (r >= lo) & (r <= hi) & np.isfinite(w)
+        i = (np.argmin if kind == "min" else np.argmax)(w[m])
+        return r[m][i], w[m][i]
+    return ext(2.4, 3.2, "min"), ext(3.2, 4.2, "max"), ext(4.2, 5.6, "min")
+
+
+def fig_nnp_anchor(out, rep):
+    """fig7: MP2 C-NNP anchor vs Madrid-2019 — pairing PMF + D ratios."""
+    r_mad, w_mad = _madrid_pmf()
+    pmf = {c: np.loadtxt(os.path.join(ANCHOR, f"rdf_nacl_{c}.csv"),
+                         delimiter=",", skiprows=1).T for c in ("cube2", "cube3")}
+
+    # diffusion ratios D_ion / D_water: MP2 per box (uncorrected), Madrid D0
+    wat = np.genfromtxt(os.path.join(ANCHOR, "diffusion_summary.csv"),
+                        delimiter=",", names=True, dtype=None, encoding=None)
+    ion = np.genfromtxt(os.path.join(ANCHOR, "ion_diffusion_summary.csv"),
+                        delimiter=",", names=True, dtype=None, encoding=None)
+
+    def pool(rows, key):
+        d = np.array([x["D_1e9_m2_s"] for x in rows])
+        return d.mean(), d.std(ddof=1) / np.sqrt(len(d))
+
+    mp2 = {}
+    for cell in ("cube2", "cube3"):
+        dO, sO = pool([x for x in wat if x["cell"] == cell], None)
+        mp2[cell] = {"O": (dO, sO)}
+        for sp in ("Na", "Cl"):
+            mp2[cell][sp] = pool([x for x in ion if x["cell"] == cell
+                                  and x["species"] == sp], None)
+
+    def ratio(num, den):
+        v = num[0] / den[0]
+        return v, v * np.hypot(num[1] / num[0], den[1] / den[0])
+
+    # Madrid D0 (YH shared-slope fit): free_fits row 0 = O, shared_fits = Na, Cl
+    mad_O = (rep["free_fits"][0][1], rep["free_fits"][0][2])
+    mad = {"Na": ratio((rep["shared_fits"][0][1], rep["shared_fits"][0][2]), mad_O),
+           "Cl": ratio((rep["shared_fits"][1][1], rep["shared_fits"][1][2]), mad_O)}
+    # expt infinite-dilution: D0_ion from limiting conductivities (Robinson &
+    # Stokes: lambda0 50.10 / 76.35 S cm2/mol -> 1.334 / 2.032 e-9 m2/s via
+    # Nernst), water self-D 2.299e-9 (Holz 2000)
+    expt = {"Na": 1.334 / 2.299, "Cl": 2.032 / 2.299}
+
+    fig, (a, b) = plt.subplots(1, 2, figsize=(9.8, 4.1))
+
+    a.axhline(0, color=MUTED, lw=0.8)
+    a.plot(r_mad, w_mad, color=C_NA, lw=2.0, label="Madrid-2019 (1 m)")
+    r3, g3, w3 = pmf["cube3"]
+    r2, g2, w2 = pmf["cube2"]
+    a.plot(r3, w3, color=INK, lw=2.0, label="MP2 C-NNP, $L$=37.3 Å (1 m)")
+    a.plot(r2, w2, color=MUTED, lw=1.1, ls="--",
+           label="MP2 C-NNP, $L$=24.8 Å")
+    for rr, ww, col in ((r_mad, w_mad, C_NA), (r3, w3, INK)):
+        (rc, wc), (rt, wt), (rs, ws) = _extrema(rr, ww)
+        for x, y in ((rc, wc), (rs, ws)):
+            a.plot(x, y, "o", ms=5, color=col, mfc="white", mew=1.4)
+    (_, wcM), _, (_, wsM) = _extrema(r_mad, w_mad)
+    (_, wc3), _, (_, ws3) = _extrema(r3, w3)
+    a.annotate(rf"Madrid: $\Delta W_{{\mathrm{{CIP-SSIP}}}}$ = {wcM - wsM:+.2f}",
+               (0.97, 0.86), xycoords="axes fraction", ha="right",
+               color=C_NA, fontsize=9)
+    a.annotate(rf"MP2: $\Delta W_{{\mathrm{{CIP-SSIP}}}}$ = {wc3 - ws3:+.2f}"
+               "\n(CIP ≈ SSIP, as O'Neill 2024)",
+               (0.97, 0.72), xycoords="axes fraction", ha="right",
+               color=INK, fontsize=9)
+    a.set_xlim(2.2, 8.0)
+    a.set_ylim(-1.7, 1.4)
+    a.legend(fontsize=8.5, frameon=False, loc="lower right", labelcolor=INK2)
+    style(a, r"$r_{\mathrm{Na-Cl}}$ (Å)", r"$w(r)$ (kcal/mol)",
+          "Na–Cl pairing free energy, 1 m")
+
+    xs = {"Na": 0.0, "Cl": 1.0}
+    for sp in ("Na", "Cl"):
+        x = xs[sp]
+        v, e = mad[sp]
+        b.errorbar(x - 0.18, v, yerr=e, fmt="s", ms=6, color=C_NA,
+                   capsize=3, label="Madrid-2019 ($D_0$, YH)" if sp == "Na" else None)
+        for off, cell, mfc in ((-0.02, "cube2", "white"), (0.14, "cube3", INK)):
+            v, e = ratio(mp2[cell][sp], mp2[cell]["O"])
+            b.errorbar(x + off, v, yerr=e, fmt="o", ms=6, color=INK, mfc=mfc,
+                       capsize=3,
+                       label=(f"MP2 C-NNP, $L$={'24.8' if cell == 'cube2' else '37.3'} Å"
+                              if sp == "Na" else None))
+        b.plot(x + 0.30, expt[sp], marker="_", ms=14, mew=2.2, color=INK2, ls="",
+               label="expt (infinite dilution)" if sp == "Na" else None)
+    b.annotate("Cl/water ratio:\nMP2 moves toward expt", (1.02, 0.80),
+               color=INK2, fontsize=8.5, ha="center")
+    b.set_xticks([0.06, 1.06])
+    b.set_xticklabels([r"$D_{\mathrm{Na}}/D_{\mathrm{w}}$",
+                       r"$D_{\mathrm{Cl}}/D_{\mathrm{w}}$"])
+    b.set_xlim(-0.5, 1.6)
+    b.set_ylim(0.35, 1.0)
+    b.legend(fontsize=8, frameon=False, loc="upper left", labelcolor=INK2)
+    style(b, "", r"$D_{\mathrm{ion}}\,/\,D_{\mathrm{water}}$",
+          "Ion/water diffusion ratio, 1 m")
+    savefig(fig, out, "fig7_nnp_anchor")
+
+    print("  fig7 table: D (1e-9 m2/s) and ratios")
+    for cell in ("cube2", "cube3"):
+        row = mp2[cell]
+        print(f"    MP2 {cell}: O {row['O'][0]:.3f}±{row['O'][1]:.3f}  "
+              f"Na {row['Na'][0]:.3f}±{row['Na'][1]:.3f}  "
+              f"Cl {row['Cl'][0]:.3f}±{row['Cl'][1]:.3f}  "
+              f"Na/O {ratio(row['Na'], row['O'])[0]:.3f}  "
+              f"Cl/O {ratio(row['Cl'], row['O'])[0]:.3f}")
+    print(f"    Madrid D0 ratios: Na/O {mad['Na'][0]:.3f}±{mad['Na'][1]:.3f}  "
+          f"Cl/O {mad['Cl'][0]:.3f}±{mad['Cl'][1]:.3f}   "
+          f"expt(inf dil): Na 0.580  Cl 0.884")
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--out", default=os.path.join(ROOT, "figures"))
@@ -372,6 +506,7 @@ def main():
     fig_transport(args.out, kap)
     fig_pmf(args.out)
     fig_onsager_decomp(args.out, kap)
+    fig_nnp_anchor(args.out, rep)
 
     # console check: pooled kappa table vs headline numbers
     mol = kap["runs_mol"]
