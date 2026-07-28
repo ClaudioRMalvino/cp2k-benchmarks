@@ -37,7 +37,7 @@ plt.rcParams.update({
 })
 W_TEXT = 6.3
 # master = neutral slate, native-spline = Cambridge warm blue, chebyshev = Cambridge red
-C = {"master": CAM["slate_3"], "native-spline": CAM["blue_warm"], "chebyshev": CAM["crest_dark"]}
+C = {"master": CAM["slate_3"], "native-spline": CAM["blue_warm"], "chebyshev": CAM["purple"]}
 M = {"master": "o", "native-spline": "^", "chebyshev": "D"}
 # Full branch names in legends, as in thesis_figures.py BRANCH_STYLE.
 LBL = {"master": "master", "native-spline": "feature/nnp-native-spline",

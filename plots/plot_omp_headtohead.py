@@ -90,7 +90,7 @@ for a, c, m, ls, lab in SER.values():
 ax[0].set_xscale("log", base=2); ax[0].set_yscale("log")
 ax[0].set_xticks(omp_b[:, 2])
 ax[0].set_xticklabels([f"{int(x)}" for x in omp_b[:, 2]], rotation=45)
-ax[0].set_xlabel("Cores (threads or ranks)")
+ax[0].set_xlabel("Cores")
 ax[0].set_ylabel("Time per MD step (s)")
 ax[0].set_title(r"$N = 1024$ H$_2$O, time per step")
 panel_letter(ax[0], "a")
@@ -104,7 +104,7 @@ ax[1].set_xticks(ideal)
 ax[1].set_xticklabels([f"{int(x)}" for x in ideal], rotation=45)
 ax[1].set_yticks([1, 2, 4, 8, 16, 32, 64]); ax[1].set_yticklabels(
     ["1", "2", "4", "8", "16", "32", "64"])
-ax[1].set_xlabel("Cores (threads or ranks)")
+ax[1].set_xlabel("Cores")
 ax[1].set_ylabel("Speedup vs 1 core")
 ax[1].set_title("Strong-scaling speedup")
 ax[1].legend([h_ideal], ["Ideal (linear)"],
@@ -119,12 +119,6 @@ fig.legend(handles=handles, loc="upper center", bbox_to_anchor=(0.5, 1.00),
            ncol=2, frameon=False, fontsize=12, columnspacing=2.0,
            handlelength=2.6, handletextpad=0.6)
 
-# headline annotations
-r76 = omp_b[-1, 4] / omp_g[-1, 4]
-ax[0].annotate(f"{r76:.0f}$\\times$ at 76 threads",
-               xy=(76, omp_g[-1, 4]), xytext=(14, 0.35),
-               color=CAM["blue_dark"], fontsize=11,
-               arrowprops=dict(arrowstyle="->", color=CAM["slate_3"], lw=1.0))
 
 fig.tight_layout(rect=[0, 0, 1, 0.86])
 for ext in ("png", "pdf"):
@@ -149,7 +143,6 @@ for i in range(omp_b.shape[0]):
     print(f"| {n} | {tb:.4f} ± {sb:.4f} | {tg:.4f} ± {sg:.4f} "
           f"| {tb/tg:.2f}× | {mb:.4f} | {mg:.4f} |")
 
-print(f"\nOMP-76 head-to-head ratio: {r76:.1f}x")
 print(f"graft OMP-76 vs best full-node baseline (head, 76 MPI): "
       f"{mpi_b[-1, 4] / omp_g[-1, 4]:.2f}x")
 print(f"serial overhead of graft (OMP=1): "

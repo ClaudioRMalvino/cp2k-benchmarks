@@ -39,9 +39,9 @@ plt.rcParams.update({
     "pdf.fonttype": 42, "ps.fonttype": 42,
 })
 W_TEXT = 6.3
-C = {"master": CAM["slate_3"], "native-spline": CAM["blue_warm"], "chebyshev": CAM["crest_dark"]}
+C = {"master": CAM["slate_3"], "native-spline": CAM["blue_warm"], "chebyshev": CAM["purple"]}
 M = {"master": "o", "native-spline": "^", "chebyshev": "D"}
-# Full branch names in legends, as in thesis_figures.py BRANCH_STYLE.
+
 LBL = {"master": "master", "native-spline": "feature/nnp-native-spline",
        "chebyshev": "feature/nnp-chebyshev"}
 

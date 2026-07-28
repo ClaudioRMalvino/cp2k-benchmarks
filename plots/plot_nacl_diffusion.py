@@ -24,7 +24,7 @@ os.makedirs(OUT, exist_ok=True)
 CAM = {
     "blue_warm": "#00BDB6", "blue_dark": "#133844",
     "crest": "#FD8153", "crest_dark": "#DD3025",
-    "indigo": "#5366E0", "green_dark": "#13553A", "purple": "#A368DF",
+    "indigo": "#5366E0", "green": "#4DB78C", "purple": "#A368DF",
     "slate_2": "#B5BDC8", "slate_3": "#546072", "slate_4": "#232830",
 }
 plt.rcParams.update({
@@ -44,7 +44,7 @@ plt.rcParams.update({
 
 KB = 1.380649e-23
 XI = 2.837297
-CELLS = {"cube2": (24.84, CAM["crest_dark"], "s"),
+CELLS = {"cube2": (24.84, CAM["crest"], "s"),
          "cube3": (37.26, CAM["blue_warm"], "o")}
 
 summ = np.genfromtxt(os.path.join(R, "diffusion_summary.csv"),
@@ -53,9 +53,13 @@ summ = np.genfromtxt(os.path.join(R, "diffusion_summary.csv"),
 fig, ax = plt.subplots(1, 2, figsize=(11, 4.3))
 
 # ---- (a) MSD curves --------------------------------------------------------
+# The CSVs span half of each cell's trajectory (cube2 50 ps, cube3 80 ps);
+# show both over the common lag range.
+tabs = {cell: np.loadtxt(os.path.join(R, f"msd_{cell}.csv"), delimiter=",",
+                         skiprows=1) for cell in CELLS}
+lag_max = min(tab[-1, 0] for tab in tabs.values())
 for cell, (L, c, m) in CELLS.items():
-    tab = np.loadtxt(os.path.join(R, f"msd_{cell}.csv"), delimiter=",",
-                     skiprows=1)
+    tab = tabs[cell][tabs[cell][:, 0] <= lag_max]
     lag, curves = tab[:, 0], tab[:, 1:]
     mean, lo, hi = curves.mean(1), curves.min(1), curves.max(1)
     ax[0].fill_between(lag, lo, hi, color=c, alpha=0.18, lw=0)
@@ -92,7 +96,7 @@ eta = -KB * tbar * XI / (6 * np.pi * slope * 1e-19) if slope < 0 else np.nan
 
 xs = np.linspace(0, x2 * 1.12, 50)
 ax[1].plot(xs, d0 + slope * xs, color=CAM["slate_3"], lw=1.2, ls="--")
-ax[1].errorbar([0], [d0], yerr=[d0_err], marker="*", color=CAM["green_dark"],
+ax[1].errorbar([0], [d0], yerr=[d0_err], marker="*", color=CAM["green"],
                ms=15, capsize=3.5, ls="none",
                label=f"$D_0$ = {d0:.2f} $\\pm$ {d0_err:.2f}")
 ax[1].set_xlim(-0.003, x2 * 1.12)
