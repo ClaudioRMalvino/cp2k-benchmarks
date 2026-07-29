@@ -159,7 +159,7 @@ def fig_msd_vs_vacf(out, rep, vacf_D, curves):
     b.legend(handles=hs, fontsize=8, frameon=False, loc="upper left",
              labelcolor=INK2)
     style(b, r"$D$ from MSD slope (Å$^2$/ps)", r"$D$ from VACF integral (Å$^2$/ps)",
-          "b  Einstein vs Green–Kubo (all 12 within 2σ)")
+          "b  Einstein vs Green–Kubo (11/12 within 2σ)")
     fig.tight_layout(w_pad=3)
     savefig(fig, out, "fig1_msd_vs_vacf")
 
