@@ -63,16 +63,15 @@ for cell, (L, c, m) in CELLS.items():
     lag, curves = tab[:, 0], tab[:, 1:]
     mean, lo, hi = curves.mean(1), curves.min(1), curves.max(1)
     ax[0].fill_between(lag, lo, hi, color=c, alpha=0.18, lw=0)
-    ax[0].plot(lag, mean, color=c, label=f"{cell}  (L = {L:.2f} $\\AA$)")
+    ax[0].plot(lag, mean, color=c, label=f"L = {L:.1f} $\\AA$")
 sel = summ["cell"] == "cube2"
 flo, fhi = summ["fit_lo_ps"][sel][0], summ["fit_hi_ps"][sel][0]
 ax[0].axvspan(flo, fhi, color=CAM["slate_2"], alpha=0.25, lw=0)
-ax[0].text((flo + fhi) / 2, ax[0].get_ylim()[1] * 0.05, "fit window",
-           ha="center", color=CAM["slate_3"], fontsize=10)
 ax[0].set_xlabel("lag time [ps]")
 ax[0].set_ylabel("water-O MSD [$\\AA^2$]")
-ax[0].set_title("(a) MSD, 5 NVE segments per cell")
-ax[0].legend(frameon=False, loc="upper left")
+ax[0].set_title("(a)")
+ax[0].legend(frameon=False, loc="lower center", bbox_to_anchor=(0.5, 1.09),
+             ncol=2, columnspacing=1.8, handlelength=2.0, handletextpad=0.6)
 
 # ---- (b) Yeh-Hummer D vs 1/L -----------------------------------------------
 pts = {}
@@ -83,7 +82,7 @@ for cell, (L, c, m) in CELLS.items():
     d_mean, d_sem = ds.mean(), ds.std(ddof=1) / np.sqrt(len(ds))
     pts[cell] = (L, d_mean, d_sem, ts.mean())
     ax[1].errorbar(1.0 / L, d_mean, yerr=d_sem, marker=m, color=c,
-                   capsize=3.5, ms=8, label=f"{cell} (L = {L:.2f} $\\AA$)")
+                   capsize=3.5, ms=8, ls="none", label=f"L = {L:.1f} $\\AA$")
 
 (l2, d2, s2, t2), (l3, d3, s3, t3) = pts["cube2"], pts["cube3"]
 x2, x3 = 1.0 / l2, 1.0 / l3
@@ -98,12 +97,13 @@ xs = np.linspace(0, x2 * 1.12, 50)
 ax[1].plot(xs, d0 + slope * xs, color=CAM["slate_3"], lw=1.2, ls="--")
 ax[1].errorbar([0], [d0], yerr=[d0_err], marker="*", color=CAM["green"],
                ms=15, capsize=3.5, ls="none",
-               label=f"$D_0$ = {d0:.2f} $\\pm$ {d0_err:.2f}")
+               label="$L \\to \\infty$ extrapolation")
 ax[1].set_xlim(-0.003, x2 * 1.12)
 ax[1].set_xlabel("1/L [$\\AA^{-1}$]")
 ax[1].set_ylabel("$D_{\\mathrm{H_2O}}$ [$10^{-9}$ m$^2$ s$^{-1}$]")
-ax[1].set_title("(b) Yeh-Hummer extrapolation")
-ax[1].legend(frameon=False, loc="lower left")
+ax[1].set_title("(b)")
+ax[1].legend(frameon=False, loc="lower center", bbox_to_anchor=(0.5, 1.09),
+             ncol=3, columnspacing=1.4, handlelength=1.8, handletextpad=0.5)
 
 for ext in ("png", "pdf"):
     fig.savefig(f"{OUT}/nacl_diffusion_yh.{ext}")

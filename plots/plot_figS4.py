@@ -206,7 +206,7 @@ def fig_performance(rows, branch, out_dir):
     if not np.any(m):
         return
     fig, ax = plt.subplots(figsize=(4.6, 3.7))
-    ax.errorbar(sizes[m], tps[m], yerr=tps_e[m], color=CAMBRIDGE["blue_warm"],
+    ax.errorbar(sizes[m], tps[m], yerr=tps_e[m], color=CAMBRIDGE["purple"],
                 marker="o", capsize=3, label="chebyshev production")
     if m.sum() >= 2:
         b = np.polyfit(np.log(sizes[m]), np.log(tps[m]), 1)[0]

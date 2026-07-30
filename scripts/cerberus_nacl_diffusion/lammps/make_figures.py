@@ -38,10 +38,14 @@ ROOT = next(p for p in (
 ) if p and os.path.isdir(p))
 KT_KCAL = 0.0019872041 * 298.15          # k_B T in kcal/mol at 298.15 K
 
-# validated categorical palette (dataviz reference, light mode, fixed order)
-C_NA, C_CL, C_O = "#2a78d6", "#008300", "#e87ba4"   # slots 1-3
+# Cambridge palette for non-species curves (cf. plots/ CAM dict); two-series
+# figures pair cambridge blue with slate_3 (slate_4 #232830 reads as black
+# at line weight, so the visible mid slate is used for dark series)
+CAM_BLUE, SLATE3 = "#00BDB6", "#546072"
+C_NA, C_CL, C_O = CAM_BLUE, "#4DB78C", "#CD3572"   # slots 1-3 (non-species curves)
 INK, INK2, MUTED, GRID = "#0b0b0b", "#52514e", "#898781", "#e1e0d9"
-SPECIES_COLOR = {"Na": C_NA, "Cl": C_CL, "O": C_O}
+# element colours: Cambridge indigo / green / cherry (cf. plots/ CAM palette)
+SPECIES_COLOR = {"Na": "#5366E0", "Cl": "#4DB78C", "O": "#CD3572"}
 
 MOL_TO_M = {0.25: 0.231, 0.5: 0.491, 1.0: 0.960, 2.0: 1.915, 4.0: 3.666}  # sim c
 
@@ -84,7 +88,7 @@ def style(ax, xlabel=None, ylabel=None, title=None):
     if ylabel:
         ax.set_ylabel(ylabel, color=INK, fontsize=10)
     if title:
-        ax.set_title(title, color=INK, fontsize=11, loc="left", pad=8)
+        ax.set_title(title, color=INK, fontsize=11, loc="center", pad=8)
 
 
 def savefig(fig, out, name):
@@ -127,14 +131,10 @@ def fig_msd_vs_vacf(out, rep, vacf_D, curves):
         t = curves[sp][0][0]
         v = np.mean([c[1] for c in curves[sp]], axis=0)
         a.plot(t, v, color=SPECIES_COLOR[sp], lw=1.8)
-        a.annotate(sp, (t[np.argmin(np.abs(t - {"O": 0.12, "Na": 0.32, "Cl": 0.55}[sp]))],
-                        v[np.argmin(np.abs(t - {"O": 0.12, "Na": 0.32, "Cl": 0.55}[sp]))]),
-                   textcoords="offset points", xytext=(6, 4),
-                   color=SPECIES_COLOR[sp], fontsize=9, fontweight="bold")
     a.axhline(0, color=MUTED, lw=0.8)
     a.set_xlim(0, 2.0)
     style(a, "t (ps)", r"$\langle v(0)\cdot v(t)\rangle$ / $\langle v^2\rangle$",
-          "a  Velocity autocorrelation (L = 43.5 Å, seed avg.)")
+          "(a)")
 
     # (b) parity: D_VACF vs D_MSD, all boxes x species
     lims = [0.06, 0.23]
@@ -150,8 +150,6 @@ def fig_msd_vs_vacf(out, rep, vacf_D, curves):
                        yerr=v.std(ddof=1) / np.sqrt(len(v)),
                        fmt=markers[L], ms=6, color=SPECIES_COLOR[sp],
                        mfc="white", mew=1.6, elinewidth=1.0, capsize=2, zorder=3)
-    for sp, xy in (("O", (0.192, 0.207)), ("Na", (0.089, 0.077)), ("Cl", (0.135, 0.122))):
-        b.annotate(sp, xy, color=SPECIES_COLOR[sp], fontsize=9, fontweight="bold")
     b.set_xlim(*lims)
     b.set_ylim(*lims)
     hs = [plt.Line2D([], [], marker=markers[L], ls="", mfc="white", mew=1.6,
@@ -159,7 +157,13 @@ def fig_msd_vs_vacf(out, rep, vacf_D, curves):
     b.legend(handles=hs, fontsize=8, frameon=False, loc="upper left",
              labelcolor=INK2)
     style(b, r"$D$ from MSD slope (Å$^2$/ps)", r"$D$ from VACF integral (Å$^2$/ps)",
-          "b  Einstein vs Green–Kubo (11/12 within 2σ)")
+          "(b)")
+    # one species legend above the figure instead of per-panel annotations
+    sp_hs = [plt.Line2D([], [], color=SPECIES_COLOR[sp], lw=2.5, label=sp)
+             for sp in ("O", "Na", "Cl")]
+    fig.legend(handles=sp_hs, loc="upper center", bbox_to_anchor=(0.5, 1.06),
+               ncol=3, frameon=False, fontsize=10, columnspacing=2.0,
+               handlelength=1.8, labelcolor=INK2)
     fig.tight_layout(w_pad=3)
     savefig(fig, out, "fig1_msd_vs_vacf")
 
@@ -185,18 +189,29 @@ def fig_yeh_hummer(out, rep, vacf_D):
         vs = [np.std(vacf_D[(L, sp)], ddof=1) / np.sqrt(len(vacf_D[(L, sp)])) for L in Ls]
         ax.errorbar(invL + 0.0006, vm, yerr=vs, fmt="x", ms=6, color=c,
                     elinewidth=0.9, capsize=2, alpha=0.75, zorder=3)
+        # per-box YH-corrected values D_PBC + |slope|/L: flat by construction
+        # where the raw points are linear, so they replot the fit residuals
+        ax.errorbar(invL - 0.0006, rep["D_mean"][i] - m * invL,
+                    yerr=rep["D_sem"][i], fmt="D", ms=4.5, color=c,
+                    elinewidth=0.9, capsize=2, alpha=0.85, zorder=3)
+        ax.axhline(D0, color=c, lw=0.9, ls=":", alpha=0.55, zorder=1)
         ax.errorbar([0], [D0], fmt="*", ms=11, color=c, zorder=4)
         ax.annotate(f"{sp}:  $D_0$ = {D0:.3f}", (0.0015, D0 + label_y[sp]),
                     color=c, fontsize=9, fontweight="bold")
     hs = [plt.Line2D([], [], marker="o", ls="--", mfc="white", mew=1.6, color=INK2,
-                     ms=6, label="MSD (NVT) + YH fit (shared slope)"),
-          plt.Line2D([], [], marker="x", ls="", color=INK2, ms=6, label="VACF (NVE)"),
+                     ms=6, label="MSD"),
+          plt.Line2D([], [], marker="x", ls="", color=INK2, ms=6, label="VACF"),
+          plt.Line2D([], [], marker="D", ls=":", color=INK2, ms=4.5,
+                     label="YH-corrected"),
           plt.Line2D([], [], marker="*", ls="", color=INK2, ms=10,
                      label=r"$L\to\infty$ extrapolation")]
-    ax.legend(handles=hs, fontsize=8, frameon=False, loc="lower left", labelcolor=INK2)
+    # frameless figure-level legend above the axes (thesis style, cf.
+    # plot_omp_headtohead.py); series names only, methodology in the caption
+    fig.legend(handles=hs, loc="upper center", bbox_to_anchor=(0.5, 1.03),
+               ncol=4, frameon=False, fontsize=8.5, columnspacing=1.4,
+               handlelength=2.4, handletextpad=0.6, labelcolor=INK2)
     ax.set_xlim(0, x.max())
-    style(ax, r"$1/L$ (Å$^{-1}$)", r"$D_{\mathrm{PBC}}$ (Å$^2$/ps)",
-          "Yeh–Hummer finite-size scaling, 1 m NaCl, 298.15 K")
+    style(ax, r"$1/L$ (Å$^{-1}$)", r"$D_{\mathrm{PBC}}$ (Å$^2$/ps)")
     savefig(fig, out, "fig2_yeh_hummer")
 
 
@@ -216,33 +231,51 @@ def fig_kappa(out, kap):
     fig, ax = plt.subplots(figsize=(5.2, 4.0))
     ax.errorbar(c, kNE, yerr=kNE_s, fmt="^--", ms=6, color=C_O, mfc="white",
                 mew=1.5, lw=1.4, elinewidth=1.0, capsize=2,
-                label=r"Nernst–Einstein, $z=\pm1$")
+                label="Nernst–Einstein")
     ax.errorbar(c, kOns, yerr=kOns_s, fmt="o-", ms=6.5, color=C_NA, mfc="white",
                 mew=1.6, lw=1.8, elinewidth=1.0, capsize=2,
-                label=r"Onsager (Einstein–Helfand), $z=\pm1$")
+                label=r"Onsager, $z=\pm1$")
     ax.errorbar(c, kOns * 0.7225, yerr=kOns_s * 0.7225, fmt="s-", ms=6, color=C_CL,
                 mfc="white", mew=1.6, lw=1.4, elinewidth=1.0, capsize=2,
-                label=r"Onsager, $z=\pm0.85$ (scaled)")
+                label=r"Onsager, $z=\pm0.85$")
     ce = [EXPT_C[m] for m in EXPT_KAPPA]
-    ax.plot(ce, list(EXPT_KAPPA.values()), marker="*", ms=13, ls="", color=INK,
-            label="Experiment (Chambers–Stokes 1956)", zorder=5)
+    ax.plot(ce, list(EXPT_KAPPA.values()), marker="o", ms=5, ls="", color=SLATE3,
+            label="Experiment", zorder=5)
     print("  fig3 expt anchors (Chambers-Stokes 1956): " +
           "  ".join(f"m={m:g}: {k:.2f} S/m @ c={EXPT_C[m]:.3f}"
                     for m, k in EXPT_KAPPA.items()))
-    ax.legend(fontsize=8.5, frameon=False, loc="upper left", labelcolor=INK2)
+    # handles come back lines-first: Experiment, NE, Onsager z=1, z=0.85 —
+    # column-major that puts Experiment/NE left, the two Onsager right
+    h, l = ax.get_legend_handles_labels()
+    fig.legend(h, l,
+               loc="upper center", bbox_to_anchor=(0.5, 1.06), ncol=2,
+               frameon=False, fontsize=8.5, columnspacing=1.6,
+               handlelength=2.4, handletextpad=0.6, labelcolor=INK2)
     ax.set_xlim(0, 3.9)
     ax.set_ylim(0, 24)
-    style(ax, "c (mol/L)", r"$\kappa$ (S/m)",
-          "Electrical conductivity of NaCl(aq), Madrid-2019")
+    style(ax, "c (mol/L)", r"$\kappa$ (S/m)")
     savefig(fig, out, "fig3_kappa_vs_c")
 
 
-def fig_transport(out, kap):
+def fig_ne_deviation(out, kap):
+    mol = kap["runs_mol"]
+    c = np.array([MOL_TO_M[m] for m in sorted(set(mol))])
+    ratio = 1.0 - kap["runs_kOns"] / kap["runs_kNE"]
+    _, dNE, dNE_s = pooled(mol, ratio)
+    fig, ax = plt.subplots(figsize=(5.2, 4.0))
+    ax.axhline(0, color=MUTED, lw=0.8)
+    ax.errorbar(c, dNE, yerr=dNE_s, fmt="o-", ms=6.5, color=CAM_BLUE,
+                mfc="white", mew=1.6, lw=1.8, elinewidth=1.0, capsize=2)
+    ax.set_ylim(-0.05, 0.32)
+    ax.set_xlim(0, 3.9)
+    style(ax, "c (mol/L)", r"$\Delta_{\mathrm{NE}}$")
+    savefig(fig, out, "fig4_ne_deviation")
+
+
+def fig_tna(out, kap):
     mol = kap["runs_mol"]
     mols = np.array(sorted(set(mol)))
     c = np.array([MOL_TO_M[m] for m in mols])
-    ratio = 1.0 - kap["runs_kOns"] / kap["runs_kNE"]
-    _, dNE, dNE_s = pooled(mol, ratio)
     _, tNa, tNa_s = pooled(mol, kap["runs_tNa"])
     # barycentric -> Hittorf (solvent frame), per run. The solvent Onsager
     # row follows from the mass constraint sum_i M_i L^ij = 0 (Fong 2020
@@ -255,32 +288,29 @@ def fig_transport(out, kap):
     tH_runs = (kap["runs_tNa"]
                + mol * (M_NA * (sNN - sNC) - M_CL * (sCC - sNC)) / s_sum)
     _, tH, tH_s = pooled(mol, tH_runs)
-    fig, (a, b) = plt.subplots(1, 2, figsize=(9.0, 3.6))
 
-    a.axhline(0, color=MUTED, lw=0.8)
-    a.errorbar(c, dNE, yerr=dNE_s, fmt="o-", ms=6.5, color=C_NA, mfc="white",
-               mew=1.6, lw=1.8, elinewidth=1.0, capsize=2)
-    a.set_ylim(-0.05, 0.32)
-    a.set_xlim(0, 3.9)
-    style(a, "c (mol/L)", r"$1-\kappa_{\mathrm{Ons}}/\kappa_{\mathrm{NE}}$",
-          "a  Ion-correlation reduction of κ")
-
-    b.errorbar(c, tNa, yerr=tNa_s, fmt="o-", ms=6.5, color=C_NA, mfc="white",
-               mew=1.6, lw=1.8, elinewidth=1.0, capsize=2,
-               label="Madrid-2019, barycentric")
-    b.errorbar(c, tH, yerr=tH_s, fmt="D--", ms=5.5, color=C_NA, mfc="white",
-               mew=1.3, lw=1.3, elinewidth=1.0, capsize=2, alpha=0.85,
-               label="Madrid-2019, Hittorf (solvent) frame")
+    fig, ax = plt.subplots(figsize=(5.2, 4.0))
+    ax.errorbar(c, tNa, yerr=tNa_s, fmt="o-", ms=6.5, color=CAM_BLUE,
+                mfc="white", mew=1.6, lw=1.8, elinewidth=1.0, capsize=2,
+                label="Barycentric")
+    ax.errorbar(c, tH, yerr=tH_s, fmt="D--", ms=5.5, color=SLATE3,
+                mfc="white", mew=1.3, lw=1.3, elinewidth=1.0, capsize=2,
+                label="Hittorf frame")
     ce = [EXPT_C[m] for m in mols]
-    b.plot(ce, tna_expt_hittorf(mols), marker="*", ms=13, ls="", color=INK,
-           label="Experiment, Hittorf (Smits–Duyvis 1966)", zorder=5)
-    b.set_ylim(0.28, 0.56)
-    b.set_xlim(0, 3.9)
-    b.legend(fontsize=8.5, frameon=False, loc="upper left", labelcolor=INK2)
-    style(b, "c (mol/L)", r"$t_{\mathrm{Na}^+}$", "b  Cation transport number")
-    fig.tight_layout(w_pad=3)
-    savefig(fig, out, "fig4_ne_deviation_tNa")
-    print("  fig4 t_Na (pooled):")
+    ax.plot(ce, tna_expt_hittorf(mols), marker="o", ms=5, ls="", color=SLATE3,
+            label="Experiment", zorder=5)
+    ax.set_ylim(0.28, 0.56)
+    ax.set_xlim(0, 3.9)
+    style(ax, "c (mol/L)", r"$t_{\mathrm{Na}^+}$")
+    # handles come back lines-first: Experiment, then the two errorbars
+    h, l = ax.get_legend_handles_labels()
+    order = [1, 2, 0]
+    fig.legend([h[i] for i in order], [l[i] for i in order],
+               loc="upper center", bbox_to_anchor=(0.5, 1.03), ncol=3,
+               frameon=False, fontsize=9, columnspacing=2.0,
+               handlelength=2.4, handletextpad=0.6, labelcolor=INK2)
+    savefig(fig, out, "fig5_tNa")
+    print("  fig5 t_Na (pooled):")
     for m_, tb, tbs, th, ths in zip(mols, tNa, tNa_s, tH, tH_s):
         print(f"    m={m_:4.2f}  bary {tb:.3f}±{tbs:.3f}  "
               f"Hittorf {th:.3f}±{ths:.3f}  expt(SD66) "
@@ -303,46 +333,49 @@ def fig_onsager_decomp(out, kap):
 
     mol = kap["runs_mol"]
     c = np.array([MOL_TO_M[m] for m in sorted(set(mol))])
-    fig, (a, b) = plt.subplots(1, 2, figsize=(9.0, 3.6))
 
-    # (a) conductivity contributions
+    # fig6: conductivity contributions in absolute units
+    fig, ax = plt.subplots(figsize=(5.2, 4.0))
     for y, color, fmt, lw, label in (
-            (kap["runs_kOns"], INK, "o-", 1.8, r"total $\kappa_{\mathrm{Ons}}$"),
+            (kap["runs_kOns"], SLATE3, "o-", 1.8, r"total $\kappa_{\mathrm{Ons}}$"),
             (kNaNa, C_NA, "s-", 1.4, r"$\kappa_{\mathrm{NaNa}}$"),
             (kClCl, C_CL, "^-", 1.4, r"$\kappa_{\mathrm{ClCl}}$"),
-            (-2 * kNaCl, C_O, "D-", 1.4, r"$-2\,\kappa_{\mathrm{NaCl}}$ (cross)")):
+            (-2 * kNaCl, C_O, "D-", 1.4, r"$-2\,\kappa_{\mathrm{NaCl}}$")):
         _, ym, ys = pooled(mol, y)
-        a.errorbar(c, ym, yerr=ys, fmt=fmt, ms=5.5, color=color, mfc="white",
-                   mew=1.5, lw=lw, elinewidth=1.0, capsize=2, label=label)
-    a.axhline(0, color=MUTED, lw=0.8)
-    a.legend(fontsize=8.5, frameon=False, loc="upper left", labelcolor=INK2)
-    a.set_xlim(0, 3.9)
-    style(a, "c (mol/L)", r"$\kappa$ contribution (S/m)",
-          "a  Onsager decomposition of κ  (z = ±1)")
+        ax.errorbar(c, ym, yerr=ys, fmt=fmt, ms=5.5, color=color, mfc="white",
+                    mew=1.5, lw=lw, elinewidth=1.0, capsize=2, label=label)
+    ax.axhline(0, color=MUTED, lw=0.8)
+    ax.set_xlim(0, 3.9)
+    h, l = ax.get_legend_handles_labels()
+    fig.legend(h, l, loc="upper center", bbox_to_anchor=(0.5, 1.06), ncol=2,
+               frameon=False, fontsize=9, columnspacing=2.0,
+               handlelength=2.4, handletextpad=0.6, labelcolor=INK2)
+    style(ax, "c (mol/L)", r"$\kappa$ contribution (S/m)")
+    savefig(fig, out, "fig6_kappa_decomposition")
 
-    # (b) contributions to the NE deviation: Delta = 1 - kOns/kNE
-    #     = [-dNaNa - dClCl + 2 dNaCl] / kNE   (per run, then pooled)
+    # fig7: contributions to the NE deviation: Delta = 1 - kOns/kNE
+    #       = [-dNaNa - dClCl + 2 dNaCl] / kNE   (per run, then pooled)
+    fig, ax = plt.subplots(figsize=(5.2, 4.0))
     parts = ((-dNaNa / kNE, C_NA, "s-", "Na–Na distinct"),
              (-dClCl / kNE, C_CL, "^-", "Cl–Cl distinct"),
-             (2 * kNaCl / kNE, C_O, "D-", "Na–Cl distinct (pairing)"))
+             (2 * kNaCl / kNE, C_O, "D-", "Na–Cl distinct"))
     for y, color, fmt, label in parts:
         _, ym, ys = pooled(mol, y)
-        b.errorbar(c, ym, yerr=ys, fmt=fmt, ms=5.5, color=color, mfc="white",
-                   mew=1.5, lw=1.4, elinewidth=1.0, capsize=2, label=label)
+        ax.errorbar(c, ym, yerr=ys, fmt=fmt, ms=5.5, color=color, mfc="white",
+                    mew=1.5, lw=1.4, elinewidth=1.0, capsize=2, label=label)
     _, tot, tot_s = pooled(mol, 1.0 - kap["runs_kOns"] / kNE)
-    b.errorbar(c, tot, yerr=tot_s, fmt="o-", ms=5.5, color=INK, mfc="white",
-               mew=1.5, lw=1.8, elinewidth=1.0, capsize=2,
-               label=r"total $\Delta_{\mathrm{NE}}$")
-    b.axhline(0, color=MUTED, lw=0.8)
-    b.annotate("pairing term ≈ 0 within noise\n(under-paired PMF, cf. Fig. 5)",
-               (3.75, -0.155), color=C_O, fontsize=8.5, ha="right")
-    b.legend(fontsize=8.5, frameon=False, loc="upper left", labelcolor=INK2, ncol=2)
-    b.set_xlim(0, 3.9)
-    b.set_ylim(-0.19, 0.31)
-    style(b, "c (mol/L)", r"contribution to $1-\kappa_{\mathrm{Ons}}/\kappa_{\mathrm{NE}}$",
-          "b  Origin of the Nernst–Einstein deviation")
-    fig.tight_layout(w_pad=3)
-    savefig(fig, out, "fig6_onsager_decomposition")
+    ax.errorbar(c, tot, yerr=tot_s, fmt="o-", ms=5.5, color=SLATE3, mfc="white",
+                mew=1.5, lw=1.8, elinewidth=1.0, capsize=2,
+                label=r"total $\Delta_{\mathrm{NE}}$")
+    ax.axhline(0, color=MUTED, lw=0.8)
+    ax.set_xlim(0, 3.9)
+    ax.set_ylim(-0.19, 0.31)
+    h, l = ax.get_legend_handles_labels()
+    fig.legend(h, l, loc="upper center", bbox_to_anchor=(0.5, 1.06), ncol=2,
+               frameon=False, fontsize=9, columnspacing=2.0,
+               handlelength=2.4, handletextpad=0.6, labelcolor=INK2)
+    style(ax, "c (mol/L)", r"contribution to $\Delta_{\mathrm{NE}}$")
+    savefig(fig, out, "fig7_ne_origin")
 
     print("  pooled decomposition (z=1, S/m):")
     for name, y in (("kNaNa", kNaNa), ("kClCl", kClCl), ("-2kNaCl", -2 * kNaCl),
@@ -352,61 +385,8 @@ def fig_onsager_decomp(out, kap):
             f"{m:4.2f}m {v:+6.3f}±{s:5.3f}" for m, v, s in zip(sorted(set(mol)), ym, ys)))
 
 
-def fig_pmf(out):
-    gs, r = [], None
-    for f in sorted(glob.glob(os.path.join(ROOT, "conductivity", "m1.0", "L*_s*", "*.rdf"))):
-        dat = np.loadtxt(f, skiprows=4)
-        if r is None:
-            r = dat[:, 1]
-        elif not np.allclose(dat[:, 1], r):
-            dat = np.column_stack([dat[:, 0], r,
-                                   np.interp(r, dat[:, 1], dat[:, 2]), dat[:, 3]])
-        gs.append(dat[:, 2])
-    g = np.mean(gs, axis=0)
-    mask = g > 0.02
-    w = np.full_like(g, np.nan)
-    w[mask] = -KT_KCAL * np.log(g[mask])
-    w -= np.nanmean(w[(r > 9.0) & (r < r.max())])          # zero at large r
-
-    def extremum(lo, hi, kind):
-        m = (r >= lo) & (r <= hi) & np.isfinite(w)
-        i = (np.argmin if kind == "min" else np.argmax)(w[m])
-        return r[m][i], w[m][i]
-
-    r_cip, w_cip = extremum(2.5, 3.2, "min")
-    r_ts, w_ts = extremum(3.2, 4.2, "max")
-    r_ssip, w_ssip = extremum(4.2, 5.6, "min")
-
-    fig, ax = plt.subplots(figsize=(5.6, 4.0))
-    ax.axhline(0, color=MUTED, lw=0.8)
-    ax.plot(r, w, color=C_NA, lw=2.0, label="Madrid-2019, 1 m (this work)")
-    offsets = {"CIP": (0, -26), "barrier": (0, 10), "SSIP": (12, -14)}
-    for rx, wx, name in ((r_cip, w_cip, "CIP"), (r_ts, w_ts, "barrier"),
-                         (r_ssip, w_ssip, "SSIP")):
-        ax.plot(rx, wx, "o", ms=6, color=C_NA, mfc="white", mew=1.6)
-        ax.annotate(f"{name}\n{wx:+.2f}", (rx, wx),
-                    textcoords="offset points", xytext=offsets[name],
-                    ha="left" if name == "SSIP" else "center",
-                    color=INK2, fontsize=8.5)
-    # O'Neill 2024 MP2/RPA benchmark: CIP and SSIP equistable within ~0.2 kcal/mol
-    # -> gray band = where the CIP minimum would sit if CIP ~ SSIP
-    ax.fill_between([r_cip - 0.3, r_cip + 0.3], w_ssip - 0.2, w_ssip + 0.2,
-                    color=GRID, alpha=0.9, zorder=0)
-    ax.annotate("gray band: CIP depth if CIP ≈ SSIP\n(MP2/RPA benchmark, O'Neill 2024)",
-                (r_cip - 0.35, w_ssip - 0.42), color=INK2, fontsize=8.5)
-    dW = w_cip - w_ssip
-    ax.annotate(rf"Madrid: $\Delta W_{{\mathrm{{CIP-SSIP}}}}$ = {dW:+.2f} kcal/mol"
-                "\n→ under-paired vs benchmark",
-                (0.97, 0.70), xycoords="axes fraction", ha="right",
-                color=INK, fontsize=9)
-    ax.set_xlim(2.2, 8.0)
-    ax.set_ylim(-1.0, 1.6)
-    ax.legend(fontsize=8.5, frameon=False, loc="upper right", labelcolor=INK2)
-    style(ax, r"$r_{\mathrm{Na-Cl}}$ (Å)", r"$w(r) = -k_BT\,\ln g(r)$ (kcal/mol)",
-          "Na–Cl pairing free energy vs first-principles benchmark")
-    savefig(fig, out, "fig5_pmf_vs_benchmark")
-    print(f"  PMF: CIP {w_cip:+.3f} @ {r_cip:.2f} | TS {w_ts:+.3f} @ {r_ts:.2f} | "
-          f"SSIP {w_ssip:+.3f} @ {r_ssip:.2f} | dW(CIP-SSIP) {dW:+.3f} kcal/mol")
+# fig5 (standalone PMF-vs-benchmark) retired 2026-07-30: redundant with
+# fig7 panel (a), which carries the same comparison plus the small MP2 cell.
 
 
 ANCHOR = os.path.join(_REPO, "results", "nacl_mp2_anchor")
@@ -479,56 +459,45 @@ def fig_nnp_anchor(out, rep):
     fig, (a, b) = plt.subplots(1, 2, figsize=(9.8, 4.1))
 
     a.axhline(0, color=MUTED, lw=0.8)
-    a.plot(r_mad, w_mad, color=C_NA, lw=2.0, label="Madrid-2019 (1 m)")
+    a.plot(r_mad, w_mad, color=C_NA, lw=2.0, label="Madrid-2019")
     r3, g3, w3 = pmf["cube3"]
     r2, g2, w2 = pmf["cube2"]
-    a.plot(r3, w3, color=INK, lw=2.0, label="MP2 C-NNP, $L$=37.3 Å (1 m)")
+    a.plot(r3, w3, color=SLATE3, lw=2.0, label="MP2 C-NNP, $L$=37.3 Å")
     a.plot(r2, w2, color=MUTED, lw=1.1, ls="--",
            label="MP2 C-NNP, $L$=24.8 Å")
-    for rr, ww, col in ((r_mad, w_mad, C_NA), (r3, w3, INK)):
-        (rc, wc), (rt, wt), (rs, ws) = _extrema(rr, ww)
-        for x, y in ((rc, wc), (rs, ws)):
-            a.plot(x, y, "o", ms=5, color=col, mfc="white", mew=1.4)
-    (_, wcM), _, (_, wsM) = _extrema(r_mad, w_mad)
-    (_, wc3), _, (_, ws3) = _extrema(r3, w3)
-    a.annotate(rf"Madrid: $\Delta W_{{\mathrm{{CIP-SSIP}}}}$ = {wcM - wsM:+.2f}",
-               (0.97, 0.86), xycoords="axes fraction", ha="right",
-               color=C_NA, fontsize=9)
-    a.annotate(rf"MP2: $\Delta W_{{\mathrm{{CIP-SSIP}}}}$ = {wc3 - ws3:+.2f}"
-               "\n(CIP ≈ SSIP, as O'Neill 2024)",
-               (0.97, 0.72), xycoords="axes fraction", ha="right",
-               color=INK, fontsize=9)
     a.set_xlim(2.2, 8.0)
-    a.set_ylim(-1.7, 1.4)
+    a.set_ylim(-1.3, 1.5)
     a.legend(fontsize=8.5, frameon=False, loc="lower right", labelcolor=INK2)
-    style(a, r"$r_{\mathrm{Na-Cl}}$ (Å)", r"$w(r)$ (kcal/mol)",
-          "Na–Cl pairing free energy, 1 m")
+    style(a, r"$r_{\mathrm{Na-Cl}}$ (Å)", r"$w(r)$ (kcal/mol)", "(a)")
 
     xs = {"Na": 0.0, "Cl": 1.0}
     for sp in ("Na", "Cl"):
         x = xs[sp]
         v, e = mad[sp]
         b.errorbar(x - 0.18, v, yerr=e, fmt="s", ms=6, color=C_NA,
-                   capsize=3, label="Madrid-2019 ($D_0$, YH)" if sp == "Na" else None)
-        for off, cell, mfc in ((-0.02, "cube2", "white"), (0.14, "cube3", INK)):
+                   capsize=3, label="Madrid-2019" if sp == "Na" else None)
+        for off, cell, mfc in ((-0.02, "cube2", "white"), (0.14, "cube3", SLATE3)):
             v, e = ratio(mp2[cell][sp], mp2[cell]["O"])
-            b.errorbar(x + off, v, yerr=e, fmt="o", ms=6, color=INK, mfc=mfc,
+            b.errorbar(x + off, v, yerr=e, fmt="o", ms=6, color=SLATE3, mfc=mfc,
                        capsize=3,
                        label=(f"MP2 C-NNP, $L$={'24.8' if cell == 'cube2' else '37.3'} Å"
                               if sp == "Na" else None))
         b.plot(x + 0.30, expt[sp], marker="_", ms=14, mew=2.2, color=INK2, ls="",
-               label="expt (infinite dilution)" if sp == "Na" else None)
-    b.annotate("Cl/water ratio:\nMP2 moves toward expt", (1.02, 0.80),
-               color=INK2, fontsize=8.5, ha="center")
+               label="Experiment" if sp == "Na" else None)
     b.set_xticks([0.06, 1.06])
     b.set_xticklabels([r"$D_{\mathrm{Na}}/D_{\mathrm{w}}$",
                        r"$D_{\mathrm{Cl}}/D_{\mathrm{w}}$"])
     b.set_xlim(-0.5, 1.6)
     b.set_ylim(0.35, 1.0)
     b.legend(fontsize=8, frameon=False, loc="upper left", labelcolor=INK2)
-    style(b, "", r"$D_{\mathrm{ion}}\,/\,D_{\mathrm{water}}$",
-          "Ion/water diffusion ratio, 1 m")
-    savefig(fig, out, "fig7_nnp_anchor")
+    style(b, "", r"$D_{\mathrm{ion}}\,/\,D_{\mathrm{water}}$", "(b)")
+    savefig(fig, out, "fig8_nnp_anchor")
+
+    for tag, rr, ww in (("Madrid", r_mad, w_mad), ("MP2 cube3", r3, w3),
+                        ("MP2 cube2", r2, w2)):
+        (rc, wc), (rt, wt), (rs, ws) = _extrema(rr, ww)
+        print(f"  PMF {tag}: CIP {wc:+.3f} @ {rc:.2f} | TS {wt:+.3f} @ {rt:.2f} | "
+              f"SSIP {ws:+.3f} @ {rs:.2f} | dW(CIP-SSIP) {wc - ws:+.3f} kcal/mol")
 
     print("  fig7 table: D (1e-9 m2/s) and ratios")
     for cell in ("cube2", "cube3"):
@@ -561,8 +530,8 @@ def main():
     fig_msd_vs_vacf(args.out, rep, vacf_D, curves)
     fig_yeh_hummer(args.out, rep, vacf_D)
     fig_kappa(args.out, kap)
-    fig_transport(args.out, kap)
-    fig_pmf(args.out)
+    fig_ne_deviation(args.out, kap)
+    fig_tna(args.out, kap)
     fig_onsager_decomp(args.out, kap)
     fig_nnp_anchor(args.out, rep)
 
