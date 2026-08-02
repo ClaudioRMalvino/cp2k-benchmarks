@@ -1,0 +1,2 @@
+label,n_NaCl_pairs,c_mol_L,frames,r_peak_A,w_min_kcalmol,r_b_A,w_b_kcalmol,dW_kcalmol,n_CIP,n_CIP_sem,K_A_L_mol,paired_frac,r_NaO_peak_A,r_NaO_min_A,n_hyd_Na,n_hyd_Na_sem,r_ClO_peak_A,r_ClO_min_A,n_hyd_Cl,n_hyd_Cl_sem
+rpa_gpu_cube3_2m,58,1.8619,4005,2.775,-0.9318,3.525,0.7316,1.6634,0.2224,0.0239,0.1264,0.1643,2.425,3.225,5.8568,0.0246,3.125,3.875,7.0588,0.0147

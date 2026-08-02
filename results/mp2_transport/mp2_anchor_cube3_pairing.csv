@@ -1,0 +1,2 @@
+label,n_NaCl_pairs,c_mol_L,frames,r_peak_A,w_min_kcalmol,r_b_A,w_b_kcalmol,dW_kcalmol,n_CIP,n_CIP_sem,K_A_L_mol,paired_frac,r_NaO_peak_A,r_NaO_min_A,n_hyd_Na,n_hyd_Na_sem,r_ClO_peak_A,r_ClO_min_A,n_hyd_Cl,n_hyd_Cl_sem
+mp2_anchor_cube3,30,0.9630,4005,2.825,-0.6622,3.575,0.7107,1.3728,0.0858,0.0221,0.0933,0.0766,2.425,3.225,5.7225,0.0255,3.125,3.775,6.4990,0.0106
