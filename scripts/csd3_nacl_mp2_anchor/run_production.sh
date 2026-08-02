@@ -10,10 +10,15 @@ set -euo pipefail
 #
 # Env:  MODEL=MP2  CELLS="cube2"  SEGMENTS="1 2 3 4 5"  TOTAL_RANKS=76
 #       PROD_PS=100
+#       CONC_DIR=cubic_1M (concentration subdir; transport campaign uses
+#       cubic_2m / cubic_4m)
+#       PROD_SUBDIR=production (output subdir; the 1 m transport pilot uses
+#       production_transport so the completed anchor segments stay untouched)
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 TEMPLATE="$SCRIPT_DIR/nacl_diffusion_template.inp"
-source "$SCRIPT_DIR/env_csd3.sh"
+# ENV_SCRIPT override: the GPU track sources the ampere env instead
+source "${ENV_SCRIPT:-$SCRIPT_DIR/env_csd3.sh}"
 
 ANCHOR_ROOT="${ANCHOR_ROOT:-/rds/user/$USER/hpc-work/nacl_mp2_anchor}"
 NACL_REPO="${NACL_REPO:-$ANCHOR_ROOT}"
@@ -33,7 +38,7 @@ NNP_RANKS=$(( TOTAL_RANKS - FIST_RANKS ))
 
 MODEL_DIR="$NACL_REPO/models/$MODEL/final_model"
 [ -d "$MODEL_DIR" ] || { echo "no such model dir: $MODEL_DIR" >&2; exit 1; }
-CUBE_DIR="$RUN_ROOT/$MODEL/cubic_1M"
+CUBE_DIR="$RUN_ROOT/$MODEL/${CONC_DIR:-cubic_1M}"
 
 for cell in $CELLS; do
   case "$cell" in
@@ -47,7 +52,7 @@ for cell in $CELLS; do
   coord_cell="$CUBE_DIR/cube_n${n}.xyz"
   equildir="$CUBE_DIR/equil/$cell"
   pbase="NaCl_${MODEL}_${cell}"
-  prod_parent="$CUBE_DIR/production/$cell"
+  prod_parent="$CUBE_DIR/${PROD_SUBDIR:-production}/$cell"
 
   for seg in $SEGMENTS; do
     snap="$equildir/snapshot_$seg.restart"
@@ -79,6 +84,11 @@ for cell in $CELLS; do
       | sed -e '/&THERMOSTAT/,/&END THERMOSTAT/d' \
             -e 's|^\( *\)&RESTART_HISTORY$|\1\&RESTART_HISTORY OFF|' > "$rundir/prod.inp"
 
+    # GPU track: inject the USE_GPU keyword into &NNP
+    if [ -n "${USE_GPU_OVERRIDE:-}" ]; then
+      sed -i "s|^  &NNP$|  \&NNP\n    USE_GPU $USE_GPU_OVERRIDE|" "$rundir/prod.inp"
+    fi
+
     # positions + velocities from the snapshot; everything else fresh
     cat >> "$rundir/prod.inp" <<EOF
 
@@ -95,13 +105,22 @@ EOF
     if [ -f "$rundir/${proj}-1.restart" ] && \
        ! grep -q "PROGRAM ENDED" "$rundir/prod.out" 2>/dev/null; then
       INPUT="${proj}-1.restart"
-      # Restore the step counter on continuation so the run stops at the total
-      # STEPS instead of doing a whole fresh segment. The initial launch keeps
-      # counters OFF (production must start at step 0 from the equil snapshot);
-      # a continuation must turn them ON, otherwise CP2K treats STEPS as a
-      # per-invocation count and overruns to 2x the segment length.
+      # Counters ON keeps the step numbering continuous across the resume;
+      # the initial launch keeps them OFF (production starts at step 0 from
+      # the equil snapshot). Numbering is ALL counters fix: CP2K's MD STEPS
+      # is per-invocation even with STEP_START_VAL set, so STEPS must also
+      # be capped to the remaining budget or the resume runs a full extra
+      # segment past the target.
       sed -i -E 's/^( *RESTART_COUNTERS +)[FT.]+/\1T/' "$rundir/$INPUT"
-      echo "$cell seg$seg: continuing from checkpoint $INPUT (counters restored)"
+      start=$(awk '$1=="STEP_START_VAL"{print $2; exit}' "$rundir/$INPUT")
+      remaining=$(( PROD_STEPS - ${start:-0} ))
+      [ "$remaining" -lt 0 ] && remaining=0
+      sed -i "0,/^\( *\)STEPS  *[0-9][0-9]*$/s//\1STEPS $remaining/" "$rundir/$INPUT"
+      # fail-closed: abort (spending nothing) rather than launch MD with an
+      # uncapped STEPS if the rewrite did not take
+      got=$(awk '$1=="STEPS"{print $2; exit}' "$rundir/$INPUT")
+      [ "$got" = "$remaining" ] || { echo "$cell seg$seg: STEPS cap failed ($got != $remaining) - aborting" >&2; exit 99; }
+      echo "$cell seg$seg: continuing from checkpoint $INPUT (step ${start:-0}, $remaining steps remain)"
     fi
     echo "=== production $cell seg$seg: $PROD_STEPS steps ($PROD_PS ps) ==="
     ( cd "$rundir" && \

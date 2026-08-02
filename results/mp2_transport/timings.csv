@@ -1,0 +1,46 @@
+date,job_id,stage,conc,binary,partition,nodes,ranks,omp,steps,wall_s,s_per_step,notes
+2026-07-30,32415444,smoke,cubic_1M,dhruv-cell-list,icelake,1,76,1,200,68,0.2554,cube3 5064 atoms RPA
+2026-07-30,32415445,master_ref,cubic_1M,master,icelake,1,76,1,1000,4064,4.0473,cube3 RPA deck, pristine 2026.1
+2026-07-31,32430262,gpu_smoke,cubic_1M,gpu-collab-branch,ampere,1,4,1,200,36,0.1467,cube3 RPA, 1xA100+3 SPME ranks
+2026-07-31,32431669,gpu_equil,cubic_1M,gpu-collab-branch,ampere,1,4,1,210000,36907,0.1757,cube3 RPA GPU NVT+snapshots; s_per_step valid only single-window
+2026-07-31,32431670,gpu_equil,cubic_1M,gpu-collab-branch,ampere,1,4,1,210000,0,0.1757,cube3 RPA GPU NVT+snapshots; s_per_step valid only single-window
+2026-07-31,32451465_1,gpu_prod_seg1,cubic_1M,gpu-collab-branch,ampere,1,4,1,160000,27842,0.1740,cube3 RPA GPU 80ps NVE; s_per_step valid only single-window
+2026-07-31,32451467_3,gpu_prod_seg3,cubic_1M,gpu-collab-branch,ampere,1,4,1,160000,28196,0.1761,cube3 RPA GPU 80ps NVE; s_per_step valid only single-window
+2026-07-31,32451466_2,gpu_prod_seg2,cubic_1M,gpu-collab-branch,ampere,1,4,1,160000,28218,0.1763,cube3 RPA GPU 80ps NVE; s_per_step valid only single-window
+2026-07-31,32489584_1,gpu_prod_seg1,cubic_1M,gpu-collab-branch,ampere,1,4,1,160000,2,0.1740,cube3 RPA GPU 80ps NVE; s_per_step valid only single-window
+2026-07-31,32489588_2,gpu_prod_seg2,cubic_1M,gpu-collab-branch,ampere,1,4,1,160000,2,0.1763,cube3 RPA GPU 80ps NVE; s_per_step valid only single-window
+2026-07-31,32489589_3,gpu_prod_seg3,cubic_1M,gpu-collab-branch,ampere,1,4,1,160000,2,0.1761,cube3 RPA GPU 80ps NVE; s_per_step valid only single-window
+2026-07-31,32432109,gpu_equil,cubic_4m,gpu-collab-branch,ampere,1,4,1,210000,35242,0.1677,cube3 RPA GPU NVT+snapshots; s_per_step valid only single-window
+2026-07-31,32432110,gpu_equil,cubic_4m,gpu-collab-branch,ampere,1,4,1,210000,1,0.1677,cube3 RPA GPU NVT+snapshots; s_per_step valid only single-window
+2026-07-31,32432107,gpu_equil,cubic_2m,gpu-collab-branch,ampere,1,4,1,210000,37472,0.1784,cube3 RPA GPU NVT+snapshots; s_per_step valid only single-window
+2026-07-31,32432108,gpu_equil,cubic_2m,gpu-collab-branch,ampere,1,4,1,210000,1,0.1784,cube3 RPA GPU NVT+snapshots; s_per_step valid only single-window
+2026-08-01,32489591_4,gpu_prod_seg4,cubic_1M,gpu-collab-branch,ampere,1,4,1,160000,27471,0.1716,cube3 RPA GPU 80ps NVE; s_per_step valid only single-window
+2026-08-01,32431673_5,gpu_prod_seg5,cubic_1M,gpu-collab-branch,ampere,1,4,1,160000,27524,0.1719,cube3 RPA GPU 80ps NVE; s_per_step valid only single-window
+2026-08-01,32511869_1,gpu_prod_seg1,cubic_4m,gpu-collab-branch,ampere,1,4,1,160000,26156,0.1634,cube3 RPA GPU 80ps NVE; s_per_step valid only single-window
+2026-08-01,32511920_2,gpu_prod_seg2,cubic_4m,gpu-collab-branch,ampere,1,4,1,160000,26102,0.1631,cube3 RPA GPU 80ps NVE; s_per_step valid only single-window
+2026-08-01,32511921_3,gpu_prod_seg3,cubic_4m,gpu-collab-branch,ampere,1,4,1,160000,26213,0.1638,cube3 RPA GPU 80ps NVE; s_per_step valid only single-window
+2026-08-01,32511723_5,gpu_prod_seg5,cubic_2m,gpu-collab-branch,ampere,1,4,1,160000,26887,0.1680,cube3 RPA GPU 80ps NVE; s_per_step valid only single-window
+2026-08-01,32511819_2,gpu_prod_seg2,cubic_2m,gpu-collab-branch,ampere,1,4,1,160000,26988,0.1686,cube3 RPA GPU 80ps NVE; s_per_step valid only single-window
+2026-08-01,32511796_1,gpu_prod_seg1,cubic_2m,gpu-collab-branch,ampere,1,4,1,160000,27132,0.1695,cube3 RPA GPU 80ps NVE; s_per_step valid only single-window
+2026-08-01,32511821_4,gpu_prod_seg4,cubic_2m,gpu-collab-branch,ampere,1,4,1,160000,27098,0.1693,cube3 RPA GPU 80ps NVE; s_per_step valid only single-window
+2026-08-01,32511820_3,gpu_prod_seg3,cubic_2m,gpu-collab-branch,ampere,1,4,1,160000,27416,0.1713,cube3 RPA GPU 80ps NVE; s_per_step valid only single-window
+2026-08-01,32530340_1,gpu_prod_seg1,cubic_2m,gpu-collab-branch,ampere,1,4,1,160000,1,0.1695,cube3 RPA GPU 80ps NVE; s_per_step valid only single-window
+2026-08-01,32530355_2,gpu_prod_seg2,cubic_2m,gpu-collab-branch,ampere,1,4,1,160000,2,0.1686,cube3 RPA GPU 80ps NVE; s_per_step valid only single-window
+2026-08-01,32530373_3,gpu_prod_seg3,cubic_2m,gpu-collab-branch,ampere,1,4,1,160000,1,0.1713,cube3 RPA GPU 80ps NVE; s_per_step valid only single-window
+2026-08-01,32530449_4,gpu_prod_seg4,cubic_2m,gpu-collab-branch,ampere,1,4,1,160000,3,0.1693,cube3 RPA GPU 80ps NVE; s_per_step valid only single-window
+2026-08-01,32511724_5,gpu_prod_seg5,cubic_2m,gpu-collab-branch,ampere,1,4,1,160000,2,0.1680,cube3 RPA GPU 80ps NVE; s_per_step valid only single-window
+2026-08-01,32512196_4,gpu_prod_seg4,cubic_4m,gpu-collab-branch,ampere,1,4,1,160000,28493,0.1780,cube3 RPA GPU 80ps NVE; s_per_step valid only single-window
+2026-08-01,32511725_5,gpu_prod_seg5,cubic_4m,gpu-collab-branch,ampere,1,4,1,160000,28636,0.1789,cube3 RPA GPU 80ps NVE; s_per_step valid only single-window
+2026-08-01,32532505_1,gpu_prod_seg1,cubic_4m,gpu-collab-branch,ampere,1,4,1,160000,1,0.1634,cube3 RPA GPU 80ps NVE; s_per_step valid only single-window
+2026-08-01,32532530_2,gpu_prod_seg2,cubic_4m,gpu-collab-branch,ampere,1,4,1,160000,1,0.1631,cube3 RPA GPU 80ps NVE; s_per_step valid only single-window
+2026-08-01,32532539_3,gpu_prod_seg3,cubic_4m,gpu-collab-branch,ampere,1,4,1,160000,2,0.1638,cube3 RPA GPU 80ps NVE; s_per_step valid only single-window
+2026-08-01,32532548_4,gpu_prod_seg4,cubic_4m,gpu-collab-branch,ampere,1,4,1,160000,0,0.1780,cube3 RPA GPU 80ps NVE; s_per_step valid only single-window
+2026-08-01,32511726_5,gpu_prod_seg5,cubic_4m,gpu-collab-branch,ampere,1,4,1,160000,1,0.1789,cube3 RPA GPU 80ps NVE; s_per_step valid only single-window
+2026-08-01,32417577,equil,cubic_1M,dhruv-cell-list,icelake,1,76,1,210000,15446,0.0734,cube3 RPA NVT+snapshots; s_per_step valid only for single-window runs
+2026-08-01,32417579,equil,cubic_2m,dhruv-cell-list,icelake,1,76,1,210000,14641,0.0696,cube3 RPA NVT+snapshots; s_per_step valid only for single-window runs
+2026-08-01,32417581,equil,cubic_4m,dhruv-cell-list,icelake,1,76,1,210000,6937,0.0329,cube3 RPA NVT+snapshots; s_per_step valid only for single-window runs
+2026-08-01,32538961_2,prod_seg2,cubic_1M,dhruv-cell-list,icelake,1,76,1,160000,40450,0.2527,cube3 RPA 80ps NVE; s_per_step valid only for single-window runs
+2026-08-01,32538962_3,prod_seg3,cubic_1M,dhruv-cell-list,icelake,1,76,1,160000,40957,0.2558,cube3 RPA 80ps NVE; s_per_step valid only for single-window runs
+2026-08-01,32538960_1,prod_seg1,cubic_1M,dhruv-cell-list,icelake,1,76,1,160000,41140,0.2570,cube3 RPA 80ps NVE; s_per_step valid only for single-window runs
+2026-08-02,32539472_4,prod_seg4,cubic_1M,dhruv-cell-list,icelake,1,76,1,160000,41508,0.2592,cube3 RPA 80ps NVE; s_per_step valid only for single-window runs
+2026-08-02,32417584,vacf,cubic_1M,dhruv-cell-list,icelake,1,76,1,40000,10527,0.2627,cube3 RPA 20ps NVE + velocities

@@ -11,10 +11,16 @@ set -euo pipefail
 #
 # Env:  MODEL=MP2  CELLS="cube2"  TOTAL_RANKS=76  SKIP_DONE=1
 #       STEPS_OVERRIDE (smoke test only)
+#       CONC_DIR=cubic_1M (concentration subdir under runs/$MODEL/; the
+#       transport campaign uses cubic_2m / cubic_4m with their own cube_n3.xyz)
+#       SEED_OVERRIDE (optional int): non-default &GLOBAL SEED, so a redo of
+#       an already-equilibrated cell is statistically independent of the
+#       original run instead of bit-identical to it
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 TEMPLATE="$SCRIPT_DIR/nacl_diffusion_template.inp"
-source "$SCRIPT_DIR/env_csd3.sh"
+# ENV_SCRIPT override: the GPU track sources the ampere env instead
+source "${ENV_SCRIPT:-$SCRIPT_DIR/env_csd3.sh}"
 
 ANCHOR_ROOT="${ANCHOR_ROOT:-/rds/user/$USER/hpc-work/nacl_mp2_anchor}"
 NACL_REPO="${NACL_REPO:-$ANCHOR_ROOT}"
@@ -39,7 +45,7 @@ NNP_RANKS=$(( TOTAL_RANKS - FIST_RANKS ))
 
 MODEL_DIR="$NACL_REPO/models/$MODEL/final_model"
 [ -d "$MODEL_DIR" ] || { echo "no such model dir: $MODEL_DIR" >&2; exit 1; }
-CUBE_DIR="$RUN_ROOT/$MODEL/cubic_1M"
+CUBE_DIR="$RUN_ROOT/$MODEL/${CONC_DIR:-cubic_1M}"
 
 for cell in $CELLS; do
   case "$cell" in
@@ -77,6 +83,15 @@ for cell in $CELLS; do
       -e "s|__FISTRANKS__|$FIST_RANKS|" \
       "$TEMPLATE" > "$rundir/equil.inp"
 
+  if [ -n "${SEED_OVERRIDE:-}" ]; then
+    sed -i "s|^&GLOBAL$|\&GLOBAL\n  SEED $SEED_OVERRIDE|" "$rundir/equil.inp"
+  fi
+
+  # GPU track: inject the USE_GPU keyword into &NNP (ON aborts without a device)
+  if [ -n "${USE_GPU_OVERRIDE:-}" ]; then
+    sed -i "s|^  &NNP$|  \&NNP\n    USE_GPU $USE_GPU_OVERRIDE|" "$rundir/equil.inp"
+  fi
+
   # 12 h walltime survival: if a previous attempt was killed mid-run, continue
   # from its last checkpoint instead of starting over.
   if grep -q "PROGRAM ENDED" "$rundir/equil.out" 2>/dev/null; then
@@ -85,7 +100,19 @@ for cell in $CELLS; do
     INPUT=equil.inp
     if [ -f "$rundir/${proj}-1.restart" ]; then
       INPUT="${proj}-1.restart"
-      echo "$cell: continuing from checkpoint $INPUT"
+      # CP2K's MD STEPS is per-invocation (STEP_START_VAL only offsets the
+      # numbering), so a resume running the restart verbatim would do a full
+      # TOTAL_STEPS again, blow the walltime, and never reach the snapshot
+      # staging below. Cap STEPS to the remaining budget.
+      start=$(awk '$1=="STEP_START_VAL"{print $2; exit}' "$rundir/$INPUT")
+      remaining=$(( ${STEPS_OVERRIDE:-$TOTAL_STEPS} - ${start:-0} ))
+      [ "$remaining" -lt 0 ] && remaining=0
+      sed -i "0,/^\( *\)STEPS  *[0-9][0-9]*$/s//\1STEPS $remaining/" "$rundir/$INPUT"
+      # fail-closed: abort (spending nothing) rather than launch MD with an
+      # uncapped STEPS if the rewrite did not take
+      got=$(awk '$1=="STEPS"{print $2; exit}' "$rundir/$INPUT")
+      [ "$got" = "$remaining" ] || { echo "$cell: STEPS cap failed ($got != $remaining) - aborting" >&2; exit 99; }
+      echo "$cell: continuing from checkpoint $INPUT (step ${start:-0}, $remaining steps remain)"
     fi
     echo "=== equil $cell (${abc} A cubic), ${STEPS_OVERRIDE:-$TOTAL_STEPS} steps, $TOTAL_RANKS ranks ==="
     ( cd "$rundir" && \

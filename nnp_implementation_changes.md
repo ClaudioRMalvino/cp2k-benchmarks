@@ -1037,6 +1037,66 @@ conservation.  For a standard MACE model use the self-consistent triple
   It sustains production-scale MD and yields transport observables — the
   remaining work is scientific, not mechanical.
 
+### 5.4 MPI subgraph decomposition (2026-07-30, `aa98d9f3d1`)
+
+Replaces the replicated-evaluation scheme (full graph on every rank, result
+divided by `num_pe`) with a real spatial decomposition, mirroring the
+`no_mpi_message_passing` mode of the symmetrix LAMMPS pair style:
+
+- **`mace_c_api.cpp` / `mace_api.F`:** new entry point
+  `mace_model_compute_subgraph(num_local, num_nodes, ...)` that drives
+  symmetrix's public staged methods directly — layer-0/1 feature stages
+  (`compute_R0…compute_H1` + reverses) over **all** subgraph nodes, layer-2 +
+  readouts + reverse seeding over the **local** nodes only.  Each atom's
+  energy is therefore counted on exactly one rank and the cross-rank sum of
+  energies/forces/virial is exact.  With `num_local == num_nodes` the staged
+  sequence is identical to `MACE::compute_node_energies_forces`.
+- **`manybody_mace.F` (`build_subgraph`):** nodes are sorted by fractional
+  coordinate along the cell axis with the largest perpendicular width
+  (`plane_distance`) and cut into equal-count contiguous slabs, one per rank
+  (positions are replicated, so every rank derives the same partition with no
+  communication).  Ghosts = one-hop halo (every neighbour of a local node),
+  discovered from the edges like the LAMMPS pair style; ghost nodes keep
+  their **complete** neighbour rows (free here — full graph is on-rank) so
+  their layer-1 features are exact.  Node ordering locals-first; dangling
+  ghost-edge neighbour indices are clamped to 0 and provably never read
+  (message passing only runs over locals, whose neighbours are all subgraph
+  members).  The `/num_pe` division in `process_outputs` is gone.
+- The graph build itself (FIST pair lists → allgather → CSR) is unchanged
+  and still replicated; it is negligible next to the evaluation.
+
+**Validation (all on the 2026-07-30 binary):**
+- np=1 forces **byte-identical** to the July proof reference
+  (md5 `7ae9c54951e54fb6b6484e272a7d37de`) — the trivial partition is the
+  old code path, bit for bit.
+- 64-water: np=2/4 forces vs np=1 agree to max 4×10⁻¹⁶ Ha/bohr (machine
+  epsilon); stress tensor identical to all printed digits at np=1/2 and vs
+  the torch-validated reference.
+- 512-water (1536 atoms, 24.84 Å): energies at np=1/2/4/8 agree to ~10⁻¹²
+  Ha absolute on −274.76 Ha (few ULP).
+- `Fist/regtest-mace` passes 2/2 at 2 ranks on the partitioned path.
+- Bit-identity **across** rank counts is intentionally lost (ranks now do
+  different work); run-to-run determinism at fixed np is retained.
+
+**Scaling (512-water, login node, OMP=1, 10-step MD delta):**
+
+| ranks | s/step | speedup |
+|---|---|---|
+| 1 | 7.87 | — |
+| 2 | 5.53 | 1.42× |
+| 4 | 3.24 | 2.43× |
+
+First time MPI reduces MACE wall time at all.  Sub-linear as expected: the
+one-hop halo (r_cut = 6 Å) overlaps heavily in a box only 2×r_cut wide —
+layer-0/1 work per rank scales with (slab + 2·r_cut)/L, layer-2 with 1/np.
+Efficiency improves with system size.  np=8 verified correct (energy check)
+but not timeable on the shared login node (8× ~model+workspace memory trips
+the per-user cgroup; runs killed mid-first-evaluation, exit 255) — needs a
+compute-node job for report-grade numbers.  Artifacts in
+`~/mace_validation/mpi_subgraph_20260730/`.
+
+### Build note
+
 Build: `~/cp2k-benchmarks/.../CSD3_build_scripts/cp2k_CSD3_opt_build.sh`
 with `SYMMETRIX_ROOT` set; symmetrix/sphericart are **static `.a`** so the
 binary needs no symmetrix `LD_LIBRARY_PATH` at runtime — only the standard
