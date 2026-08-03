@@ -60,7 +60,11 @@ for cell in $CELLS; do
 
     rundir="$prod_parent/seg$seg"
     proj="${pbase}_seg${seg}"
-    if [ "${SKIP_DONE:-1}" = "1" ] && [ -f "$rundir/${proj}-1.stress" ] && \
+    # EXTEND=1 (round-2): lengthen an already-finished segment to the new
+    # PROD_PS by continuing from its final checkpoint - so no skip-if-done,
+    # and the resume branch below must fire even though prod.out says ENDED.
+    if [ "${EXTEND:-0}" != "1" ] && [ "${SKIP_DONE:-1}" = "1" ] && \
+       [ -f "$rundir/${proj}-1.stress" ] && \
        grep -q "PROGRAM ENDED" "$rundir/prod.out" 2>/dev/null; then
       echo "$cell seg$seg: already complete, skipping"
       continue
@@ -100,10 +104,18 @@ for cell in $CELLS; do
 &END EXT_RESTART
 EOF
 
-    # 12 h walltime survival: continue a killed run from its last checkpoint
+    # 12 h walltime survival: continue a killed run from its last checkpoint.
+    # EXTEND=1 additionally treats a FINISHED segment's checkpoint as the
+    # input; fail closed if there is nothing to continue from, because the
+    # fallthrough would re-run the whole segment from the equil snapshot.
     INPUT=prod.inp
+    if [ "${EXTEND:-0}" = "1" ] && [ ! -f "$rundir/${proj}-1.restart" ]; then
+      echo "$cell seg$seg: EXTEND=1 but no ${proj}-1.restart - aborting" >&2
+      exit 98
+    fi
     if [ -f "$rundir/${proj}-1.restart" ] && \
-       ! grep -q "PROGRAM ENDED" "$rundir/prod.out" 2>/dev/null; then
+       { [ "${EXTEND:-0}" = "1" ] || \
+         ! grep -q "PROGRAM ENDED" "$rundir/prod.out" 2>/dev/null; }; then
       INPUT="${proj}-1.restart"
       # Counters ON keeps the step numbering continuous across the resume;
       # the initial launch keeps them OFF (production starts at step 0 from
@@ -123,10 +135,15 @@ EOF
       echo "$cell seg$seg: continuing from checkpoint $INPUT (step ${start:-0}, $remaining steps remain)"
     fi
     echo "=== production $cell seg$seg: $PROD_STEPS steps ($PROD_PS ps) ==="
+    # CP2K appends to prod.out on resume/extend, so success = the count of
+    # ENDED banners going up, not mere presence (round-1's banner is already
+    # in the file when extending)
+    ended0=$(grep -c "PROGRAM ENDED" "$rundir/prod.out" 2>/dev/null || :)
     ( cd "$rundir" && \
       srun --ntasks="$TOTAL_RANKS" --cpus-per-task=1 --hint=nomultithread \
            "$BIN" -i "$INPUT" -o prod.out )
-    if ! grep -q "PROGRAM ENDED" "$rundir/prod.out"; then
+    ended1=$(grep -c "PROGRAM ENDED" "$rundir/prod.out" 2>/dev/null || :)
+    if [ "${ended1:-0}" -le "${ended0:-0}" ]; then
       echo "$cell seg$seg: did not finish (walltime?) - resubmit to continue" >&2
       exit 1
     fi
