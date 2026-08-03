@@ -58,13 +58,14 @@ cp2k-benchmarks/
 │   ├── figS4/                 MSD / viscosity outputs
 │   └── paper_fig2/            cnnp-paper RDF replication
 │
-├── plots/                     analysis + figure generation
-│   ├── thesis_figures.py      single entry point — produces all 8 figures
-│   ├── maqao_data_analysis.py MAQAO CQA → CSVs + supplementary plots
-│   ├── csd3_tables.py         scaling tables
-│   ├── compiler_flags_table.py stand-alone copy of fig 8 (now ported)
-│   ├── thesis_figures/        rendered PDFs (output)
-│   └── scaling_csd3/          scaling-table outputs
+├── plots/                     rendered figures ONLY (no code, no data)
+│   ├── thesis_figures/        thesis figure PDFs (output)
+│   ├── scaling_csd3/          rendered scaling-table PDFs
+│   └── ...                    cheby_benchmark_figs/, maqao_plots/, etc.
+│                              (figure scripts live in scripts/benchmark_figures/,
+│                               scripts/maqao_scripts/; derived tables in
+│                               results/scaling_csd3/, results/cheby_benchmark/,
+│                               results/maqao/)
 │
 └── logs/                      SLURM .out logs
 ```
@@ -136,8 +137,8 @@ bash scripts/maqao_scripts/run_maqao_profile_slurm.sh
 ### 3. Generate the thesis figures
 
 ```bash          # pandas + scipy
-python3 plots/thesis_figures.py              # all 8 figures
-python3 plots/thesis_figures.py --only 7     # just one
+python3 scripts/benchmark_figures/thesis_figures.py              # all 8 figures
+python3 scripts/benchmark_figures/thesis_figures.py --only 7     # just one
 ```
 
 Output PDFs land in `plots/thesis_figures/`:
@@ -157,7 +158,7 @@ The MAQAO supplementary plots and the `maqao_*_table.csv` inputs used
 by fig 5 are produced by:
 
 ```bash
-python3 plots/maqao_data_analysis.py
+python3 scripts/maqao_scripts/maqao_data_analysis.py
 ```
 
 ---

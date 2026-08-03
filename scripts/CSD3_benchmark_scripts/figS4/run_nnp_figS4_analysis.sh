@@ -44,7 +44,7 @@ echo "=== plotting ==="
 # Subshell so activating the venv does not disturb the numpy/module python above.
 (
    source "$HOME/.fortran_env/bin/activate"
-   python3 "$BENCH/plots/plot_figS4.py" \
+   python3 "$BENCH/scripts/benchmark_figures/plot_figS4.py" \
       --analysis-dir "$HOME_ANALYSIS" \
       --plot-dir     "$BENCH/plots"
 )

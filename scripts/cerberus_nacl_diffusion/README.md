@@ -4,7 +4,7 @@ Project: compute diffusion coefficients of a **nonhomogeneous liquid**
 (NaCl solution: water + Na+ + Cl-) with the optimized CP2K NNP code, apply
 the **Yeh-Hummer finite-size correction**, and produce the same
 D-vs-1/L extrapolation graph that the group already made for pure water
-(the "Morawietz figS4 replication", `plots/plot_figS4.py`).
+(the "Morawietz figS4 replication", `scripts/benchmark_figures/plot_figS4.py`).
 
 ## Translation of the supervisor's comments
 
