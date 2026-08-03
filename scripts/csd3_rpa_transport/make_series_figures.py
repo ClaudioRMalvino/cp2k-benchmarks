@@ -27,6 +27,7 @@ aggregation. Cross-level outputs (figures, transport_series_summary.csv)
 go to results/transport_comparison/.
 """
 import csv
+import glob
 import os
 
 import numpy as np
@@ -90,13 +91,15 @@ ETA_WINDOW = (10.0, 18.0)
 
 PAIRING = {1.0: "rpa_gpu_cube3_1M", 2.0: "rpa_gpu_cube3_2m",
            4.0: "rpa_gpu_cube3_4m", "mp2": "mp2_anchor_cube3"}
-MADRID_RDF = os.path.join(_REPO, "results", "lammps_madrid",
-                          "conductivity", "m1.0")
+MADRID_RDF = os.path.join(_REPO, "results", "lammps_madrid", "conductivity")
 KT_KCAL = 0.0019872041 * 298.15
 MADRID_NCIP_1M = 0.026   # report value: coordination integral of the Madrid
                          # g_NaCl at 1 m to the 3.38 A barrier (verified)
 
-SERIES = {1.0: ("rpa_gpu_cube3_full_w1040_kappa.npz", "rpa_gpu_cube3_final_eta.npz"),
+# 1 m uses the uniform 5x80 truncation, not the *_full_* set (segs 4-5 there
+# run to 125/155 ps): user decision 2026-08-03, keep all three molalities
+# like-for-like until the 160 ps extension suite lands.
+SERIES = {1.0: ("rpa_gpu_cube3_5x80_w1040_kappa.npz", "rpa_gpu_cube3_final_eta.npz"),
           2.0: ("rpa_gpu_cube3_2m_5x80_w1040_kappa.npz", "rpa_gpu_cube3_2m_final_eta.npz"),
           4.0: ("rpa_gpu_cube3_4m_5x80_w1040_kappa.npz", "rpa_gpu_cube3_4m_final_eta.npz")}
 WINDOWS = {1.0: ("rpa_gpu_cube3_5x80_w1030_kappa.npz", "rpa_gpu_cube3_5x80_w1040_kappa.npz"),
@@ -230,27 +233,52 @@ def load_pairing(tag):
     return d
 
 
-def madrid_pmf_1m():
-    """Seed-averaged Madrid w(r) at 1 m (loader of make_figures.py)."""
-    import glob
-    gs, r = [], None
-    for f in sorted(glob.glob(os.path.join(MADRID_RDF, "L*_s*", "*.rdf"))):
+def madrid_pairing(mol):
+    """Seed-averaged Madrid pairing observables at one molality, from the
+    conductivity campaign's per-run LAMMPS rdf fixes (compute rdf 200 for
+    Na-Cl; columns: bin, r, g, coord). w(r) extrema use the tab:pmf windows
+    of load_pairing; n_CIP per seed is the LAMMPS running coordination
+    number interpolated at the pooled barrier radius (identical integral to
+    the CSD3 pipeline's 4 pi rho_Cl int g r^2 dr). Returns None when the
+    molality's rdf files are not synced into the repo (they exist on
+    cerberus for every conductivity run; only m1.0 was synced originally)."""
+    # dir names are m0.25 / m0.5 / m1.0 / m2.0 / m4.0 (mixed precision)
+    for pat in (f"m{mol:g}", f"m{mol:.1f}"):
+        files = sorted(glob.glob(os.path.join(MADRID_RDF, pat,
+                                              "L*_s*", "*.rdf")))
+        if files:
+            break
+    if not files:
+        return None
+    r, gs, coords = None, [], []
+    for f in files:
         dat = np.loadtxt(f, skiprows=4)
         if r is None:
             r = dat[:, 1]
         elif not np.allclose(dat[:, 1], r):
             dat = np.column_stack([dat[:, 0], r,
-                                   np.interp(r, dat[:, 1], dat[:, 2]), dat[:, 3]])
+                                   np.interp(r, dat[:, 1], dat[:, 2]),
+                                   np.interp(r, dat[:, 1], dat[:, 3])])
         gs.append(dat[:, 2])
+        coords.append(dat[:, 3])
     g = np.mean(gs, axis=0)
     w = np.full_like(g, np.nan)
     m = g > 0.02
     w[m] = -KT_KCAL * np.log(g[m])
     w -= np.nanmean(w[(r > 9.0) & (r < r.max())])
-    return r, w
+    d = {"mol": mol, "n_seeds": len(files), "r": r, "g": g, "w": w}
+    for key, lo, hi, kind in (("CIP", 2.4, 3.2, "min"), ("TS", 3.2, 4.2, "max"),
+                              ("SSIP", 4.2, 5.6, "min")):
+        mask = (r >= lo) & (r <= hi) & np.isfinite(w)
+        i = (np.argmin if kind == "min" else np.argmax)(w[mask])
+        d[f"r_{key}"], d[f"w_{key}"] = r[mask][i], w[mask][i]
+    d["dW_cip_ssip"] = d["w_CIP"] - d["w_SSIP"]
+    n_seed = np.array([np.interp(d["r_TS"], r, c) for c in coords])
+    d["n_CIP"], d["n_CIP_sem"] = n_seed.mean(), sem(n_seed)
+    return d
 
 
-def report_pairing(pair):
+def report_pairing(pair, mad_pair):
     print("\n=== Na-Cl association (CSD3 round-2 P0 products; tab:pmf "
           "windows) ===")
     print("  level      CIP (kcal/mol)   SSIP            dW_CIP-SSIP  "
@@ -262,8 +290,18 @@ def report_pairing(pair):
               f"{d['w_SSIP']:+.2f} @ {d['r_SSIP']:.2f}   {d['dW_cip_ssip']:+.2f}"
               f"        {d['n_CIP']:.3f}+-{d['n_CIP_sem']:.3f}"
               f"    {d['n_hyd_Na']:.2f}       {d['n_hyd_Cl']:.2f}")
-    print(f"  (Madrid 1 m for reference: CIP +0.11, SSIP -0.57, dW +0.68, "
-          f"n_CIP {MADRID_NCIP_1M:.3f} — report Table tab:pmf)")
+    for m in sorted(mad_pair):
+        d = mad_pair.get(m)
+        if d is None:
+            print(f"  Madrid {m:g} m  -- rdf files not synced (fetch "
+                  f"results/lammps_madrid/conductivity/m{m:g}* from cerberus)")
+            continue
+        print(f"  Madrid {m:g} m  {d['w_CIP']:+.2f} @ {d['r_CIP']:.2f}    "
+              f"{d['w_SSIP']:+.2f} @ {d['r_SSIP']:.2f}   {d['dW_cip_ssip']:+.2f}"
+              f"        {d['n_CIP']:.3f}+-{d['n_CIP_sem']:.3f}"
+              f"    (n={d['n_seeds']} runs, barrier @ {d['r_TS']:.2f} A)")
+    print(f"  (cross-check, report Table tab:pmf Madrid 1 m: CIP +0.11, "
+          f"SSIP -0.57, dW +0.68, n_CIP {MADRID_NCIP_1M:.3f})")
     print("  regression vs O'Neill 2024 (pinned from the paper): published "
           "RPA/MP2 have CIP and SSIP degenerate within ~0.2 kcal/mol and a "
           "CIP-SSIP barrier of ~1.6 kcal/mol (their Figs 3a/4b); CIP depth "
@@ -276,10 +314,13 @@ def report_pairing(pair):
           "experimental-density 37.26 A transport cells and ~0.4 ns).")
 
 
-def fig_pairing_series(pair):
+def fig_pairing_series(pair, mad_pair):
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(9.8, 4.0))
-    rM, wM = madrid_pmf_1m()
-    ax1.plot(rM, wM, color=SLATE3, lw=1.6, label="Madrid 1 mol/kg")
+    ax1.plot(mad_pair[1.0]["r"], mad_pair[1.0]["w"], color=SLATE3, lw=1.6,
+             label="Madrid 1 mol/kg")
+    if mad_pair.get(4.0) is not None:
+        ax1.plot(mad_pair[4.0]["r"], mad_pair[4.0]["w"], color=SLATE3,
+                 lw=1.3, ls="--", label="Madrid 4 mol/kg")
     ax1.plot(pair["mp2"]["r"], pair["mp2"]["w"], color=INDIGO, lw=1.4,
              ls="--", label="MP2 anchor 1 mol/kg")
     for m, color in ((1.0, CAM_BLUE), (2.0, C_CL), (4.0, C_O)):
@@ -299,8 +340,12 @@ def fig_pairing_series(pair):
                  yerr=[pair["mp2"]["n_CIP_sem"]], fmt="s", ms=6.5,
                  color=INDIGO, mew=0, elinewidth=1.0, capsize=2,
                  label="MP2 anchor")
-    ax2.plot([MOL_TO_M[1.0]], [MADRID_NCIP_1M], marker="o", ms=6.5, ls="",
-             color=SLATE3, mfc="white", mew=1.6, label="Madrid-2019")
+    mols_mad = [m for m in sorted(mad_pair) if mad_pair.get(m) is not None]
+    ax2.errorbar([MOL_TO_M[m] for m in mols_mad],
+                 [mad_pair[m]["n_CIP"] for m in mols_mad],
+                 yerr=[mad_pair[m]["n_CIP_sem"] for m in mols_mad],
+                 fmt="o-", ms=6.5, color=SLATE3, mfc="white", mew=1.6,
+                 lw=1.4, elinewidth=1.0, capsize=2, label="Madrid-2019")
     ax2.set_xlim(0, 3.9)
     ax2.set_ylim(0, 0.45)
     ax2.legend(frameon=False, fontsize=8.5, labelcolor=INK2, loc="upper left")
@@ -697,7 +742,8 @@ def main():
     report_fong(mad, rpa, mp2)
 
     pair = {k: load_pairing(tag) for k, tag in PAIRING.items()}
-    report_pairing(pair)
+    mad_pair = {m: madrid_pairing(m) for m in (0.25, 0.5, 1.0, 2.0, 4.0)}
+    report_pairing(pair, mad_pair)
 
     window_sensitivity()
     ledger()
@@ -710,7 +756,7 @@ def main():
     fig_dne_series(mad, rpa, mp2)
     fig_tna_series(mad, rpa, mp2)
     fig_eta_series(rpa_eta, mp2_eta)
-    fig_pairing_series(pair)
+    fig_pairing_series(pair, mad_pair)
     fig_fong_series(mad, rpa, mp2)
     write_summary(mad, rpa, rpa_eta, mp2, mp2_eta)
 
