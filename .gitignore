@@ -72,6 +72,9 @@ claude-notes/
 
 # NaCl transport campaign: curated analysis products (small .npz holding the
 # MSD/Onsager/GK curves behind the CSVs) + final-frame OVITO snapshots in
-# extended XYZ. Raw trajectories/restarts stay on RDS; this exception comes
-# last so it also overrides the global *.xyz rule.
+# extended XYZ. Raw trajectories/restarts stay on RDS; these exceptions come
+# last so they also override the global *.xyz rule. rpa_transport/ and
+# transport_comparison/ are the post-refactor homes of the RPA series data.
 !results/mp2_transport/**
+!results/rpa_transport/**
+!results/transport_comparison/**
