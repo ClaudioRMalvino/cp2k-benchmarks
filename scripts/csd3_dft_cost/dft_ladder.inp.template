@@ -7,18 +7,21 @@
   EXTENDED_FFT_LENGTHS T
 &END GLOBAL
 
-# On-the-fly (Born-Oppenheimer AIMD) cost ladder for liquid water at the
-# revPBE-D3 level. Every setting below is taken verbatim from the deck that
-# generated the O'Neill et al. NaCl(aq) NNP training set
+# On-the-fly (Born-Oppenheimer AIMD) cost ladder for NaCl(aq) at the
+# revPBE-D3 level. Every electronic-structure setting below is taken verbatim
+# from the deck that generated the O'Neill et al. NaCl(aq) NNP training set
 # (potentials/oneill-nacl-water-2024/data-sets/revPBE-D3/revpbe-d3_nacl.inp),
 # so this measures the cost of the SAME electronic structure the NNP was
 # fitted to - only now evaluated at every MD step instead of once per
 # training configuration.
 #
-# System size is varied ONLY through MULTIPLE_UNIT_CELL, replicating one
-# equilibrated 64-water box (192 atoms, 12.42 A cubic, ambient density).
-# That keeps composition, density and basis identical across the ladder, so
-# the fitted slope is a clean cost-vs-N scaling exponent.
+# The SYSTEM is the campaign's own NaCl(aq) cell lineage, not a water proxy:
+# rungs 1-4 replicate cube_n1 (1 NaCl + 62 H2O, 12.42 A, 0.895 mol/kg, built
+# by scripts/cerberus_nacl_diffusion/make_base_cell.py - the same builder that
+# produced every campaign cell), and rung 5 is the production cube_n3
+# configuration itself (30 NaCl + 1668 H2O, 37.26 A, 1.000 mol/kg). Molality
+# is constant across the fitted rungs, so the slope is a clean cost-vs-N
+# scaling exponent, and the headline rung is the literal production cell.
 
 &FORCE_EVAL
   METHOD Quickstep
@@ -79,7 +82,7 @@
   &END DFT
   &SUBSYS
     &CELL
-      ABC 12.419999744463157 12.419999744463157 12.419999744463157
+      ABC [angstrom] __ABC__ __ABC__ __ABC__
       PERIODIC XYZ
       MULTIPLE_UNIT_CELL __NREP__
     &END CELL
@@ -92,11 +95,20 @@
       BASIS_SET TZV2P-GTH-q6
       POTENTIAL GTH-PBE-q6
     &END KIND
+    &KIND Na
+      BASIS_SET TZV2P-GTH-q9
+      POTENTIAL GTH-PBE-q9
+    &END KIND
+    &KIND Cl
+      BASIS_SET TZV2P-GTH-q7
+      POTENTIAL GTH-PBE-q7
+    &END KIND
     &TOPOLOGY
-      COORD_FILE_NAME __COORD__
-      COORD_FILE_FORMAT XYZ
       MULTIPLE_UNIT_CELL __NREP__
     &END TOPOLOGY
+    &COORD
+      @INCLUDE __COORD__
+    &END COORD
   &END SUBSYS
 &END FORCE_EVAL
 

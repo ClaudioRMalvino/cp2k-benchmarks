@@ -8,17 +8,20 @@ This supplies the top rungs of the report's cost ladder. The three NNP rungs
 below them are already measured (master CP2K 4.0473 s/step, optimised CPU
 0.2554, GPU 0.1467, all on the same 5064-atom cell).
 
-## Why a ladder and not one big run
+## Why a ladder at all, when rung 5 is the answer
 
 The reference electronic structure was only ever run on **160–192 atom** cells
 (that is what the training set is made of). The production cells are
-**5064 / 4952 / 4748 atoms** — about 30× larger. So the honest comparison has
-two multipliers: cost per step at fixed size, *and* the scaling penalty on the
-way up to production size. The NNP is O(N) and pays only the first; DFT and
-RPA pay both.
+**5064 / 4952 / 4748 atoms** — about 30× larger. So the cost gap has two
+multipliers: cost per step at fixed size, *and* the scaling penalty on the way
+up to production size. The NNP is O(N) and pays only the first; DFT and RPA
+pay both.
 
-Rather than assume an exponent, we measure it: four sizes, same composition,
-same density, same basis, same node layout, fit `s/step ∝ N^α`, extrapolate.
+Rung 5 measures the production cell directly, so the headline number needs no
+extrapolation. Rungs 1–4 still earn their place: they measure the exponent
+`s/step ∝ N^α`, which (a) corroborates rung 5 if the fit extrapolates onto it,
+(b) shows *why* the gap widens with system size rather than just asserting it,
+and (c) gives the cost at the other concentrations without rerunning them.
 
 ## What is run
 
@@ -33,22 +36,32 @@ System size is varied **only** through `MULTIPLE_UNIT_CELL`, replicating one
 equilibrated 64-water box (192 atoms, 12.42 Å cubic, ambient density, frame 1
 of their training trajectory):
 
-| rung | replication | cell (Å) | atoms | waters | valence e⁻ | MD steps |
-|---|---|---|---|---|---|---|
-| 1 | `1 1 1` | 12.42 cubic | 192 | 64 | 512 | 11 |
-| 2 | `2 1 1` | 24.84×12.42×12.42 | 384 | 128 | 1024 | 11 |
-| 3 | `2 2 1` | 24.84×24.84×12.42 | 768 | 256 | 2048 | 11 |
-| 4 | `2 2 2` | 24.84 cubic | 1536 | 512 | 4096 | 11 |
-| **5** | `3 3 3` | **37.26 cubic** | **5184** | 1728 | **13824** | 4 |
+The system is **NaCl(aq) throughout** — the campaign's own cell lineage, the
+same one used for the MP2 anchor, the Madrid comparison and the RPA
+production runs. There is no pure-water proxy anywhere in the ladder.
 
-**Rung 5 is the apples-to-apples rung.** 12.42 × 3 = 37.2600 Å is *exactly* the
-production cube3 cell — cube3 was built as a 3× multiple of this box — and its
-1728 waters carry **13824 valence electrons, identical to the production cell**
-(1668 H₂O × 8 + 30 Na × 9 + 30 Cl × 7 = 13824). Same box, same density, same
-electron count, so it measures the production-size AIMD cost **directly**
-rather than extrapolating to it. Rungs 1–4 remain the scaling evidence
-underneath it, and provide the fitted exponent as an independent cross-check
-on rung 5.
+| rung | cell source | replication | cell (Å) | atoms | composition | mol/kg | MD steps |
+|---|---|---|---|---|---|---|---|
+| 1 | `cube_n1` | `1 1 1` | 12.42 cubic | 188 | 1 NaCl + 62 H₂O | 0.895 | 11 |
+| 2 | `cube_n1` | `2 1 1` | 24.84×12.42×12.42 | 376 | 2 NaCl + 124 H₂O | 0.895 | 11 |
+| 3 | `cube_n1` | `2 2 1` | 24.84×24.84×12.42 | 752 | 4 NaCl + 248 H₂O | 0.895 | 11 |
+| 4 | `cube_n1` | `2 2 2` | 24.84 cubic | 1504 | 8 NaCl + 496 H₂O | 0.895 | 11 |
+| **5** | **`cube_n3` (production)** | `1 1 1` | **37.26 cubic** | **5064** | **30 NaCl + 1668 H₂O** | **1.000** | 4 |
+
+**Rung 5 is the headline: it is the production cell itself.** Not a
+size-matched proxy — the very `cube_n3.xyz` coordinates the RPA campaign
+started from, at 37.26 Å and 1 mol/kg. So the reported on-the-fly DFT cost is
+*measured on the system under study*, exactly as the NNP rungs are, with no
+extrapolation and no system substitution.
+
+Rungs 1–4 exist only to supply a scaling exponent as an independent
+cross-check on rung 5. They replicate `cube_n1` (built by
+`scripts/cerberus_nacl_diffusion/make_base_cell.py`, the same builder that
+produced `cube_n2`/`cube_n3`), which holds molality exactly constant at
+0.895 mol/kg across the fit — replication cannot change molality — so the
+fitted slope is pure size-scaling with no composition drift. The 0.895 vs
+1.000 mol/kg difference between the fitted rungs and rung 5 shifts the
+electron count by ~0.3% and is irrelevant to timing.
 
 Step 1 pays for the ATOMIC-guess SCF and is discarded; the reported
 `s_per_step` is the mean (± sd) over the remaining steady-state steps, taken

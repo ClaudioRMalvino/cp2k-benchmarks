@@ -2,10 +2,10 @@
 """
 Fit the measured on-the-fly DFT cost ladder and build the full cost table.
 
-Reads results/dft_cost/dft_ladder_timings.csv (four measured rungs: 192, 384,
-768, 1536 atoms of liquid water at revPBE-D3, the level the NNP was trained
-to), fits cost per MD step against system size in log-log space, and
-extrapolates to the production cells (5064 / 4952 / 4748 atoms).
+Reads results/dft_cost/dft_ladder_timings.csv (measured rungs: 188, 376, 752,
+1504 and 5064 atoms of NaCl(aq) at revPBE-D3, the level the NNP was trained
+to), fits cost per MD step against system size in log-log space, and cross-
+checks that fit against the directly-measured production cell (rung 5).
 
 The output table places that extrapolation alongside the three MEASURED NNP
 rungs (master CP2K, optimised CPU, GPU) and the analytic RI-RPA estimate, and
@@ -88,18 +88,40 @@ def main():
     for r in rows:
         latest[int(r["natoms"])] = r
     rows = [latest[k] for k in sorted(latest)]
-    if len(rows) < 3:
-        raise SystemExit(f"need >=3 rungs to fit, have {len(rows)}")
 
-    alpha, a, r2, n, t = fit_ladder(rows)
-    print(f"=== measured on-the-fly DFT ladder (revPBE-D3, TZV2P-GTH, 1200 Ry) ===")
+    # rung 5 IS the production cell - keep it out of the fit so the fitted
+    # exponent stays an INDEPENDENT cross-check on the direct measurement
+    prod_row = latest.get(N_PROD)
+    fit_rows = [r for r in rows if int(r["natoms"]) != N_PROD]
+    if len(fit_rows) < 3:
+        raise SystemExit(f"need >=3 sub-production rungs to fit, have {len(fit_rows)}")
+
+    alpha, a, r2, n, t = fit_ladder(fit_rows)
+    print("=== measured on-the-fly DFT ladder "
+          "(NaCl(aq), revPBE-D3, TZV2P-GTH, 1200 Ry) ===")
     for ni, ti in zip(n, t):
         print(f"  {int(ni):5d} atoms  {ti:10.3f} s/step")
-    print(f"\n  fit: s/step = {a:.3e} * N^{alpha:.3f}   (log-log R^2 = {r2:.4f})")
+    print(f"\n  fit (sub-production rungs only): "
+          f"s/step = {a:.3e} * N^{alpha:.3f}   (log-log R^2 = {r2:.4f})")
 
-    dft_prod = a * N_PROD**alpha
-    print(f"  extrapolated to {N_PROD} atoms: {dft_prod:,.0f} s/step "
-          f"= {dft_prod/3600:.2f} h per MD step")
+    dft_fit = a * N_PROD**alpha
+    if prod_row:
+        dft_prod = float(prod_row["s_per_step"])
+        sd = float(prod_row.get("sd_s") or 0.0)
+        basis_txt = "MEASURED on the production cube_n3 cell"
+        print(f"\n  *** {N_PROD} atoms, 37.26 A, 1 mol/kg: "
+              f"{dft_prod:,.0f} +- {sd:,.0f} s/step "
+              f"= {dft_prod/3600:.2f} h per MD step  [MEASURED] ***")
+        print(f"  fit extrapolated to the same point: {dft_fit:,.0f} s/step "
+              f"({dft_fit/dft_prod:.2f}x the measurement)")
+        if not 0.5 < dft_fit / dft_prod < 2.0:
+            print("  WARNING: fit and direct measurement disagree by >2x - "
+                  "check SCF iteration counts across rungs")
+    else:
+        dft_prod = dft_fit
+        basis_txt = "extrapolated from sub-production rungs"
+        print(f"\n  no production rung yet; extrapolated to {N_PROD} atoms: "
+              f"{dft_prod:,.0f} s/step = {dft_prod/3600:.2f} h per MD step")
 
     # RPA, analytic
     scale = N_PROD / RPA_REF_ATOMS
@@ -118,7 +140,7 @@ def main():
     # assemble the table
     table = []
     table.append(("On-the-fly RPA (analytic)", rpa_prod, "node", "infeasible: memory"))
-    table.append(("On-the-fly revPBE-D3 (extrapolated)", dft_prod, "node", "measured ladder + fit"))
+    table.append(("On-the-fly revPBE-D3 (AIMD)", dft_prod, "node", basis_txt))
     for label, (sps, unit) in NNP.items():
         table.append((label, sps, unit, "measured"))
 
