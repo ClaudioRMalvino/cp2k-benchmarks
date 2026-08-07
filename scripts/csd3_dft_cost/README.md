@@ -33,17 +33,30 @@ System size is varied **only** through `MULTIPLE_UNIT_CELL`, replicating one
 equilibrated 64-water box (192 atoms, 12.42 Å cubic, ambient density, frame 1
 of their training trajectory):
 
-| rung | replication | atoms | waters |
-|---|---|---|---|
-| 1 | `1 1 1` | 192 | 64 |
-| 2 | `2 1 1` | 384 | 128 |
-| 3 | `2 2 1` | 768 | 256 |
-| 4 | `2 2 2` | 1536 | 512 |
+| rung | replication | cell (Å) | atoms | waters | valence e⁻ | MD steps |
+|---|---|---|---|---|---|---|
+| 1 | `1 1 1` | 12.42 cubic | 192 | 64 | 512 | 11 |
+| 2 | `2 1 1` | 24.84×12.42×12.42 | 384 | 128 | 1024 | 11 |
+| 3 | `2 2 1` | 24.84×24.84×12.42 | 768 | 256 | 2048 | 11 |
+| 4 | `2 2 2` | 24.84 cubic | 1536 | 512 | 4096 | 11 |
+| **5** | `3 3 3` | **37.26 cubic** | **5184** | 1728 | **13824** | 4 |
 
-11 MD steps per rung: step 1 pays for the ATOMIC-guess SCF and is discarded;
-the reported `s_per_step` is the mean over the last 10 steady-state steps,
-taken from the `.ener` UsedTime column — the same timing methodology used for
-every NNP number in this campaign.
+**Rung 5 is the apples-to-apples rung.** 12.42 × 3 = 37.2600 Å is *exactly* the
+production cube3 cell — cube3 was built as a 3× multiple of this box — and its
+1728 waters carry **13824 valence electrons, identical to the production cell**
+(1668 H₂O × 8 + 30 Na × 9 + 30 Cl × 7 = 13824). Same box, same density, same
+electron count, so it measures the production-size AIMD cost **directly**
+rather than extrapolating to it. Rungs 1–4 remain the scaling evidence
+underneath it, and provide the fitted exponent as an independent cross-check
+on rung 5.
+
+Step 1 pays for the ATOMIC-guess SCF and is discarded; the reported
+`s_per_step` is the mean (± sd) over the remaining steady-state steps, taken
+from the `.ener` UsedTime column — the same timing methodology used for every
+NNP number in this campaign. Rung 5 gets only 4 steps because each one costs
+hours. The `.ener` file is written incrementally, so a rung that hits its wall
+limit still leaves usable per-step timings on disk; a TIMEOUT loses the CSV
+row, not the measurement.
 
 Binary: the **pristine upstream master build** (757bb76a80), the same one that
 produced the master NNP reference, on the same icelake 1-node / 76-rank
@@ -56,10 +69,16 @@ sbatch --time=01:00:00 sbatch_dft_ladder.sh 1     # 192 atoms
 sbatch --time=02:00:00 sbatch_dft_ladder.sh 2     # 384
 sbatch --time=04:00:00 sbatch_dft_ladder.sh 3     # 768
 sbatch --time=12:00:00 sbatch_dft_ladder.sh 4     # 1536
+sbatch --time=12:00:00 sbatch_dft_ladder.sh 5     # 5184 = production cell
 
 source ~/.fortran_env/bin/activate
 python analyze_dft_ladder.py
 ```
+
+Rung 5 is the memory-risky one: `FULL_ALL` builds a dense matrix over ~69,000
+basis functions. If it OOMs on one node, rerun it across 2–4 nodes and report
+node-hours with a parallel-efficiency caveat — but prefer the single-node
+result, since that is what makes it directly comparable to the NNP rungs.
 
 Results land in `results/dft_cost/dft_ladder_timings.csv` (raw rungs) and
 `dft_cost_summary.csv` (fitted extrapolation + full cost table).
