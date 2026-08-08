@@ -3,8 +3,8 @@
 #SBATCH -A NIKIFORAKIS-CSC-FUNDS-SL3-CPU
 #SBATCH -p icelake
 #SBATCH --nodes=1
-#SBATCH --ntasks=19
-#SBATCH --cpus-per-task=4
+#SBATCH --ntasks=76
+#SBATCH --cpus-per-task=1
 #SBATCH --mail-type=FAIL
 #SBATCH --output=/home/crm98/cp2k-benchmarks/logs/dft_ladder_%j.out
 
@@ -23,16 +23,25 @@
 # master binary (757bb76a80) as the master NNP reference, so DFT and NNP
 # numbers are directly comparable.
 #
-# LAYOUT IS HYBRID (19 MPI ranks x 4 OpenMP threads = 76 cores), not 76 pure
-# MPI ranks. Pure MPI deadlocked the 5064-atom rung: job 33128702 spent 6 h
-# 25 min inside transfer_rs2pw_distributed collocating the core density and
-# never reached an SCF iteration, because a ~776^3 realspace grid split 76 ways
-# gives each rank a slab far thinner than the collocation halo. Four times
-# fewer, four times fatter slabs fixes the ratio. The same layout is used on
-# EVERY rung - the fitted exponent is only clean if the layout is common-mode,
-# and 19 ranks also suits the small rungs better than 76 did (10 atoms/rank at
-# n=188 rather than 2.5). Rank/thread split and FFT plan strategy change no
-# computed number; the accuracy settings the NNP was fitted to are untouched.
+# LAYOUT: 76 pure-MPI ranks on one node, deliberately - that is exactly the
+# layout the NNP reference rungs were measured on (master 4.0473 s/step,
+# dhruv-cell-list 0.2554 s/step, both 1 node / 76 ranks), and the ladder only
+# means anything if the DFT and NNP numbers describe the same machine
+# footprint. Consistency with what we are comparing against beats internal
+# consistency with rung 5.
+#
+# RUNG 5 IS NOT SUBMITTED THROUGH THIS PATH. The 5064-atom cell hangs before
+# the first SCF iteration - job 33128702 burned 6 h 25 min at 76x1 with every
+# rank inside transfer_rs2pw_distributed collocating the core density, and the
+# 1 h probes 33170265 / 33170266 reproduced it exactly at 19 ranks x 4 threads
+# and again with a replicated realspace grid. Three layouts, identical stall,
+# so it is not a slab/halo ratio. It is tracked separately; rungs 1-4 carry the
+# extrapolation, which is what the cost argument needs.
+#
+# FFTW plans with ESTIMATE rather than MEASURE: MEASURE times trial plans for
+# every FFT size, and on the larger rungs that one-off charge lands inside the
+# handful of steps being timed. ESTIMATE is CP2K's own default. Neither
+# setting changes a computed number, and no accuracy setting is touched.
 set -euo pipefail
 
 # The ladder is NaCl(aq) throughout - the campaign's own cell lineage, not a
@@ -58,7 +67,7 @@ case "$RUNG" in
   1) NREP="1 1 1"; NAT=188  ; STEPS=11; ABC=12.4200; COORD="$ROOT/cube_n1_equil.xyz"; MOL=0.895 ;;
   2) NREP="2 1 1"; NAT=376  ; STEPS=11; ABC=12.4200; COORD="$ROOT/cube_n1_equil.xyz"; MOL=0.895 ;;
   3) NREP="2 2 1"; NAT=752  ; STEPS=11; ABC=12.4200; COORD="$ROOT/cube_n1_equil.xyz"; MOL=0.895 ;;
-  4) NREP="2 2 2"; NAT=1504 ; STEPS=11; ABC=12.4200; COORD="$ROOT/cube_n1_equil.xyz"; MOL=0.895 ;;
+  4) NREP="2 2 2"; NAT=1504 ; STEPS=6 ; ABC=12.4200; COORD="$ROOT/cube_n1_equil.xyz"; MOL=0.895 ;;
   5) NREP="1 1 1"; NAT=5064 ; STEPS=3 ; ABC=37.2600; COORD="$ROOT/cube_n3_equil.xyz"; MOL=1.000 ;;
   *) echo "rung must be 1-5" >&2; exit 2 ;;
 esac

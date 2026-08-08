@@ -7,38 +7,47 @@
 #SBATCH --mail-type=FAIL
 #SBATCH --output=/home/crm98/cp2k-benchmarks/logs/dft_probe_%j.out
 
-# Short probe for the 5064-atom (37.26 A) rung of the on-the-fly DFT ladder.
+# Diagnostic probe for the 5064-atom (37.26 A) rung of the on-the-fly DFT
+# ladder, which will not start its SCF.
 #
-# THE PROBLEM IT DIAGNOSES: job 33128702 ran 6 h 25 min on 76 pure-MPI ranks
-# and never printed a single SCF iteration. A gdb backtrace put every rank in
+# WHAT IS KNOWN SO FAR
+#   33128702  76 ranks x 1 thread            6 h 25 min, zero SCF iterations
+#   33170265  19 ranks x 4 threads           1 h,        zero SCF iterations
+#   33170266  19 x 4, RS_GRID REPLICATED     1 h,        zero SCF iterations
+# A gdb backtrace of 33128702 put every rank in
 #     qs_forces -> qs_energies_init_hamiltonians -> qs_env_update_s_mstruct
 #     -> calculate_rho_core_c1d_gs -> transfer_rs2pw_distributed -> mp_waitany
-# i.e. stuck in the realspace->planewave halo exchange for the core density,
-# before the SCF even starts. The node was not short of memory (80 GB of
-# 502 GB used), so this is communication, not capacity.
+# i.e. inside the realspace->planewave transfer of the core density, before the
+# SCF. It is not memory (80 GB of 502 GB used on the node) and it is not the
+# FULL_ALL preconditioner, which the code has not reached.
 #
-# THE HYPOTHESIS: at 1200 Ry the fine realspace grid is roughly 776^3. Split
-# over 76 ranks that is ~10 planes of slab per rank, while the collocation
-# halo (set by the Gaussian radii, which EPS_DEFAULT 1e-12 / EPS_PGF_ORB 1e-14
-# make generous) is far wider than 10 planes. Every rank then exchanges many
-# times its own slab with many neighbours and the transfer degenerates. Fewer,
-# fatter slabs should fix it - hence MPI x OpenMP instead of pure MPI.
+# The obvious slab-vs-halo explanation does not survive: three rank/thread
+# layouts and a replicated grid all stall identically, and CP2K's multigrid
+# puts the diffuse (large-radius) Gaussians on the COARSE grids, so the fine
+# grid never sees the 14.85 bohr radius that EPS_PGF_ORB 1e-14 implies for the
+# most diffuse O function. Something else is wrong, so this probe stops
+# guessing and samples the stack live.
 #
-# Variants:
-#   base        - hybrid ranks x threads, deck otherwise untouched
-#   replicated  - additionally force &RS_GRID DISTRIBUTION_TYPE REPLICATED, so
-#                 the halo exchange becomes a plain reduction over full grids
-#                 (~3.7 GB per rank at 19 ranks = ~70 GB, comfortable)
+# WHAT THIS RUN DOES DIFFERENTLY
+#   - srun is wrapped in `timeout` so the reporting section below always runs.
+#     The 1 h probes above were killed at the wall mid-srun and printed nothing,
+#     which is why their diagnosis had to be dug out of the run directory.
+#   - PRINT_LEVEL MEDIUM, so CP2K prints the grid tables (level sizes, cutoffs,
+#     distribution) before it reaches the stall - turning the grid geometry
+#     from an estimate into a measurement.
+#   - two gdb backtraces of a live rank, at 8 and 20 minutes, so we see whether
+#     it is stuck at one point or grinding forward.
 #
-# Accuracy settings (cutoff, EPS_*, XC, basis, D3) are NOT touched by any
-# variant: those define the level of theory the NNP was fitted to. Rank/thread
-# layout and grid distribution are solver bookkeeping and change no number.
+# Accuracy settings (cutoff, EPS_*, XC, basis, D3) are untouched: those define
+# the level of theory the NNP was fitted to. Layout, FFT planning and print
+# level change no computed number.
 #
-#   sbatch --ntasks=19 --cpus-per-task=4 sbatch_dft_probe.sh 19 4 base
+#   sbatch --ntasks=19 --cpus-per-task=4 sbatch_dft_probe.sh 19 4 base 2700
 set -euo pipefail
-RANKS=${1:?usage: sbatch_dft_probe.sh <ranks> <threads> <base|replicated>}
+RANKS=${1:?usage: sbatch_dft_probe.sh <ranks> <threads> <base|replicated> [run_seconds]}
 THREADS=${2:?}
 VARIANT=${3:-base}
+RUNSECS=${4:-2700}
 
 TDIR=/home/crm98/cp2k-benchmarks/scripts/csd3_dft_cost
 ADIR=/home/crm98/cp2k-benchmarks/scripts/csd3_nacl_mp2_anchor
@@ -53,7 +62,7 @@ COORD="$ROOT/cube_n3_equil.xyz"
 RUNDIR="$ROOT/probe_${RANKS}x${THREADS}_${VARIANT}"
 proj="nacl_revpbe_d3_probe"
 
-echo "node: $(hostname)  layout: ${RANKS} ranks x ${THREADS} threads = $((RANKS*THREADS)) cores  variant: $VARIANT"
+echo "node: $(hostname)  layout: ${RANKS} ranks x ${THREADS} threads = $((RANKS*THREADS)) cores  variant: $VARIANT  run_seconds: $RUNSECS"
 [ -f "$COORD" ] || { echo "FATAL: missing $COORD"; exit 6; }
 mkdir -p "$RUNDIR"; rm -f "$RUNDIR/$proj"* "$RUNDIR/probe.out"
 
@@ -65,9 +74,9 @@ sed -e "s|__PROJECT__|$proj|" \
     -e "s|__COORD__|$COORD|" \
     "$TDIR/dft_ladder.inp.template" > "$RUNDIR/probe.inp"
 
-# MEASURE plans every FFT size by timing trials; at ~776^3 that is a large
-# one-off charge landing inside the very step we are trying to time.
 sed -i 's|^  FFTW_PLAN_TYPE MEASURE$|  FFTW_PLAN_TYPE ESTIMATE|' "$RUNDIR/probe.inp"
+sed -i 's|^  PRINT_LEVEL LOW$|  PRINT_LEVEL MEDIUM|' "$RUNDIR/probe.inp"
+grep -q "PRINT_LEVEL MEDIUM" "$RUNDIR/probe.inp" || { echo "FATAL: PRINT_LEVEL patch did not apply"; exit 9; }
 
 if [ "$VARIANT" = replicated ]; then
   sed -i 's|^      CUTOFF 1200$|      CUTOFF 1200\n      \&RS_GRID\n        DISTRIBUTION_TYPE REPLICATED\n      \&END RS_GRID|' "$RUNDIR/probe.inp"
@@ -76,17 +85,37 @@ fi
 
 cd "$RUNDIR"
 t0=$SECONDS
-srun --ntasks="$RANKS" --cpus-per-task="$THREADS" --hint=nomultithread \
-     "$BIN" -i probe.inp -o probe.out || echo "(srun exited non-zero - probe walls out by design)"
+timeout "$RUNSECS" srun --ntasks="$RANKS" --cpus-per-task="$THREADS" --hint=nomultithread \
+     "$BIN" -i probe.inp -o probe.out &
+srun_pid=$!
+
+# sample a live rank twice: same frame at both = stuck, different = grinding
+sample() {
+  local tag=$1
+  local p
+  p=$(pgrep -u "$USER" -x cp2k.psmp | head -1 || true)
+  echo; echo "=== STACK SAMPLE ($tag, t+$((SECONDS - t0))s, pid=${p:-none}) ==="
+  [ -n "${p:-}" ] || { echo "no cp2k.psmp rank found"; return; }
+  timeout 120 gdb -p "$p" -batch -ex "bt 14" 2>/dev/null | grep -E "^#" | head -14 || echo "(gdb unavailable)"
+  echo "--- probe.out size: $(stat -c %s probe.out 2>/dev/null || echo 0) bytes"
+}
+( sleep 480;  sample "8 min"  ) &
+( sleep 1200; sample "20 min" ) &
+
+wait "$srun_pid" || echo "(srun stopped: walled out or timed out - expected)"
 wall=$((SECONDS - t0))
 
-echo "=== PROBE RESULT (${RANKS}x${THREADS} $VARIANT, wall ${wall}s) ==="
-scf_iters=$(grep -cE "OT (DIIS|SD) " probe.out 2>/dev/null || echo 0)
-echo "SCF iterations printed : $scf_iters"
+echo; echo "=== PROBE RESULT (${RANKS}x${THREADS} $VARIANT, wall ${wall}s) ==="
+echo "SCF iterations printed : $(grep -cE 'OT (DIIS|SD) ' probe.out 2>/dev/null || echo 0)"
 echo "SCF converged banners  : $(grep -c 'SCF run converged' probe.out 2>/dev/null || echo 0)"
+echo; echo "--- grid geometry as CP2K actually built it ---"
+grep -E "^ (GRID|MGRID|QS)\|" probe.out 2>/dev/null | head -30 || echo "(no grid tables printed)"
+echo; echo "--- realspace grid distribution ---"
+grep -iE "RS_GRID|distribut" probe.out 2>/dev/null | head -20 || true
 if [ -f "$proj-1.ener" ]; then
-  echo "--- .ener (last col = UsedTime per step) ---"; cat "$proj-1.ener"
+  echo; echo "--- .ener (last col = UsedTime per step) ---"; cat "$proj-1.ener"
 else
-  echo "no .ener - did not complete a single MD step"
+  echo; echo "no .ener - did not complete a single MD step"
 fi
-echo "--- tail ---"; tail -6 probe.out 2>/dev/null || true
+echo; echo "--- last 10 non-blank lines of probe.out ---"
+grep -v '^ *$' probe.out 2>/dev/null | tail -10 || true
