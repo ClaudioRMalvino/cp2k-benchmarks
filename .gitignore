@@ -78,3 +78,9 @@ claude-notes/
 !results/mp2_transport/**
 !results/rpa_transport/**
 !results/transport_comparison/**
+
+# Curated write-ups for the OpenMP head-to-head: the provenance record and the
+# cp2k PR text. Markdown only - the raw sweeps are already covered by the
+# results/**/*.csv rule, and the figure stays regenerable from those CSVs via
+# scripts/benchmark_figures/plot_omp_headtohead.py rather than being committed.
+!results/cp2k_omp_headtohead/*.md
