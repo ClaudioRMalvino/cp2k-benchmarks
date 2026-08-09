@@ -105,10 +105,6 @@ unmodified baseline binary, same input, both MD frames:
   **max_abs = 0.000e+00, max_rel = 0.000e+00**. Bit-identical, not merely within
   1e-14.
 
-Regtest wall times fall 7 → 4 → 3 → 3 minutes across OMP 1/2/4/8, confirming the
-threads are doing real work rather than the tests passing because threading is
-inert.
-
 ### Scope and limitations
 
 Parallelism moves from symmetry-function groups to atomic centres, so a case
