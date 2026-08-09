@@ -1,9 +1,15 @@
-# Draft PR body — cp2k/cp2k, branch `ClaudioRMalvino/cp2k:omp-atom-bitexact-v2`
+# Draft PR body — cp2k/cp2k, branch `ClaudioRMalvino/cp2k:nnp-omp-atom-loop`
 
 Open as a **DRAFT** PR (Dhruv's request: "rebase it to the current cp2k master
 and open a draft pr to cp2k. I can check over it there and comment in the open
 pr if there are any issues"). Base `cp2k/cp2k:master`, head
-`ClaudioRMalvino/cp2k:omp-atom-bitexact-v2`.
+`ClaudioRMalvino/cp2k:nnp-omp-atom-loop`.
+
+Compare URL:
+`https://github.com/cp2k/cp2k/compare/master...ClaudioRMalvino:cp2k:nnp-omp-atom-loop`
+
+PR title (GitHub prefills this from the single commit's subject, so it should
+need no typing): `NNP: Move OpenMP threading to the atom loop`
 
 Attach `plots/omp_headtohead/omp_headtohead_scaling.png` where the text points
 at it — GitHub will not render a repo-relative path from a fork.
@@ -11,8 +17,6 @@ at it — GitHub will not render a repo-relative path from a fork.
 Everything below the line is the PR body.
 
 ---
-
-## NNP: move the OpenMP threading up to the atom loop (bit-exact)
 
 Follow-up to #5295. That PR made the NNP kernel scale under MPI; this one makes
 it scale under OpenMP as well, by threading over atomic centres instead of over
