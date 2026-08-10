@@ -46,7 +46,7 @@ thread dimension so threads no longer share scratch space;
 `motion/helium_interactions.F` passes the shared networks explicitly — that path
 stays serial and is numerically untouched.
 
-Five files, 485 insertions, 559 deletions.
+Five files, 504 insertions, 568 deletions.
 
 ### Why
 
