@@ -284,57 +284,226 @@ Please do not write any of these:
 
 ---
 
-## 8. Cost argument (status: 3 of 5 rungs, one in flight)
+## 8. Timing, cost and energy
 
-From `scripts/csd3_dft_cost/analyze_dft_ladder.py` over
-`results/dft_cost/dft_ladder_timings.csv`:
+Everything needed to build the cost tables. All figures are measured on
+CSD3 unless explicitly marked as an extrapolation or an estimate.
 
-| rung | atoms | s/step | status |
-|---|---|---|---|
-| 1 | 188 | 35.502 ± 0.490 | measured |
-| 2 | 376 | 75.648 ± 1.011 | measured |
-| 3 | 752 | 250.244 ± 10.719 | measured |
-| 4 | 1504 | — | **in flight** (job 33374342, `icelake-himem`) |
-| 5 | 5064 | — | **not obtainable** — see below |
+Regenerate with:
 
-Current fit on rungs 1–3: `s/step = 2.065e-2 · N^1.409`, log-log R² = 0.983,
-extrapolating to **3,414 s/step = 0.95 h per MD step** at 5064 atoms.
+```bash
+source ~/.fortran_env/bin/activate
+python scripts/csd3_dft_cost/analyze_dft_ladder.py        # DFT ladder + fits
+python scripts/csd3_rpa_transport/energy_cost_ledger.py   # consumption + kWh
+```
 
-**Do not quote that exponent as well determined.** The local exponent between
-rungs 1→2 is 1.09 and between 2→3 is 1.73 — the cost is *steepening*, so a
-single power law through three points understates the extrapolation. Rung 4
-is precisely the lever arm that would pin this down, which is why it is
-being re-run. **Update this section once rung 4 lands.**
+### 8.1 Engine speedup — master vs optimised, measured
 
-Rung 4 originally failed on 2026-08-09 (job 33197088): it converged the
-step-0 wavefunction cleanly (E = −9065.617286 Ha) and was then OOM-killed on
-the first force evaluation — 3.73 GB/rank × 76 ranks ≈ 283 GB against a
-250 GB icelake node. It has been resubmitted to `icelake-himem` (same Ice
-Lake silicon, same 76×1 layout, 502 GB). Rung 3 is being re-run on himem
-alongside it as a cross-partition timing control.
+Job 32415445 (`mp2t_master_ref`) against job 32415444 (the optimised smoke).
+Both on **the same physical node, cpu-q-102, all 76 cores, not overlapping**
+(smoke 19:38:33–19:39:47, master 19:54:27–21:02:16, and `sacct` confirms no
+other job on that node in the window).
 
-Rung 5 (the 5064-atom production cell) stalls before the first SCF iteration
-in the realspace→planewave halo exchange. Four independent attempts across
-three layouts (76×1, 19×4, and a replicated realspace grid) reproduce it
-identically. It is a real CP2K limit at this cell size, not a misconfigured
-run, and the extrapolation from rungs 1–4 is what carries the argument.
+| | optimised (PR #5295) | master 2026.1 |
+|---|---|---|
+| binary | `dhruv-cell-list` | pristine `757bb76a80` |
+| steps | 200 | 1000 |
+| s/step (ledger) | 0.2554 | **4.0473** |
+| s/step (steady state, recomputed) | 0.2438 ± 0.0114 | 4.0196 ± 0.0233 |
 
-Campaign cost comparison (2.4 M MD steps):
+**Speedup 15.85×** (16.49× on the steady-state recomputation).
 
-| | cost |
+The physics cross-check is exact — step-0 potential energy on identical
+coordinates is **−30777.866694782 Ha** and conserved quantity
+**−30770.651581044 Ha** in *both* binaries, to every printed digit. That is
+what licenses treating them as the same calculation at different speeds.
+
+Two caveats to state:
+
+- the master deck is NVT/CSVR while production is NVE (otherwise identical —
+  same `cube_n3.xyz`, same committee, same cell). A CSVR thermostat is a
+  global velocity rescale, so the cost impact is negligible, but this is not
+  a byte-identical deck and should not be claimed as one;
+- the 68/8 MIXED rank split was tuned on the PR binary and never re-tuned for
+  master. That biases *against* master, so 15.85× is if anything conservative.
+
+### 8.2 On-the-fly DFT cost ladder — COMPLETE, 4 rungs
+
+NaCl(aq), revPBE-D3, TZV2P-GTH, 1200 Ry, 1 node / 76 ranks × 1 thread,
+pristine master binary. `results/dft_cost/dft_ladder_timings.csv`.
+
+| rung | atoms | s/step | sd | partition | job |
+|---|---|---|---|---|---|
+| 1 | 188 | 35.502 | 0.490 | icelake | 33197085 |
+| 2 | 376 | 75.648 | 1.011 | icelake | 33197086 |
+| 3 | 752 | 250.244 | 10.719 | icelake | 33197087 |
+| 3′ | 752 | 242.432 | 10.493 | icelake-himem | 33374344 |
+| 4 | 1504 | 785.849 | 9.042 | icelake-himem | 33374342 |
+
+Rung 3 was measured twice because rung 4 needed a different partition (see
+below). The two agree to **+3.1%, t = 1.65 — not significant**, so the
+partitions are timing-equivalent and rung 4 fits alongside rungs 1–3 without
+an asterisk. The analyzer uses the last row per atom count, i.e. the himem
+value, which is the consistent choice since rung 4 is also himem.
+
+**The local exponent settles rather than steepening:**
+
+| range | exponent |
 |---|---|
-| On-the-fly RI-RPA (analytic) | memory-infeasible — 1.63 PB for the (ia\|P) integrals alone, 11× the entire 552-node icelake partition's RAM |
-| On-the-fly revPBE-D3 AIMD | 2,276,222 node-h ≈ 173 M core-h |
-| NNP, master CP2K (757bb76a80) | 2,698 node-h ≈ 205 k core-h |
-| NNP, optimised CPU (PR #5295) | 170 node-h ≈ 12.9 k core-h |
+| 188 → 376 | 1.091 |
+| 376 → 752 | 1.680 |
+| 752 → 1504 | 1.697 |
 
-Measured engine speedup on the exact campaign workload: **15.85×**
-(0.2554 vs 4.0473 s/step, same node, same deck), with step-0 potential
-energy identical to every printed digit between the two binaries
-(−30777.866694782 Ha).
+So rung 1 sits in a shallow small-N regime and 376–1504 atoms is a clean
+power law. Two defensible fits:
 
-The framing that lands: the entire 84,000 core-h SL3 allocation would buy
-**1,165 on-the-fly DFT steps = 0.58 ps**. The campaign produced 1,200 ps.
+| fit | exponent | R² | s/step at 5064 | h/step |
+|---|---|---|---|---|
+| rungs 1–4 (analyzer default) | 1.509 | 0.9906 | 4,506 | 1.25 |
+| **rungs 2–4 (asymptotic regime)** | **1.688** | **0.99999** | **6,092** | **1.69** |
+
+Prefer the rungs 2–4 fit if you want the physically meaningful exponent — R²
+= 0.99999 across a 4× range in N, against a rungs 1–4 fit that averages two
+regimes. Quote rungs 1–4 if you prefer the conservative number. Either way
+the earlier 3-rung value (1.409, 3,414 s/step) is superseded and was an
+**underestimate**, exactly as flagged.
+
+**Rung 4 needed `icelake-himem`.** Its first attempt (33197088) converged the
+step-0 wavefunction cleanly (E = −9065.617286 Ha) then OOM-killed on the
+first force evaluation: 3.73 GB/rank × 76 ranks ≈ 283 GB against a 250 GB
+icelake node, short by 13%. himem is the same Ice Lake silicon with 502 GB,
+so the 76×1 layout the ladder depends on was preserved and only the DRAM
+ceiling moved.
+
+**Rung 5 (5064 atoms) is not obtainable.** It stalls before the first SCF
+iteration in the realspace→planewave halo exchange. Four independent attempts
+across three layouts (76×1, 19×4, replicated realspace grid) reproduce it
+identically — a real CP2K limit at this cell size, not a misconfigured run.
+The extrapolation from rungs 1–4 carries the argument.
+
+### 8.3 Campaign cost comparison (2.4 M MD steps = 1.2 ns aggregate)
+
+| method | node-h | core-h |
+|---|---|---|
+| On-the-fly RI-RPA (analytic) | infeasible | — |
+| On-the-fly revPBE-D3 AIMD (rungs 1–4 fit) | 3,003,762 | 228,285,932 |
+| NNP, master CP2K `757bb76a80` | 2,698.2 | 205,063 |
+| NNP, optimised CPU (PR #5295) | 170.3 | 12,940 |
+| NNP, GPU (PR #5295 + `nnp_gpu`) | — | 97.8 GPU-h |
+
+RI-RPA is **memory**-infeasible, not merely slow: 1.63 PB for the (ia\|P)
+integrals alone at 5064 atoms, 11× the total RAM of the entire 552-node
+icelake partition (148 TB). That is a stronger statement than a time estimate
+and should be made in those terms.
+
+Two framings, both measured:
+
+- the entire 84,000 core-h SL3 allocation buys **883 on-the-fly DFT steps =
+  0.44 ps**; the campaign produced 1,200 ps, **2,718× more trajectory**;
+- on master, one 12 h SL3 window holds 10,673 steps, so a single 160 ps
+  segment needs **30 chained windows** and the campaign needs **450 job
+  windows**. That is an operational impossibility rather than a budget
+  overrun, and it is harder to argue with than a core-hour total.
+
+### 8.4 What the campaign actually consumed
+
+From `sacct` — the accounting database SLURM bills from — not from
+`timings.csv`. The ledger written by `log_timing.sh` appends its row at the
+*end* of a job, so a job killed by its wall limit never logs one and the
+5-element extend arrays logged a single row between them; aggregating it
+undercounts the CPU campaign by ~10%. Rows with elapsed ≤ 10 s are excluded
+as requeue bookkeeping.
+
+| group | jobs | node-h | core-h | GPU-h | kWh (est.) |
+|---|---|---|---|---|---|
+| CPU campaign | 43 | 389.7 | 29,614.0 | — | 272.8 |
+| GPU campaign | 26 | 173.2 | 5,542.1 | 173.2 | 95.3 |
+| DFT cost ladder | 13 | 19.3 | 1,441.4 | — | 13.5 |
+| analysis | 1 | 0.1 | 2.1 | — | 0.1 |
+| **total** | | **582.3** | **36,599.6** | **173.2** | **381.6** |
+
+GPU jobs took `gres/gpu=1` (verified across all 43), so GPU-hours equal
+elapsed hours.
+
+**Do not mix these two quantities — they differ by 2.3×:**
+
+| | value | correct use |
+|---|---|---|
+| idealised production-only | 170.3 node-h | the DFT comparison, because the DFT figure is idealised the same way |
+| measured consumption | 389.7 node-h | any £ or kWh claim, because it is what the machine actually spent |
+
+The gap is equilibration, insurance arrays, and re-runs after wall-clock
+timeouts. Both are honest; using the wrong one in the wrong sentence is not.
+
+### 8.5 Energy — TDP estimate, NOT measured
+
+**Measured per-job energy is unavailable on CSD3.** `scontrol show config`
+reports `AcctGatherEnergyType = (null)`, and `ConsumedEnergyRaw` is 0 for
+every job — not only ours: a sweep of *all* cluster jobs over two days found
+none with a nonzero value. This is a site configuration, not a permissions or
+query problem, and the report should state it as such rather than leaving the
+absence unexplained.
+
+The kWh column above is therefore an estimate on these assumptions, which
+must be quoted alongside any energy number:
+
+| | |
+|---|---|
+| icelake node | **700 W** — 2 × Xeon Platinum 8368Q (38 cores, 270 W TDP each) = 540 W, plus DRAM, board, NIC, fans; midpoint of the 650–750 W band |
+| A100 (ampere) | **550 W** per GPU including a quarter-node host share |
+| PUE | **not applied** — the figures are IT load only |
+
+Hardware pinned from the machine itself via `scontrol show node` / `lscpu` on
+2026-08-10. To upgrade this to an authoritative figure, ask
+support@hpc.cam.ac.uk for the standard per-node power draw and the
+data-centre PUE — RCS hold both for sustainability reporting. Then re-run
+with `--pue <value>`.
+
+### 8.6 Adding £ — the arithmetic
+
+The CSD3 rate card is behind Raven, so rates are inputs rather than repo
+constants. Take the SL3 icelake £/core-hour and the ampere £/GPU-hour from
+the internal service-charges page on hpc.cam.ac.uk, note the access date,
+then:
+
+```bash
+python scripts/csd3_rpa_transport/energy_cost_ledger.py \
+  --gbp-core-hour <rate> --gbp-gpu-hour <rate> \
+  --accessed 2026-08-XX --pue <from RCS>
+```
+
+which multiplies the correct column per group (core-h for CPU groups, GPU-h
+for the ampere group) and prints the £ column and the citation line. Cite as:
+*University of Cambridge Research Computing Services, internal service
+charges page, accessed 2026-08-XX.* Assessors are Cambridge members and can
+verify it.
+
+The three multiplications, if doing it by hand:
+
+| | |
+|---|---|
+| CPU campaign | 29,614.0 core-h × £/core-h |
+| GPU campaign | 173.2 GPU-h × £/GPU-h |
+| master projection | 205,063 core-h × £/core-h |
+
+### 8.7 Sampling context — we are short, and should say so
+
+O'Neill's reference simulations ran **200 ns** (per user, 2026-08-10 —
+*needs a citation before it goes in the report*). Ours is 160 ps per replica,
+1.2 ns aggregate. Matching 200 ns at our cell size and engine would cost:
+
+| | trajectory | steps | node-h at our cell/engine |
+|---|---|---|---|
+| one segment | 0.16 ns | 320,000 | 22.7 |
+| our campaign | 1.20 ns | 2,400,000 | 170.3 |
+| O'Neill-equivalent | 200 ns | 400,000,000 | **28,378** |
+
+So their sampling is **167× our production cost** at our system size — which
+is presumably why their cells are smaller. This is worth stating plainly
+rather than hiding: it explains why κ_Ons and t_Na are unconverged here
+(Section 5) while structural quantities like the PMF and K_A are solid, and
+it frames our contribution as a large-cell, short-trajectory study rather
+than pretending to compete on sampling.
 
 ---
 
@@ -379,8 +548,11 @@ python scripts/csd3_rpa_transport/make_series_figures.py
 
 ## 10. Still open
 
-- **Rung 4 of the DFT ladder** — in flight; Section 8 needs updating with the
-  measured value and the refitted exponent.
+- **£ rates** — Section 8.6; needs the Raven-gated rate card and an access date.
+- **Authoritative per-node power and PUE** — Section 8.5; one email to
+  support@hpc.cam.ac.uk upgrades the kWh column from a TDP estimate.
+- **Citation for O'Neill's 200 ns** — Section 8.7 currently attributes it to
+  the user, which is not citable.
 - **Yeh–Hummer finite-size corrections** on D — not applied to any number in
   this document. The reported D values are raw, single-box, 37.26 Å.
 - **Two-cell finite-size check** on κ and η from the cube2 anchor segments —

@@ -2,3 +2,5 @@ date,job_id,natoms,system,molality,replication,cell_abc,method,basis,cutoff_ry,b
 2026-08-09,33197085,188,NaCl(aq),0.895,"1 1 1",12.42x12.42x12.42,revPBE-D3,TZV2P-GTH,1200,master,icelake,1,76,1,10,35.5018,0.4904,439,12,on-the-fly BOMD; steady-state mean over last 10 steps
 2026-08-09,33197086,376,NaCl(aq),0.895,"2 1 1",24.84x12.42x12.42,revPBE-D3,TZV2P-GTH,1200,master,icelake,1,76,1,10,75.6479,1.0108,922,12,on-the-fly BOMD; steady-state mean over last 10 steps
 2026-08-10,33197087,752,NaCl(aq),0.895,"2 2 1",24.84x24.84x12.42,revPBE-D3,TZV2P-GTH,1200,master,icelake,1,76,1,10,250.2436,10.7188,3039,12,on-the-fly BOMD; steady-state mean over last 10 steps
+2026-08-10,33374344,752,NaCl(aq),0.895,"2 2 1",24.84x24.84x12.42,revPBE-D3,TZV2P-GTH,1200,master,icelake-himem,1,76,1,10,242.4316,10.4932,2947,12,on-the-fly BOMD; steady-state mean over last 10 steps
+2026-08-10,33374342,1504,NaCl(aq),0.895,"2 2 2",24.84x24.84x24.84,revPBE-D3,TZV2P-GTH,1200,master,icelake-himem,1,76,1,5,785.8491,9.0415,5641,7,on-the-fly BOMD; steady-state mean over last 5 steps
