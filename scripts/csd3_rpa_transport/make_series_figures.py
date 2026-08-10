@@ -1,30 +1,38 @@
 #!/usr/bin/env python3
-"""RPA concentration-series pooling + report figures (fig9-fig14).
+"""RPA concentration-series pooling + report figures (fig8-fig14).
 
 Pools the per-segment CP2K analysis products (written on CSD3 by
 analyze_onsager_cp2k.py / analyze_viscosity_cp2k.py; RPA-series files in
-results/rpa_transport/, MP2-anchor files in results/mp2_transport/) and
+results/rpa_transport/, MP2 files in results/mp2_transport/) and
 overlays the RPA series on the Madrid-2019 curves of make_figures.py, same
-style and experimental anchors. Headline datasets:
+style and experimental reference values. Headline datasets:
 
   1 m: rpa_cpu_cube3_5x160_w1040_kappa.npz    + rpa_cpu_cube3_5x160_final_eta.npz
   2 m: rpa_cpu_cube3_2m_5x160_w1040_kappa.npz + rpa_cpu_cube3_2m_5x160_final_eta.npz
   4 m: rpa_cpu_cube3_4m_5x160_w1040_kappa.npz + rpa_cpu_cube3_4m_5x160_final_eta.npz
-  MP2 anchor at 1 m, same pipeline: mp2_anchor_cube3_{kappa,eta}.npz
+  MP2 at 1 m, same pipeline: mp2_anchor_cube3_{kappa,eta}.npz
 
-Model encoding across figures: Madrid-2019 = hollow markers + solid lines,
-RPA = filled markers + dashed lines (x-offset so error bars stay legible),
-MP2 anchor = filled indigo marker at 1 m only. Channel/species hues follow
-make_figures.py so a channel keeps its colour across classical and RPA.
+Model encoding across figures: one colour per level everywhere (RPA =
+Cambridge crest orange, Madrid-2019 = cherry, MP2 = blue, experiment =
+slate; user rule 2026-08-06), with Madrid additionally hollow markers +
+solid lines and RPA filled markers + dashed lines (x-offset so error bars
+stay legible). MP2 appears only in state-point panels (fig8,
+the fig13a PMF, the fig12b GK integrals) -- never on a concentration
+axis, where its single 1 m point adds nothing (user rule 2026-08-06).
+RPA molalities sharing a panel use light-to-dark shades of the crest
+orange.
 
-All experimental anchors are pinned from primary sources (2026-08-02):
+All experimental reference values are pinned from primary sources (2026-08-02):
 kappa Chambers-Stokes 1956, t_Na Smits-Duyvis 1966, eta Kestin-Khalifa-
 Correia 1981, D_w Muller-Hertz 1996 via Blazquez 2023 Table V.
 
 Also prints: fit-window sensitivity (10-30 vs 10-40 ps), the 1 m three-way
 Madrid/MP2/RPA block, the D_w timescale check, and the timings-ledger
-aggregation. Cross-level outputs (figures, transport_series_summary.csv)
-go to results/transport_comparison/.
+aggregation. Layout convention: figures go to plots/transport_comparison/
+(plots = images, results = data); transport_series_summary.csv stays in
+results/transport_comparison/. fig8 (the 1 m three-way comparison, formerly in
+make_figures.py) lives here since 2026-08-06: every first-principles curve
+is the RPA production cell (cube3), same pipeline as the series.
 """
 import csv
 import glob
@@ -37,12 +45,14 @@ import matplotlib.pyplot as plt
 
 _REPO = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)),
                                       "..", ".."))
-MP2T = os.path.join(_REPO, "results", "mp2_transport")      # MP2-anchor products
+MP2T = os.path.join(_REPO, "results", "mp2_transport")      # MP2 products
 RPAT = os.path.join(_REPO, "results", "rpa_transport")      # RPA-series products
 CMP = os.path.join(_REPO, "results", "transport_comparison")  # cross-level outputs
 MADRID = os.path.join(_REPO, "results", "lammps_madrid",
                       "conductivity", "analysis", "kappa_vs_c.npz")
-OUT = os.path.join(CMP, "figures")
+MADRID_REPL = os.path.join(_REPO, "results", "lammps_madrid",
+                           "replicas", "analysis", "replica_D.npz")
+OUT = os.path.join(_REPO, "plots", "transport_comparison")
 
 
 def res_path(fname):
@@ -54,7 +64,13 @@ def res_path(fname):
 CAM_BLUE, SLATE3 = "#00BDB6", "#546072"
 C_NA, C_CL, C_O = CAM_BLUE, "#4DB78C", "#CD3572"
 INK, INK2, MUTED, GRID = "#0b0b0b", "#52514e", "#898781", "#e1e0d9"
-INDIGO = "#5366E0"                       # MP2-anchor entity colour (renders' Na)
+# model colours (user rule 2026-08-06): in every Madrid/MP2/RPA comparison
+# a level keeps ONE colour, regardless of figure -- RPA = Cambridge crest
+# orange, Madrid-2019 = cherry, MP2 = blue (hexes from the CAM dict of
+# scripts/benchmark_figures); experiment stays slate.
+C_RPA, C_MAD, C_MP2 = "#FD8153", "#CD3572", "#5366E0"
+RPA_SHADE = {1.0: "#FFBE93", 2.0: "#FD8153", 4.0: "#E2571F"}  # crest ramp
+# (ramp stays orange end to end so no RPA shade reads as Madrid cherry)
 
 MOL_TO_M = {0.25: 0.231, 0.5: 0.491, 1.0: 0.960, 2.0: 1.915, 4.0: 3.666}
 EXPT_C = {0.25: 0.248, 0.5: 0.494, 1.0: 0.979, 2.0: 1.920, 4.0: 3.686}
@@ -84,7 +100,7 @@ ETA_EXP = {0.0: 0.8901, 1.0: 0.9723, 2.0: 1.0745, 4.0: 1.3504}
 # biased low at RPA 1 m: the running integral is still rising there, the
 # per-segment late-early difference is +0.31 mPa s at 7.9 sigma. Over
 # 10-18 ps the slope of the segment-mean curve is zero within segment noise
-# for 2 m / 4 m / the anchor and the anchor value moves by less than its
+# for 2 m / 4 m / MP2 and the MP2 value moves by less than its
 # SEM, so 10-18 ps is the headline window for all four datasets; the 2-10 ps
 # value is printed alongside as the sensitivity.
 ETA_WINDOW = (10.0, 18.0)
@@ -96,23 +112,17 @@ KT_KCAL = 0.0019872041 * 298.15
 MADRID_NCIP_1M = 0.026   # report value: coordination integral of the Madrid
                          # g_NaCl at 1 m to the 3.38 A barrier (verified)
 
-# The 160 ps extension suite has landed (2026-08-10): all fifteen CPU
-# segments reached 320,000 steps, so all three molalities are now uniform
-# 5 x 160 ps and the *_5x80_* truncation that kept them like-for-like is no
-# longer needed. Switched from the GPU track to the CPU track at the same
-# time - GPU round 2 was abandoned in the queue, so CPU carries the series.
-# The 80 ps products are still on disk under their *_5x80_* / *_final_*
-# labels if the 80-vs-160 ps convergence check is wanted.
+# 160 ps CPU-track products (round 2, complete 2026-08-10): every segment
+# recomputed from the raw trajectories, 5 x 160 ps per molality. The GPU
+# round-2 arrays were cancelled while pending; the *_gpu_*_5x80_* round-1
+# products remain on disk but are superseded.
 SERIES = {1.0: ("rpa_cpu_cube3_5x160_w1040_kappa.npz", "rpa_cpu_cube3_5x160_final_eta.npz"),
           2.0: ("rpa_cpu_cube3_2m_5x160_w1040_kappa.npz", "rpa_cpu_cube3_2m_5x160_final_eta.npz"),
           4.0: ("rpa_cpu_cube3_4m_5x160_w1040_kappa.npz", "rpa_cpu_cube3_4m_5x160_final_eta.npz")}
-# A 10-60 ps window (*_w1060_*) is also produced now that 160 ps supports it;
-# the pair below stays 10-30 vs 10-40 because the sensitivity print labels
-# those two windows by name.
 WINDOWS = {1.0: ("rpa_cpu_cube3_5x160_w1030_kappa.npz", "rpa_cpu_cube3_5x160_w1040_kappa.npz"),
            2.0: ("rpa_cpu_cube3_2m_5x160_w1030_kappa.npz", "rpa_cpu_cube3_2m_5x160_w1040_kappa.npz"),
            4.0: ("rpa_cpu_cube3_4m_5x160_w1030_kappa.npz", "rpa_cpu_cube3_4m_5x160_w1040_kappa.npz")}
-ANCHOR = ("mp2_anchor_cube3_kappa.npz", "mp2_anchor_cube3_eta.npz")
+MP2_FILES = ("mp2_anchor_cube3_kappa.npz", "mp2_anchor_cube3_eta.npz")
 MASTER_S_PER_STEP = None                 # read from timings.csv (master_ref row)
 
 
@@ -321,17 +331,77 @@ def report_pairing(pair, mad_pair):
           "experimental-density 37.26 A transport cells and ~0.4 ns).")
 
 
+def fig_three_way_1m(pair, mad_pair, rpa, mp2):
+    """fig8: the 1 m three-way comparison -- pairing PMF + D ratios. Every
+    first-principles curve is the RPA production cell (cube3, 37.26 A),
+    new-pipeline products only; Madrid D ratios use the Yeh-Hummer D_0
+    of the replica campaign. Model colours follow the series figures so
+    a level keeps its colour across the report."""
+    rep = np.load(MADRID_REPL, allow_pickle=True)
+
+    fig, (a, b) = plt.subplots(1, 2, figsize=(9.8, 4.1))
+    a.axhline(0, color=MUTED, lw=0.8)
+    a.plot(mad_pair[1.0]["r"], mad_pair[1.0]["w"], color=C_MAD, lw=2.0,
+           label="Madrid-2019")
+    a.plot(pair["mp2"]["r"], pair["mp2"]["w"], color=C_MP2, lw=1.6,
+           ls="--", label="MP2 C-NNP")
+    a.plot(pair[1.0]["r"], pair[1.0]["w"], color=C_RPA, lw=2.0,
+           label="RPA C-NNP")
+    a.set_xlim(2.2, 8.0)
+    a.set_ylim(-1.3, 1.5)
+    a.legend(fontsize=8.5, frameon=False, loc="lower right", labelcolor=INK2)
+    style(a, r"$r_{\mathrm{Na-Cl}}$ (Å)", r"$w(r)$ (kcal/mol)", "(a)")
+
+    # (b) D_ion / D_w: Madrid YH D_0 ratio; MP2/RPA per-segment means.
+    def ratio(num, den):
+        v = num[0] / den[0]
+        return v, v * np.hypot(num[1] / num[0], den[1] / den[0])
+
+    # replica_D.npz fits: free_fits row 0 = O (slope, D0, err),
+    # shared_fits rows = Na, Cl (shared YH slope)
+    mad_O = (rep["free_fits"][0][1], rep["free_fits"][0][2])
+    mad = {"Na": ratio((rep["shared_fits"][0][1], rep["shared_fits"][0][2]), mad_O),
+           "Cl": ratio((rep["shared_fits"][1][1], rep["shared_fits"][1][2]), mad_O)}
+    # expt infinite dilution: D0_ion from limiting conductivities (Robinson
+    # & Stokes: lambda0 50.10 / 76.35 S cm2/mol -> 1.334 / 2.032e-9 m2/s
+    # via Nernst), water self-D 2.299e-9 (Holz 2000)
+    expt = {"Na": 1.334 / 2.299, "Cl": 2.032 / 2.299}
+    for x, sp in ((0.0, "Na"), (1.0, "Cl")):
+        first = sp == "Na"
+        v, e = mad[sp]
+        b.errorbar(x - 0.21, v, yerr=e, fmt="o", ms=6.5, color=C_MAD,
+                   mfc="white", mew=1.6, capsize=3,
+                   label="Madrid-2019 ($D_0$)" if first else None)
+        k = "rNa" if first else "rCl"
+        b.errorbar(x - 0.07, mp2[k].mean(), yerr=sem(mp2[k]), fmt="s",
+                   ms=6.5, color=C_MP2, mew=0, capsize=3,
+                   label="MP2 C-NNP" if first else None)
+        b.errorbar(x + 0.07, rpa[1.0][k].mean(), yerr=sem(rpa[1.0][k]),
+                   fmt="o", ms=6.5, color=C_RPA, mew=0, capsize=3,
+                   label="RPA C-NNP" if first else None)
+        b.plot(x + 0.21, expt[sp], marker="_", ms=14, mew=2.2, color=SLATE3,
+               ls="", label="Experiment" if first else None)
+    b.set_xticks([0.0, 1.0])
+    b.set_xticklabels([r"$D_{\mathrm{Na}}/D_{\mathrm{w}}$",
+                       r"$D_{\mathrm{Cl}}/D_{\mathrm{w}}$"])
+    b.set_xlim(-0.5, 1.6)
+    b.set_ylim(0.35, 1.0)
+    b.legend(fontsize=8, frameon=False, loc="upper left", labelcolor=INK2)
+    style(b, "", r"$D_{\mathrm{ion}}\,/\,D_{\mathrm{water}}$", "(b)")
+    savefig(fig, "fig8_three_way_1m")
+
+
 def fig_pairing_series(pair, mad_pair):
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(9.8, 4.0))
-    ax1.plot(mad_pair[1.0]["r"], mad_pair[1.0]["w"], color=SLATE3, lw=1.6,
+    ax1.plot(mad_pair[1.0]["r"], mad_pair[1.0]["w"], color=C_MAD, lw=1.6,
              label="Madrid 1 mol/kg")
     if mad_pair.get(4.0) is not None:
-        ax1.plot(mad_pair[4.0]["r"], mad_pair[4.0]["w"], color=SLATE3,
+        ax1.plot(mad_pair[4.0]["r"], mad_pair[4.0]["w"], color=C_MAD,
                  lw=1.3, ls="--", label="Madrid 4 mol/kg")
-    ax1.plot(pair["mp2"]["r"], pair["mp2"]["w"], color=INDIGO, lw=1.4,
-             ls="--", label="MP2 anchor 1 mol/kg")
-    for m, color in ((1.0, CAM_BLUE), (2.0, C_CL), (4.0, C_O)):
-        ax1.plot(pair[m]["r"], pair[m]["w"], color=color, lw=1.6,
+    ax1.plot(pair["mp2"]["r"], pair["mp2"]["w"], color=C_MP2, lw=1.4,
+             ls="--", label="MP2 1 mol/kg")
+    for m in (1.0, 2.0, 4.0):
+        ax1.plot(pair[m]["r"], pair[m]["w"], color=RPA_SHADE[m], lw=1.6,
                  label=f"RPA {m:g} mol/kg")
     ax1.axhline(0, color=MUTED, lw=0.8)
     ax1.set_xlim(2.2, 7.0)
@@ -341,17 +411,13 @@ def fig_pairing_series(pair, mad_pair):
     cr = [MOL_TO_M[m] for m in (1.0, 2.0, 4.0)]
     y = [pair[m]["n_CIP"] for m in (1.0, 2.0, 4.0)]
     ys = [pair[m]["n_CIP_sem"] for m in (1.0, 2.0, 4.0)]
-    ax2.errorbar(cr, y, yerr=ys, fmt="o--", ms=6.5, color=CAM_BLUE, mew=0,
+    ax2.errorbar(cr, y, yerr=ys, fmt="o--", ms=6.5, color=C_RPA, mew=0,
                  lw=1.3, elinewidth=1.0, capsize=2, label="RPA")
-    ax2.errorbar([MOL_TO_M[1.0] - 0.07], [pair["mp2"]["n_CIP"]],
-                 yerr=[pair["mp2"]["n_CIP_sem"]], fmt="s", ms=6.5,
-                 color=INDIGO, mew=0, elinewidth=1.0, capsize=2,
-                 label="MP2 anchor")
     mols_mad = [m for m in sorted(mad_pair) if mad_pair.get(m) is not None]
     ax2.errorbar([MOL_TO_M[m] for m in mols_mad],
                  [mad_pair[m]["n_CIP"] for m in mols_mad],
                  yerr=[mad_pair[m]["n_CIP_sem"] for m in mols_mad],
-                 fmt="o-", ms=6.5, color=SLATE3, mfc="white", mew=1.6,
+                 fmt="o-", ms=6.5, color=C_MAD, mfc="white", mew=1.6,
                  lw=1.4, elinewidth=1.0, capsize=2, label="Madrid-2019")
     ax2.set_xlim(0, 3.9)
     ax2.set_ylim(0, 0.45)
@@ -376,7 +442,11 @@ def ledger():
     with open(os.path.join(RPAT, "timings.csv")) as fh:
         for r in csv.DictReader(fh):
             r["wall_s"], r["steps"] = float(r["wall_s"]), float(r["steps"])
-            r["s_per_step"] = float(r["s_per_step"])
+            # round-2 continuation wrappers log s_per_step as NA; derive it
+            sps = r["s_per_step"]
+            r["s_per_step"] = (float(sps) if sps not in ("", "NA") else
+                               r["wall_s"] / r["steps"] if r["steps"] > 0
+                               else np.nan)
             rows.append(r)
     master = [r for r in rows if r["stage"] == "master_ref"]
     sps_master = master[0]["s_per_step"] if master else np.nan
@@ -422,7 +492,7 @@ def madrid_fong(mad):
 
 def expt_fong(mols):
     """Lambda / uNa / uCl derived from the pinned kappa (Chambers-Stokes
-    1956) and Hittorf t_Na (Smits-Duyvis 1966) anchors -- derived, not
+    1956) and Hittorf t_Na (Smits-Duyvis 1966) reference values -- derived, not
     independently measured."""
     mols = np.asarray(mols, float)
     tH = tna_expt_hittorf(mols)
@@ -451,81 +521,78 @@ def report_fong(mad, rpa, mp2):
             print(line + f"  expt {exp_v:6.2f}")
 
 
-def fig_fong_series(mad, rpa, mp2):
+def fig_fong_series(mad, rpa):
+    """fig14: Fong-style observables, one quantity per panel so the model
+    comparison stays readable -- (a) molar conductivity vs sqrt(c),
+    (b) Na+ mobility, (c) Cl- mobility magnitude (both Hittorf frame)."""
     mf = madrid_fong(mad)
     mols = np.array(sorted(set(mf["mol"])))
     ce, lam_e, una_e, ucl_e = expt_fong(mols)
+    cm = np.array([MOL_TO_M[m] for m in mols])
     cr = np.array([MOL_TO_M[m] for m in sorted(rpa)])
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(9.8, 4.0))
+    fig, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(13.5, 4.0))
+
     # (a) molar conductivity vs sqrt(c), Kohlrausch presentation
     _, lam, lam_s = pooled(mf["mol"], mf["Lambda"])
-    cm = np.array([MOL_TO_M[m] for m in mols])
-    ax1.errorbar(np.sqrt(cm), lam, yerr=lam_s, fmt="o-", ms=6, color=CAM_BLUE,
+    ax1.errorbar(np.sqrt(cm), lam, yerr=lam_s, fmt="o-", ms=6, color=C_MAD,
                  mfc="white", mew=1.5, lw=1.4, elinewidth=1.0, capsize=2,
                  label="Madrid-2019")
     y = [rpa[m]["Lambda"].mean() for m in sorted(rpa)]
     ys = [sem(rpa[m]["Lambda"]) for m in sorted(rpa)]
     ax1.errorbar(np.sqrt(cr) + 0.03, y, yerr=ys, fmt="o--", ms=6.5,
-                 color=CAM_BLUE, mew=0, lw=1.3, elinewidth=1.0, capsize=2,
+                 color=C_RPA, mew=0, lw=1.3, elinewidth=1.0, capsize=2,
                  label="RPA")
-    ax1.errorbar([np.sqrt(MOL_TO_M[1.0]) - 0.03], [mp2["Lambda"].mean()],
-                 yerr=[sem(mp2["Lambda"])], fmt="s", ms=6.5, color=INDIGO,
-                 mew=0, elinewidth=1.0, capsize=2, label="MP2 anchor")
+    # expt: Lambda(c) is Chambers-Stokes primary data; u = t^H kappa / F c
+    # combines Chambers-Stokes kappa with Smits-Duyvis t^H (exact algebra,
+    # same identity as our points -- not independent of fig9/fig11)
     ax1.plot(np.sqrt(ce), lam_e, marker="o", ms=5, ls="", color=SLATE3,
-             label="Experiment (derived)", zorder=5)
+             label="Experiment", zorder=5)
     ax1.set_xlim(0.3, 2.05)
-    ax1.legend(frameon=False, fontsize=8.5, labelcolor=INK2, loc="lower left")
     style(ax1, r"$\sqrt{c}$ ((mol/L)$^{1/2}$)",
           r"$\Lambda$ (S cm$^2$ mol$^{-1}$)", "(a)")
-    # (b) electrophoretic mobilities (Hittorf frame; -u shown for Cl-)
-    for key, color, mk, lab in (("uNa", CAM_BLUE, "o", r"Na$^+$"),
-                                ("uCl", C_CL, "^", r"$-$Cl$^-$")):
+
+    # (b, c) electrophoretic mobilities, one species per panel (Hittorf
+    # frame; the Cl- magnitude is shown)
+    for ax, key, ue, title in ((ax2, "uNa", una_e, r"(b) Na$^+$"),
+                               (ax3, "uCl", ucl_e, r"(c) $-$Cl$^-$")):
         _, um, us = pooled(mf["mol"], mf[key])
-        ax2.errorbar(cm, um, yerr=us, fmt=mk + "-", ms=5.5, color=color,
-                     mfc="white", mew=1.5, lw=1.4, elinewidth=1.0, capsize=2,
-                     label=f"Madrid {lab}")
+        ax.errorbar(cm, um, yerr=us, fmt="o-", ms=6, color=C_MAD,
+                    mfc="white", mew=1.5, lw=1.4, elinewidth=1.0, capsize=2)
         y = [rpa[m][key].mean() for m in sorted(rpa)]
         ys = [sem(rpa[m][key]) for m in sorted(rpa)]
-        ax2.errorbar(cr + 0.07, y, yerr=ys, fmt=mk + "--", ms=6, color=color,
-                     mew=0, lw=1.1, elinewidth=1.0, capsize=2,
-                     label=f"RPA {lab}")
-        ax2.errorbar([MOL_TO_M[1.0] - 0.07], [mp2[key].mean()],
-                     yerr=[sem(mp2[key])], fmt="s", ms=6, color=INDIGO, mew=0,
-                     elinewidth=1.0, capsize=2,
-                     label="MP2 anchor" if key == "uNa" else None)
-    ax2.plot(ce, una_e, marker="o", ms=5, ls="", color=SLATE3,
-             label="Experiment (derived)", zorder=5)
-    ax2.plot(ce, ucl_e, marker="^", ms=5, ls="", color=SLATE3, zorder=5)
-    ax2.set_xlim(0, 3.9)
-    ax2.set_ylim(0, None)
-    h, l = ax2.get_legend_handles_labels()
-    ax2.legend(h, l, frameon=False, fontsize=8, labelcolor=INK2,
-               loc="upper right", ncol=2, columnspacing=1.2)
-    style(ax2, "c (mol/L)", r"$u$ ($10^{-8}$ m$^2$ V$^{-1}$ s$^{-1}$)", "(b)")
+        ax.errorbar(cr + 0.07, y, yerr=ys, fmt="o--", ms=6.5, color=C_RPA,
+                    mew=0, lw=1.3, elinewidth=1.0, capsize=2)
+        ax.plot(ce, ue, marker="o", ms=5, ls="", color=SLATE3, zorder=5)
+        ax.set_xlim(0, 3.9)
+        ax.set_ylim(0, 7.0)
+        style(ax, "c (mol/L)", r"$u$ ($10^{-8}$ m$^2$ V$^{-1}$ s$^{-1}$)",
+              title)
+    h, l = ax1.get_legend_handles_labels()
+    fig.legend(h, l, loc="upper center", bbox_to_anchor=(0.5, 1.07), ncol=4,
+               frameon=False, fontsize=9.5, columnspacing=2.0,
+               handlelength=2.4, handletextpad=0.6, labelcolor=INK2)
+    fig.tight_layout(w_pad=2.5)
     savefig(fig, "fig14_fong_series")
 
 
-def fig_kappa_series(mad, rpa, mp2):
+def fig_kappa_series(mad, rpa):
     mols, kNE, kNE_s = pooled(mad["runs_mol"], mad["runs_kNE"])
     _, kOns, kOns_s = pooled(mad["runs_mol"], mad["runs_kOns"])
     c = np.array([MOL_TO_M[m] for m in mols])
     fig, ax = plt.subplots(figsize=(5.2, 4.0))
-    ax.errorbar(c, kNE, yerr=kNE_s, fmt="^-", ms=6, color=C_O, mfc="white",
+    ax.errorbar(c, kNE, yerr=kNE_s, fmt="^-", ms=6, color=C_MAD, mfc="white",
                 mew=1.5, lw=1.4, elinewidth=1.0, capsize=2,
                 label="Madrid NE")
-    ax.errorbar(c, kOns, yerr=kOns_s, fmt="o-", ms=6.5, color=CAM_BLUE,
+    ax.errorbar(c, kOns, yerr=kOns_s, fmt="o-", ms=6.5, color=C_MAD,
                 mfc="white", mew=1.6, lw=1.8, elinewidth=1.0, capsize=2,
                 label="Madrid Onsager")
     cr = np.array([MOL_TO_M[m] for m in sorted(rpa)])
-    for key, color, mk, lab in (("kNE", C_O, "^", "RPA NE"),
-                                ("kOns", CAM_BLUE, "o", "RPA Onsager")):
+    for key, mk, lab in (("kNE", "^", "RPA NE"),
+                         ("kOns", "o", "RPA Onsager")):
         y = [rpa[m][key].mean() for m in sorted(rpa)]
         ys = [sem(rpa[m][key]) for m in sorted(rpa)]
-        ax.errorbar(cr + 0.07, y, yerr=ys, fmt=mk + "--", ms=6.5, color=color,
+        ax.errorbar(cr + 0.07, y, yerr=ys, fmt=mk + "--", ms=6.5, color=C_RPA,
                     mew=0, lw=1.3, elinewidth=1.0, capsize=2, label=lab)
-    ax.errorbar([MOL_TO_M[1.0] - 0.07], [mp2["kOns"].mean()],
-                yerr=[sem(mp2["kOns"])], fmt="s", ms=6.5, color=INDIGO, mew=0,
-                elinewidth=1.0, capsize=2, label="MP2 anchor Onsager")
     ce = [EXPT_C[m] for m in EXPT_KAPPA]
     ax.plot(ce, list(EXPT_KAPPA.values()), marker="o", ms=5, ls="",
             color=SLATE3, label="Experiment", zorder=5)
@@ -539,7 +606,7 @@ def fig_kappa_series(mad, rpa, mp2):
     savefig(fig, "fig9_kappa_series")
 
 
-def fig_dne_series(mad, rpa, mp2):
+def fig_dne_series(mad, rpa):
     E2KBT = E2 / (KB * 298.15)
     pref = E2KBT / (mad["runs_V"] * 1.0e-30) * 1.0e-8 / 6.0
     kNaNa, kClCl, kNaCl = (pref * mad[f"runs_s{s}"] for s in ("NaNa", "ClCl", "NaCl"))
@@ -550,23 +617,20 @@ def fig_dne_series(mad, rpa, mp2):
     cr = np.array([MOL_TO_M[m] for m in sorted(rpa)])
 
     fig, axes = plt.subplots(2, 2, figsize=(9.2, 7.2), sharex=True, sharey=True)
-    parts = ((-dNaNa / kNE, "chNaNa", CAM_BLUE, "s", "Na–Na distinct"),
-             (-dClCl / kNE, "chClCl", C_CL, "^", "Cl–Cl distinct"),
-             (2 * kNaCl / kNE, "chNaCl", C_O, "D", "Na–Cl distinct (pairing)"),
-             (1.0 - mad["runs_kOns"] / kNE, "dNE", SLATE3, "o",
+    parts = ((-dNaNa / kNE, "chNaNa", "s", "Na–Na distinct"),
+             (-dClCl / kNE, "chClCl", "^", "Cl–Cl distinct"),
+             (2 * kNaCl / kNE, "chNaCl", "D", "Na–Cl distinct (pairing)"),
+             (1.0 - mad["runs_kOns"] / kNE, "dNE", "o",
               r"total $\Delta_{\mathrm{NE}}$"))
-    for ax, (y_mad, key, color, mk, lab) in zip(axes.flat, parts):
+    for ax, (y_mad, key, mk, lab) in zip(axes.flat, parts):
         _, ym, ys = pooled(mol, y_mad)
-        ax.errorbar(c, ym, yerr=ys, fmt=mk + "-", ms=5.5, color=color,
+        ax.errorbar(c, ym, yerr=ys, fmt=mk + "-", ms=5.5, color=C_MAD,
                     mfc="white", mew=1.5, lw=1.4, elinewidth=1.0, capsize=2,
                     label="Madrid-2019")
         y = [rpa[m][key].mean() for m in sorted(rpa)]
         ys = [sem(rpa[m][key]) for m in sorted(rpa)]
-        ax.errorbar(cr + 0.07, y, yerr=ys, fmt=mk, ms=6, color=color,
+        ax.errorbar(cr + 0.07, y, yerr=ys, fmt=mk, ms=6, color=C_RPA,
                     mew=0, elinewidth=1.0, capsize=2, label="RPA")
-        ax.errorbar([MOL_TO_M[1.0] - 0.07], [mp2[key].mean()],
-                    yerr=[sem(mp2[key])], fmt="s", ms=6, color=INDIGO, mew=0,
-                    elinewidth=1.0, capsize=2, label="MP2 anchor")
         ax.axhline(0, color=MUTED, lw=0.8)
         ax.set_xlim(0, 3.9)
         style(ax, None, None, lab)
@@ -584,7 +648,7 @@ def fig_dne_series(mad, rpa, mp2):
     savefig(fig, "fig10_dne_series")
 
 
-def fig_tna_series(mad, rpa, mp2):
+def fig_tna_series(mad, rpa):
     mols = np.array(sorted(set(mad["runs_mol"])))
     c = np.array([MOL_TO_M[m] for m in mols])
     sNN, sCC, sNC = (mad[f"runs_s{s}"] for s in ("NaNa", "ClCl", "NaCl"))
@@ -593,17 +657,14 @@ def fig_tna_series(mad, rpa, mp2):
                + mad["runs_mol"] * (M_NA * (sNN - sNC) - M_CL * (sCC - sNC)) / s_sum)
     _, tH, tH_s = pooled(mad["runs_mol"], tH_runs)
     fig, ax = plt.subplots(figsize=(5.2, 4.0))
-    ax.errorbar(c, tH, yerr=tH_s, fmt="D-", ms=5.5, color=CAM_BLUE,
+    ax.errorbar(c, tH, yerr=tH_s, fmt="D-", ms=5.5, color=C_MAD,
                 mfc="white", mew=1.3, lw=1.3, elinewidth=1.0, capsize=2,
                 label="Madrid, Hittorf")
     cr = np.array([MOL_TO_M[m] for m in sorted(rpa)])
     y = [rpa[m]["tH"].mean() for m in sorted(rpa)]
     ys = [sem(rpa[m]["tH"]) for m in sorted(rpa)]
-    ax.errorbar(cr + 0.07, y, yerr=ys, fmt="D--", ms=5.5, color=CAM_BLUE,
+    ax.errorbar(cr + 0.07, y, yerr=ys, fmt="D--", ms=5.5, color=C_RPA,
                 mew=0, lw=1.1, elinewidth=1.0, capsize=2, label="RPA, Hittorf")
-    ax.errorbar([MOL_TO_M[1.0] - 0.07], [mp2["tH"].mean()],
-                yerr=[sem(mp2["tH"])], fmt="s", ms=6, color=INDIGO, mew=0,
-                elinewidth=1.0, capsize=2, label="MP2 anchor, Hittorf")
     ax.plot([EXPT_C[m] for m in mols], tna_expt_hittorf(mols), marker="o",
             ms=5, ls="", color=SLATE3, label="Experiment", zorder=5)
     ax.set_xlim(0, 3.9)
@@ -621,12 +682,8 @@ def fig_eta_series(rpa_eta, mp2_eta):
     cr = np.array([MOL_TO_M[m] for m in sorted(rpa_eta)])
     y = [rpa_eta[m]["etas"].mean() * 1e3 for m in sorted(rpa_eta)]
     ys = [sem(rpa_eta[m]["etas"] * 1e3) for m in sorted(rpa_eta)]
-    ax1.errorbar(cr, y, yerr=ys, fmt="o--", ms=6.5, color=CAM_BLUE, mew=0,
+    ax1.errorbar(cr, y, yerr=ys, fmt="o--", ms=6.5, color=C_RPA, mew=0,
                  lw=1.3, elinewidth=1.0, capsize=2, label="RPA")
-    ax1.errorbar([MOL_TO_M[1.0] - 0.07], [mp2_eta["etas"].mean() * 1e3],
-                 yerr=[sem(mp2_eta["etas"] * 1e3)], fmt="s", ms=6.5,
-                 color=INDIGO, mew=0, elinewidth=1.0, capsize=2,
-                 label="MP2 anchor")
     ce = [0.0] + [EXPT_C[m] for m in (1.0, 2.0, 4.0)]
     ax1.plot(ce, [ETA_EXP[m] for m in (0.0, 1.0, 2.0, 4.0)], marker="o",
              ms=5, ls="", color=SLATE3, label="Experiment", zorder=5)
@@ -634,14 +691,15 @@ def fig_eta_series(rpa_eta, mp2_eta):
     ax1.legend(frameon=False, fontsize=8.5, labelcolor=INK2, loc="upper left")
     style(ax1, "c (mol/L)", r"$\eta$ (mPa s)", "(a)")
     # (b) GK running integrals, per-molality segment mean
-    for m, color in ((1.0, CAM_BLUE), (2.0, C_CL), (4.0, C_O)):
+    for m in (1.0, 2.0, 4.0):
         e = rpa_eta[m]
-        ax2.plot(e["t_ps"], e["curves"].mean(axis=0) * 1e3, color=color,
-                 lw=1.6, label=f"RPA {m:g} mol/kg")
+        ax2.plot(e["t_ps"], e["curves"].mean(axis=0) * 1e3,
+                 color=RPA_SHADE[m], lw=1.6, label=f"RPA {m:g} mol/kg")
         for cv in e["curves"]:
-            ax2.plot(e["t_ps"], cv * 1e3, color=color, lw=0.5, alpha=0.25)
+            ax2.plot(e["t_ps"], cv * 1e3, color=RPA_SHADE[m], lw=0.5,
+                     alpha=0.25)
     ax2.plot(mp2_eta["t_ps"], mp2_eta["curves"].mean(axis=0) * 1e3,
-             color=INDIGO, lw=1.4, ls="--", label="MP2 anchor 1 mol/kg")
+             color=C_MP2, lw=1.4, ls="--", label="MP2 1 mol/kg")
     lo, hi = rpa_eta[1.0]["plateau"]
     ax2.axvspan(lo, hi, color=GRID, alpha=0.5, zorder=0)
     ax2.set_xlim(0, float(rpa_eta[1.0]["t_ps"].max()))
@@ -675,7 +733,7 @@ def write_summary(mad, rpa, rpa_eta, mp2, mp2_eta):
         fh.write(cols)
         for m in sorted(rpa):
             fh.write(row("RPA", m, rpa[m], rpa_eta[m]))
-        fh.write(row("MP2_anchor", 1.0, mp2, mp2_eta))
+        fh.write(row("MP2", 1.0, mp2, mp2_eta))
         # Madrid rows, pooled from kappa_vs_c.npz in the same shape
         for m in sorted(set(mad["runs_mol"])):
             g = mad["runs_mol"] == m
@@ -709,13 +767,13 @@ def main():
     mad = {k: v for k, v in np.load(MADRID, allow_pickle=True).items()}
     rpa = {m: load_kappa(f, m) for m, (f, _) in SERIES.items()}
     rpa_eta = {m: load_eta(e) for m, (_, e) in SERIES.items()}
-    mp2 = load_kappa(ANCHOR[0], 1.0)
-    mp2_eta = load_eta(ANCHOR[1])
+    mp2 = load_kappa(MP2_FILES[0], 1.0)
+    mp2_eta = load_eta(MP2_FILES[1])
 
     print("=== RPA series (headline datasets) ===")
     for m in sorted(rpa):
         report_block(f"RPA {m:g} mol/kg", rpa[m], rpa_eta[m])
-    report_block("MP2 anchor 1 mol/kg", mp2, mp2_eta)
+    report_block("MP2 1 mol/kg", mp2, mp2_eta)
 
     print("\n=== three-way at 1 mol/kg (Madrid pooled n=10, MP2/RPA n=5) ===")
     g = mad["runs_mol"] == 1.0
@@ -754,17 +812,18 @@ def main():
 
     window_sensitivity()
     ledger()
-    print("\nAll experimental anchors pinned 2026-08-02: kappa Chambers-"
+    print("\nAll experimental reference values pinned 2026-08-02: kappa Chambers-"
           "Stokes 1956, t_Na Smits-Duyvis 1966, eta Kestin 1981 (Zotero "
           "8R3TJWV9), D_w Muller-Hertz 1996 via Blazquez 2023 Table V "
           "(Zotero VMZZ3IN9), O'Neill 2024 PMF benchmarks from the paper.")
 
-    fig_kappa_series(mad, rpa, mp2)
-    fig_dne_series(mad, rpa, mp2)
-    fig_tna_series(mad, rpa, mp2)
+    fig_three_way_1m(pair, mad_pair, rpa, mp2)
+    fig_kappa_series(mad, rpa)
+    fig_dne_series(mad, rpa)
+    fig_tna_series(mad, rpa)
     fig_eta_series(rpa_eta, mp2_eta)
     fig_pairing_series(pair, mad_pair)
-    fig_fong_series(mad, rpa, mp2)
+    fig_fong_series(mad, rpa)
     write_summary(mad, rpa, rpa_eta, mp2, mp2_eta)
 
 
