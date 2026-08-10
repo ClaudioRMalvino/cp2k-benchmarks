@@ -7,9 +7,9 @@ results/rpa_transport/, MP2-anchor files in results/mp2_transport/) and
 overlays the RPA series on the Madrid-2019 curves of make_figures.py, same
 style and experimental anchors. Headline datasets:
 
-  1 m: rpa_gpu_cube3_full_w1040_kappa.npz    + rpa_gpu_cube3_final_eta.npz
-  2 m: rpa_gpu_cube3_2m_5x80_w1040_kappa.npz + rpa_gpu_cube3_2m_final_eta.npz
-  4 m: rpa_gpu_cube3_4m_5x80_w1040_kappa.npz + rpa_gpu_cube3_4m_final_eta.npz
+  1 m: rpa_cpu_cube3_5x160_w1040_kappa.npz    + rpa_cpu_cube3_5x160_final_eta.npz
+  2 m: rpa_cpu_cube3_2m_5x160_w1040_kappa.npz + rpa_cpu_cube3_2m_5x160_final_eta.npz
+  4 m: rpa_cpu_cube3_4m_5x160_w1040_kappa.npz + rpa_cpu_cube3_4m_5x160_final_eta.npz
   MP2 anchor at 1 m, same pipeline: mp2_anchor_cube3_{kappa,eta}.npz
 
 Model encoding across figures: Madrid-2019 = hollow markers + solid lines,
@@ -89,22 +89,29 @@ ETA_EXP = {0.0: 0.8901, 1.0: 0.9723, 2.0: 1.0745, 4.0: 1.3504}
 # value is printed alongside as the sensitivity.
 ETA_WINDOW = (10.0, 18.0)
 
-PAIRING = {1.0: "rpa_gpu_cube3_1M", 2.0: "rpa_gpu_cube3_2m",
-           4.0: "rpa_gpu_cube3_4m", "mp2": "mp2_anchor_cube3"}
+PAIRING = {1.0: "rpa_cpu_cube3_1M_5x160", 2.0: "rpa_cpu_cube3_2m_5x160",
+           4.0: "rpa_cpu_cube3_4m_5x160", "mp2": "mp2_anchor_cube3"}
 MADRID_RDF = os.path.join(_REPO, "results", "lammps_madrid", "conductivity")
 KT_KCAL = 0.0019872041 * 298.15
 MADRID_NCIP_1M = 0.026   # report value: coordination integral of the Madrid
                          # g_NaCl at 1 m to the 3.38 A barrier (verified)
 
-# 1 m uses the uniform 5x80 truncation, not the *_full_* set (segs 4-5 there
-# run to 125/155 ps): user decision 2026-08-03, keep all three molalities
-# like-for-like until the 160 ps extension suite lands.
-SERIES = {1.0: ("rpa_gpu_cube3_5x80_w1040_kappa.npz", "rpa_gpu_cube3_final_eta.npz"),
-          2.0: ("rpa_gpu_cube3_2m_5x80_w1040_kappa.npz", "rpa_gpu_cube3_2m_final_eta.npz"),
-          4.0: ("rpa_gpu_cube3_4m_5x80_w1040_kappa.npz", "rpa_gpu_cube3_4m_final_eta.npz")}
-WINDOWS = {1.0: ("rpa_gpu_cube3_5x80_w1030_kappa.npz", "rpa_gpu_cube3_5x80_w1040_kappa.npz"),
-           2.0: ("rpa_gpu_cube3_2m_5x80_w1030_kappa.npz", "rpa_gpu_cube3_2m_5x80_w1040_kappa.npz"),
-           4.0: ("rpa_gpu_cube3_4m_5x80_w1030_kappa.npz", "rpa_gpu_cube3_4m_5x80_w1040_kappa.npz")}
+# The 160 ps extension suite has landed (2026-08-10): all fifteen CPU
+# segments reached 320,000 steps, so all three molalities are now uniform
+# 5 x 160 ps and the *_5x80_* truncation that kept them like-for-like is no
+# longer needed. Switched from the GPU track to the CPU track at the same
+# time - GPU round 2 was abandoned in the queue, so CPU carries the series.
+# The 80 ps products are still on disk under their *_5x80_* / *_final_*
+# labels if the 80-vs-160 ps convergence check is wanted.
+SERIES = {1.0: ("rpa_cpu_cube3_5x160_w1040_kappa.npz", "rpa_cpu_cube3_5x160_final_eta.npz"),
+          2.0: ("rpa_cpu_cube3_2m_5x160_w1040_kappa.npz", "rpa_cpu_cube3_2m_5x160_final_eta.npz"),
+          4.0: ("rpa_cpu_cube3_4m_5x160_w1040_kappa.npz", "rpa_cpu_cube3_4m_5x160_final_eta.npz")}
+# A 10-60 ps window (*_w1060_*) is also produced now that 160 ps supports it;
+# the pair below stays 10-30 vs 10-40 because the sensitivity print labels
+# those two windows by name.
+WINDOWS = {1.0: ("rpa_cpu_cube3_5x160_w1030_kappa.npz", "rpa_cpu_cube3_5x160_w1040_kappa.npz"),
+           2.0: ("rpa_cpu_cube3_2m_5x160_w1030_kappa.npz", "rpa_cpu_cube3_2m_5x160_w1040_kappa.npz"),
+           4.0: ("rpa_cpu_cube3_4m_5x160_w1030_kappa.npz", "rpa_cpu_cube3_4m_5x160_w1040_kappa.npz")}
 ANCHOR = ("mp2_anchor_cube3_kappa.npz", "mp2_anchor_cube3_eta.npz")
 MASTER_S_PER_STEP = None                 # read from timings.csv (master_ref row)
 

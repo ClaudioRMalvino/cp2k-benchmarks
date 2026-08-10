@@ -1,0 +1,38 @@
+# round-2 transport products, 5 x 160 ps CPU campaign
+# job 33374194, generated 2026-08-10T14:53:05+01:00
+# source: /rds/user/crm98/hpc-work/nacl_mp2_anchor/runs/RPA/{cubic_1M,cubic_2m,cubic_4m}/production/cube3/seg{1..5} @ step 320000
+
+-rw-rw-r-- 1 crm98 crm98     237 Aug 10 14:53 /home/crm98/cp2k-benchmarks/results/rpa_transport/MANIFEST_5x160.txt
+-rw-rw-r-- 1 crm98 crm98     370 Aug 10 14:51 /home/crm98/cp2k-benchmarks/results/rpa_transport/rpa_cpu_cube3_1M_5x160_pairing.csv
+-rw-rw-r-- 1 crm98 crm98   34904 Aug 10 14:51 /home/crm98/cp2k-benchmarks/results/rpa_transport/rpa_cpu_cube3_1M_5x160_pairing.npz
+-rw-rw-r-- 1 crm98 crm98   45870 Aug 10 14:51 /home/crm98/cp2k-benchmarks/results/rpa_transport/rpa_cpu_cube3_1M_5x160_rdf_ions.csv
+-rw-rw-r-- 1 crm98 crm98 3841546 Aug 10 14:50 /home/crm98/cp2k-benchmarks/results/rpa_transport/rpa_cpu_cube3_2m_5x160_final_eta.npz
+-rw-rw-r-- 1 crm98 crm98 1921546 Aug 10 14:50 /home/crm98/cp2k-benchmarks/results/rpa_transport/rpa_cpu_cube3_2m_5x160_p0210_eta.npz
+-rw-rw-r-- 1 crm98 crm98     370 Aug 10 14:51 /home/crm98/cp2k-benchmarks/results/rpa_transport/rpa_cpu_cube3_2m_5x160_pairing.csv
+-rw-rw-r-- 1 crm98 crm98   34904 Aug 10 14:51 /home/crm98/cp2k-benchmarks/results/rpa_transport/rpa_cpu_cube3_2m_5x160_pairing.npz
+-rw-rw-r-- 1 crm98 crm98   45856 Aug 10 14:51 /home/crm98/cp2k-benchmarks/results/rpa_transport/rpa_cpu_cube3_2m_5x160_rdf_ions.csv
+-rw-rw-r-- 1 crm98 crm98     669 Aug 10 14:50 /home/crm98/cp2k-benchmarks/results/rpa_transport/rpa_cpu_cube3_2m_5x160_w1030_kappa.csv
+-rw-rw-r-- 1 crm98 crm98    4014 Aug 10 14:50 /home/crm98/cp2k-benchmarks/results/rpa_transport/rpa_cpu_cube3_2m_5x160_w1030_kappa.npz
+-rw-rw-r-- 1 crm98 crm98     669 Aug 10 14:51 /home/crm98/cp2k-benchmarks/results/rpa_transport/rpa_cpu_cube3_2m_5x160_w1040_kappa.csv
+-rw-rw-r-- 1 crm98 crm98    4014 Aug 10 14:51 /home/crm98/cp2k-benchmarks/results/rpa_transport/rpa_cpu_cube3_2m_5x160_w1040_kappa.npz
+-rw-rw-r-- 1 crm98 crm98     671 Aug 10 14:52 /home/crm98/cp2k-benchmarks/results/rpa_transport/rpa_cpu_cube3_2m_5x160_w1060_kappa.csv
+-rw-rw-r-- 1 crm98 crm98    4014 Aug 10 14:52 /home/crm98/cp2k-benchmarks/results/rpa_transport/rpa_cpu_cube3_2m_5x160_w1060_kappa.npz
+-rw-rw-r-- 1 crm98 crm98 3841546 Aug 10 14:50 /home/crm98/cp2k-benchmarks/results/rpa_transport/rpa_cpu_cube3_4m_5x160_final_eta.npz
+-rw-rw-r-- 1 crm98 crm98 1921546 Aug 10 14:50 /home/crm98/cp2k-benchmarks/results/rpa_transport/rpa_cpu_cube3_4m_5x160_p0210_eta.npz
+-rw-rw-r-- 1 crm98 crm98     371 Aug 10 14:53 /home/crm98/cp2k-benchmarks/results/rpa_transport/rpa_cpu_cube3_4m_5x160_pairing.csv
+-rw-rw-r-- 1 crm98 crm98   34904 Aug 10 14:53 /home/crm98/cp2k-benchmarks/results/rpa_transport/rpa_cpu_cube3_4m_5x160_pairing.npz
+-rw-rw-r-- 1 crm98 crm98   45846 Aug 10 14:53 /home/crm98/cp2k-benchmarks/results/rpa_transport/rpa_cpu_cube3_4m_5x160_rdf_ions.csv
+-rw-rw-r-- 1 crm98 crm98     678 Aug 10 14:50 /home/crm98/cp2k-benchmarks/results/rpa_transport/rpa_cpu_cube3_4m_5x160_w1030_kappa.csv
+-rw-rw-r-- 1 crm98 crm98    4014 Aug 10 14:50 /home/crm98/cp2k-benchmarks/results/rpa_transport/rpa_cpu_cube3_4m_5x160_w1030_kappa.npz
+-rw-rw-r-- 1 crm98 crm98     680 Aug 10 14:51 /home/crm98/cp2k-benchmarks/results/rpa_transport/rpa_cpu_cube3_4m_5x160_w1040_kappa.csv
+-rw-rw-r-- 1 crm98 crm98    4014 Aug 10 14:51 /home/crm98/cp2k-benchmarks/results/rpa_transport/rpa_cpu_cube3_4m_5x160_w1040_kappa.npz
+-rw-rw-r-- 1 crm98 crm98     679 Aug 10 14:51 /home/crm98/cp2k-benchmarks/results/rpa_transport/rpa_cpu_cube3_4m_5x160_w1060_kappa.csv
+-rw-rw-r-- 1 crm98 crm98    4014 Aug 10 14:51 /home/crm98/cp2k-benchmarks/results/rpa_transport/rpa_cpu_cube3_4m_5x160_w1060_kappa.npz
+-rw-rw-r-- 1 crm98 crm98 3841546 Aug 10 14:52 /home/crm98/cp2k-benchmarks/results/rpa_transport/rpa_cpu_cube3_5x160_final_eta.npz
+-rw-rw-r-- 1 crm98 crm98 1921546 Aug 10 14:52 /home/crm98/cp2k-benchmarks/results/rpa_transport/rpa_cpu_cube3_5x160_p0210_eta.npz
+-rw-rw-r-- 1 crm98 crm98     663 Aug 10 14:50 /home/crm98/cp2k-benchmarks/results/rpa_transport/rpa_cpu_cube3_5x160_w1030_kappa.csv
+-rw-rw-r-- 1 crm98 crm98    4014 Aug 10 14:50 /home/crm98/cp2k-benchmarks/results/rpa_transport/rpa_cpu_cube3_5x160_w1030_kappa.npz
+-rw-rw-r-- 1 crm98 crm98     663 Aug 10 14:51 /home/crm98/cp2k-benchmarks/results/rpa_transport/rpa_cpu_cube3_5x160_w1040_kappa.csv
+-rw-rw-r-- 1 crm98 crm98    4014 Aug 10 14:51 /home/crm98/cp2k-benchmarks/results/rpa_transport/rpa_cpu_cube3_5x160_w1040_kappa.npz
+-rw-rw-r-- 1 crm98 crm98     664 Aug 10 14:52 /home/crm98/cp2k-benchmarks/results/rpa_transport/rpa_cpu_cube3_5x160_w1060_kappa.csv
+-rw-rw-r-- 1 crm98 crm98    4014 Aug 10 14:52 /home/crm98/cp2k-benchmarks/results/rpa_transport/rpa_cpu_cube3_5x160_w1060_kappa.npz

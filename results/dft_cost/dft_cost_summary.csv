@@ -1,0 +1,6 @@
+rung,s_per_step_5064atoms,unit,campaign_node_or_gpu_h,campaign_core_h,ratio_vs_gpu,basis
+On-the-fly RPA (analytic),6.97366e+09,node,4.6491e+12,3.53332e+14,4.75368e+10,infeasible: memory
+On-the-fly revPBE-D3 (AIMD),3414.33,node,2.27622e+06,1.72993e+08,23274.2,extrapolated from sub-production rungs
+"NNP, master CP2K (757bb76a80)",4.0473,node,2698.2,205063,27.589,measured
+"NNP, optimised CPU (PR #5295)",0.2554,node,170.267,12940.3,1.74097,measured
+"NNP, GPU (PR #5295 + nnp_gpu)",0.1467,gpu,97.8,,1,measured

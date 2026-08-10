@@ -12,6 +12,28 @@
 #
 #   usage: sbatch --time=<wall> sbatch_dft_ladder.sh <rung 1-4>
 #
+#   RUNG 4 MUST BE SUBMITTED WITH -p icelake-himem:
+#     sbatch -p icelake-himem --time=04:00:00 sbatch_dft_ladder.sh 4
+#
+# RUNG 4 DOES NOT FIT IN A PLAIN icelake NODE. Job 33197088 converged the
+# step-0 wavefunction cleanly (7 SCF steps, outer loop converged in 2,
+# E = -9065.61728603745905 Ha) and was then OOM-killed on rank 35 during the
+# first force evaluation; the job hung on the survivors until the 5 h wall
+# and wrote no .ener at all. sacct puts MaxRSS at 3,911,944 K per rank, so
+# 76 ranks need ~283 GB against the 250 GB an icelake node has - it is short
+# by about 13%, not by an order of magnitude. icelake-himem is the same Ice
+# Lake silicon with the same 76 cores and 502 GB, so the 76x1 pure-MPI layout
+# the whole ladder depends on is preserved exactly and only the DRAM ceiling
+# moves. Hybrid 19x4 would also have fitted, but it changes the layout the
+# NNP reference rungs were measured on, which is precisely what this ladder
+# is not allowed to do.
+#
+# Because rung 4 now sits on different nodes from rungs 1-3, rung 3 is re-run
+# on himem as a control - if it reproduces its icelake 250.2436 s/step then
+# the partitions are timing-equivalent and rung 4 can be fitted alongside
+# rungs 1-3 without an asterisk. The CSV records SLURM_JOB_PARTITION per row,
+# so both rung-3 measurements coexist and are told apart by that column.
+#
 # Measures the steady-state Born-Oppenheimer AIMD cost per MD step for
 # liquid water at revPBE-D3 (the O'Neill training-set level), at four system
 # sizes built by replicating one 64-water box. The fitted cost-vs-N exponent
