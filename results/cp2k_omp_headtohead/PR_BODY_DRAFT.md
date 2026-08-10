@@ -107,10 +107,26 @@ unmodified baseline binary, same input, both MD frames:
 
 ### Scope and limitations
 
-Parallelism moves from symmetry-function groups to atomic centres, so a case
-with very few centres per MPI rank but several angular groups loses parallelism
-this PR does not replace. For any production-sized system centres per rank
-greatly exceeds group count, which is the regime the measurements above cover.
+Parallelism moves from angular symmetry-function groups to atomic centres.
+The removed path was an `!$OMP DO` over `nnp%ang(ind)%n_symfgrp`, so its
+parallelism was capped at the number of angular groups the potential defines —
+2 for H and 3 for O in the RPBE-vdW water NNP benchmarked above, 10 per centre
+for a four-element NaCl(aq) NNP. That ceiling is a property of the symmetry
+function set, not of the machine, so the old path could not use more threads
+than that anywhere.
+
+A case therefore loses parallelism only once centres per MPI rank drops below
+that group count — fewer than about three atoms per rank on water. MPI
+parallelism has already collapsed by then, so this is not a regime production
+runs occupy: for any production-sized system centres per rank exceeds group
+count by orders of magnitude, which is what the measurements above cover.
+
+On the system measured here the old path did not merely cap out, it cost time:
+2.1879 s/step at one thread against 2.4849 at two and 2.7614 at 76, slower
+than its own serial run at every thread count. That is one machine and I would
+not generalise it; the group-count ceiling above is the part that holds
+everywhere.
+
 I have not tried to make the two levels coexist; a fixed reduction order over
 centres is what buys bit-exactness, and nesting a second level inside it would
 put that at risk.
