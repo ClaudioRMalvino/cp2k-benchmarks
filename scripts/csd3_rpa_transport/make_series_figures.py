@@ -409,7 +409,7 @@ def fig_three_way_1m(pair, mad_pair, rpa, mp2):
 
 
 def fig_pairing_series(pair, mad_pair):
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(9.8, 4.0))
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(9.8, 4.6))
     ax1.plot(mad_pair[1.0]["r"], mad_pair[1.0]["w"], color=C_MAD, lw=1.6,
              label="Madrid 1 mol/kg")
     if mad_pair.get(4.0) is not None:
@@ -423,8 +423,11 @@ def fig_pairing_series(pair, mad_pair):
     ax1.axhline(0, color=MUTED, lw=0.8)
     ax1.set_xlim(2.2, 7.0)
     ax1.set_ylim(-1.3, 2.2)
-    ax1.legend(frameon=False, fontsize=8.5, labelcolor=INK2, loc="upper right")
-    style(ax1, r"$r_{\mathrm{NaCl}}$ (Å)", r"$w(r)$ (kcal/mol)", "(a)")
+    ax1.legend(frameon=False, fontsize=9, labelcolor=INK2, ncol=3,
+               loc="lower center", bbox_to_anchor=(0.5, 1.0),
+               columnspacing=1.2, handlelength=1.8, handletextpad=0.5)
+    style(ax1, r"$r_{\mathrm{NaCl}}$ (Å)", r"$w(r)$ (kcal/mol)")
+    ax1.set_title("(a)", color=INK, fontsize=11, pad=44)
     cr = [1.0, 2.0, 4.0]
     y = [pair[m]["n_CIP"] for m in (1.0, 2.0, 4.0)]
     ys = [pair[m]["n_CIP_sem"] for m in (1.0, 2.0, 4.0)]
@@ -439,8 +442,10 @@ def fig_pairing_series(pair, mad_pair):
                  lw=1.4, elinewidth=1.0, capsize=2, label="Madrid-2019")
     ax2.set_xlim(*SERIES_XLIM)
     ax2.set_ylim(0, 0.60)
-    ax2.legend(frameon=False, fontsize=8.5, labelcolor=INK2, loc="upper left")
-    style(ax2, SERIES_XLABEL, r"$n_{\mathrm{CIP}}$ (contact Cl per Na)", "(b)")
+    ax2.legend(frameon=False, fontsize=9, labelcolor=INK2, ncol=2,
+               loc="lower center", bbox_to_anchor=(0.5, 1.0))
+    style(ax2, SERIES_XLABEL, r"$n_{\mathrm{CIP}}$ (contact Cl per Na)")
+    ax2.set_title("(b)", color=INK, fontsize=11, pad=44)
     savefig(fig, "fig13_pairing_series")
 
 
@@ -550,7 +555,7 @@ def fig_fong_series(mad, rpa):
     ce, lam_e, una_e, ucl_e = expt_fong(mols)
     cm = mols
     cr = np.array(sorted(rpa), float)
-    fig, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(14.5, 4.6))
+    fig, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(9.8, 3.7))
 
     # (a) molar conductivity vs sqrt(m), Kohlrausch presentation
     _, lam, lam_s = pooled(mf["mol"], mf["Lambda"])
@@ -569,7 +574,7 @@ def fig_fong_series(mad, rpa):
              label="Experiment", zorder=5)
     ax1.set_xlim(0.9, 2.1)
     style(ax1, r"$\sqrt{m}$ ((mol/kg)$^{1/2}$)",
-          r"$\Lambda$ (S cm$^2$ mol$^{-1}$)", "(a)", fs=12.5)
+          r"$\Lambda$ (S cm$^2$ mol$^{-1}$)", "(a)", fs=14)
 
     # (b, c) electrophoretic mobilities, one species per panel (Hittorf
     # frame; the Cl- magnitude is shown)
@@ -586,12 +591,12 @@ def fig_fong_series(mad, rpa):
         ax.set_xlim(*SERIES_XLIM)
         ax.set_ylim(0, 7.0)
         style(ax, SERIES_XLABEL,
-              r"$u$ ($10^{-8}$ m$^2$ V$^{-1}$ s$^{-1}$)", title, fs=12.5)
+              r"$u$ ($10^{-8}$ m$^2$ V$^{-1}$ s$^{-1}$)", title, fs=14)
     h, l = ax1.get_legend_handles_labels()
-    fig.legend(h, l, loc="upper center", bbox_to_anchor=(0.5, 1.07), ncol=4,
-               frameon=False, fontsize=12, columnspacing=2.0,
-               handlelength=2.4, handletextpad=0.6, labelcolor=INK2)
-    fig.tight_layout(w_pad=2.5)
+    fig.legend(h, l, loc="upper center", bbox_to_anchor=(0.5, 1.12), ncol=4,
+               frameon=False, fontsize=13, columnspacing=1.6,
+               handlelength=2.0, handletextpad=0.5, labelcolor=INK2)
+    fig.tight_layout(w_pad=2.0)
     savefig(fig, "fig14_fong_series")
 
 
@@ -708,7 +713,7 @@ def fig_tna_series(mad, rpa):
 
 
 def fig_eta_series(rpa_eta, mp2_eta):
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(9.8, 4.0))
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(9.8, 4.4))
     # (a) eta(c)
     cr = np.array(sorted(rpa_eta), float)
     y = [rpa_eta[m]["etas"].mean() * 1e3 for m in sorted(rpa_eta)]
@@ -719,8 +724,10 @@ def fig_eta_series(rpa_eta, mp2_eta):
              marker="o", ms=5, ls="", color=SLATE3, label="Experiment",
              zorder=5)
     ax1.set_xlim(*SERIES_XLIM)
-    ax1.legend(frameon=False, fontsize=8.5, labelcolor=INK2, loc="upper left")
-    style(ax1, SERIES_XLABEL, r"$\eta$ (mPa s)", "(a)")
+    ax1.legend(frameon=False, fontsize=9, labelcolor=INK2, ncol=2,
+               loc="lower center", bbox_to_anchor=(0.5, 1.0))
+    style(ax1, SERIES_XLABEL, r"$\eta$ (mPa s)")
+    ax1.set_title("(a)", color=INK, fontsize=11, pad=32)
     # (b) GK running integrals, per-molality segment mean
     for m in (1.0, 2.0, 4.0):
         e = rpa_eta[m]
@@ -734,8 +741,11 @@ def fig_eta_series(rpa_eta, mp2_eta):
     lo, hi = rpa_eta[1.0]["plateau"]
     ax2.axvspan(lo, hi, color=GRID, alpha=0.5, zorder=0)
     ax2.set_xlim(0, float(rpa_eta[1.0]["t_ps"].max()))
-    ax2.legend(frameon=False, fontsize=8.5, labelcolor=INK2, loc="lower right")
-    style(ax2, "t (ps)", r"$\eta_{\mathrm{GK}}(t)$ (mPa s)", "(b)")
+    ax2.legend(frameon=False, fontsize=9, labelcolor=INK2, ncol=4,
+               loc="lower center", bbox_to_anchor=(0.5, 1.0),
+               columnspacing=1.0, handlelength=1.6, handletextpad=0.4)
+    style(ax2, "t (ps)", r"$\eta_{\mathrm{GK}}(t)$ (mPa s)")
+    ax2.set_title("(b)", color=INK, fontsize=11, pad=32)
     savefig(fig, "fig12_eta_series")
 
 
