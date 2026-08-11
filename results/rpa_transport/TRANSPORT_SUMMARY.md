@@ -533,16 +533,28 @@ the numbers below are computed from the Table 9.4 hour canon directly.
 > energy: the jobs *reserved* 32 cores and 250 GB, which no one else could use
 > while they held them. Carbon accounting charges reserved, not used.
 
-**Carbon intensity is measured, not assumed.** The UK National Grid API
-(`api.carbonintensity.org.uk`) gives **122.0 gCO2e/kWh** as the mean over the
-93 days the campaign ran (2026-05-10 → 08-11; daily range 57–209). The Green
-Algorithms UK default of 231.12 is a 2021 vintage and would nearly double the
-answer — grid intensity has roughly halved since. Use the measured figure and
-say which window it covers.
+**Carbon intensity is measured, not assumed.** The UK National Grid Carbon
+Intensity API (`api.carbonintensity.org.uk`, run by National Grid ESO with EDF
+Europe, Oxford and WWF), endpoint `/intensity/stats/{from}/{to}/24`, gives
+**122.0 gCO2e/kWh** as the mean of 93 daily means over the campaign window
+2026-05-10 → 2026-08-11 (daily range 57–209). The Green Algorithms UK default
+of 231.12 is a 2021 vintage and would nearly double the answer — grid intensity
+has roughly halved since. Cite the API and the window.
 
-**PUE = 1.67**, the Green Algorithms global default. CSD3 publishes no PUE and
-RCS have not replied; 1.67 is what other published CSD3 footprint calculations
-use, so it is the defensible choice. Modern facilities target ~1.2.
+> This is the **national** figure. The same API serves regional data and
+> Cambridge (CB3) is region 10, "East England"/UKPN East, whose generation mix
+> differs. Recomputing regionally is a two-minute job if the report wants the
+> tighter number.
+
+**PUE = 1.67 — this is the weakest input in the whole calculation and must be
+labelled as an assumption, not a value.** CSD3 publishes no PUE; RCS have not
+replied. 1.67 is the number in the Green Algorithms *configuration template*,
+where it appears as `PUE: <1.67>` — angle brackets, i.e. a placeholder to be
+replaced with the real facility figure, not a recommended default. Web searches
+suggest other work on CSD3 falls back to ~1.67 for the same reason, but **no
+such publication has been verified**, so do not cite one. Modern facilities
+target ~1.2. Since PUE is a pure multiplier, the honest presentation is to
+state it in the caption and give the rescaling factor.
 
 | | hours | kWh | kgCO2e | tree-months | car-km |
 |---|---:|---:|---:|---:|---:|
