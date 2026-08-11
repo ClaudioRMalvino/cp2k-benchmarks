@@ -541,7 +541,11 @@ Europe, Oxford and WWF), endpoint `/intensity/stats/{from}/{to}/24`, gives
 of 231.12 is a 2021 vintage and would nearly double the answer — grid intensity
 has roughly halved since. Cite the API and the window.
 
-> **Addendum 2026-08-11 (laptop): regional figure computed and adopted.**
+> **Addendum 2026-08-11/12 (laptop): regional figure computed, then NOT
+> adopted.** The report keeps the measured national 122.0 as its carbon
+> basis, because the regional service publishes forecasts rather than
+> measurements; the regional mean below is quoted in the report only as a
+> sensitivity (x1.20 on every carbon number). Original computation:**
 > `/regional/intensity/{from}/{to}/regionid/10` (East England, the region
 > containing CSD3), half-hourly forecast intensities aggregated to 93 full
 > daily means over 2026-05-10 → 2026-08-10: **mean 146.0 gCO2e/kWh**
