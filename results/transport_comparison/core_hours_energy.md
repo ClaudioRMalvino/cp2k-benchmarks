@@ -30,15 +30,18 @@ want the all-in number; the report's money table uses that basis.
 
 ## 2. Extended to 200 ns of trajectory (400 M MD steps, the O'Neill-scale sampling)
 
-| Code | Wall-time on one unit | Node-hours | Core-hours | GPU-hours | kWh (TDP est.) |
+| Code | Serial time on one unit (derived) | Node-hours | Core-hours | GPU-hours | kWh (TDP est.) |
 |---|---|---|---|---|---|
 | `master` (non-optimised) | 51 years (1 node) | 450,000 | 34,200,000 | — | ~315,000 |
 | Optimised CPU | 3.2 years (1 node) | 28,000 | 2,128,000 | — | ~19,600 |
 | Optimised GPU | 2.2 years (1 A100) | — | 57,000 (SPME) | 19,000 | ~10,450 |
 
-These match the report's §9.5 numbers (£342,000 / £21,600 / £10,400 at
-CSD3 internal rates). Wall-times assume one unit; in practice the runs
-split into independent segments across nodes.
+The node-hours, GPU-hours and £ equivalents (£342,000 / £21,600 /
+£10,400 at CSD3 internal rates) are the report's §9.5 numbers. The
+"serial time" column is NOT in the report; it is node-hours divided by
+8,760 (hours per year), the time one unit would need running
+non-stop. Real campaigns run independent segments in parallel, so no
+one would ever wait this long; the column only illustrates scale.
 
 ## 3. If the whole series ran to 200 ns per concentration (600 ns, 1.2 G steps)
 
