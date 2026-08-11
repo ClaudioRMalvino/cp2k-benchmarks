@@ -601,6 +601,34 @@ def fig_fong_series(mad, rpa):
     savefig(fig, "fig14_fong_series")
 
 
+def fig_carbon():
+    """fig15: estimated carbon of the series per code branch (report
+    tab->fig swap 2026-08-12). Numbers from TRANSPORT_SUMMARY.md section 8.8
+    (Green Algorithms model, reserved-allocation draws, PUE 1.67, measured
+    national CI 122.0 gCO2e/kWh over the campaign window); hours are the
+    Table 9.4 canon. kWh is proportional to kgCO2e (divide by 0.122), so
+    one quantity per panel suffices."""
+    codes = ["master", "optimised\nCPU", "optimised\nGPU"]
+    colors = [SLATE3, CAM_BLUE, C_RPA]
+    asrun_kg = [696, 44, 29]
+    ns200_t = [58.0, 3.6, 2.5]
+    fig, (a, b) = plt.subplots(1, 2, figsize=(9.8, 4.2))
+    for ax, vals, ylab, title, fmt in (
+            (a, asrun_kg, r"kgCO$_2$e", "(a) the series as run (2.4 ns)", "{:,.0f}"),
+            (b, ns200_t, r"tCO$_2$e", "(b) projected to 200 ns", "{:,.1f}")):
+        bars = ax.bar(range(3), vals, width=0.62, color=colors, zorder=3)
+        for r, v in zip(bars, vals):
+            ax.text(r.get_x() + r.get_width() / 2, r.get_height(),
+                    fmt.format(v), ha="center", va="bottom",
+                    fontsize=13, color=INK, fontweight="bold")
+        ax.set_xticks(range(3))
+        ax.set_xticklabels(codes)
+        ax.set_ylim(0, max(vals) * 1.14)
+        style(ax, None, ylab, title, fs=13)
+    fig.tight_layout(w_pad=3)
+    savefig(fig, "fig15_carbon")
+
+
 def fig_kappa_series(mad, rpa):
     mols, kNE, kNE_s = pooled(mad["runs_mol"], mad["runs_kNE"])
     _, kOns, kOns_s = pooled(mad["runs_mol"], mad["runs_kOns"])
@@ -866,6 +894,7 @@ def main():
     fig_eta_series(rpa_eta, mp2_eta)
     fig_pairing_series(pair, mad_pair)
     fig_fong_series(mad, rpa)
+    fig_carbon()
     write_summary(mad, rpa, rpa_eta, mp2, mp2_eta)
 
 
