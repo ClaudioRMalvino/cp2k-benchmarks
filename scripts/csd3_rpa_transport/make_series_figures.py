@@ -64,11 +64,12 @@ def res_path(fname):
 CAM_BLUE, SLATE3 = "#00BDB6", "#546072"
 C_NA, C_CL, C_O = CAM_BLUE, "#4DB78C", "#CD3572"
 INK, INK2, MUTED, GRID = "#0b0b0b", "#52514e", "#898781", "#e1e0d9"
-# model colours (user rule 2026-08-06): in every Madrid/MP2/RPA comparison
-# a level keeps ONE colour, regardless of figure -- RPA = Cambridge crest
-# orange, Madrid-2019 = cherry, MP2 = blue (hexes from the CAM dict of
-# scripts/benchmark_figures); experiment stays slate.
-C_RPA, C_MAD, C_MP2 = "#FD8153", "#CD3572", "#5366E0"
+# model colours (user rule 2026-08-06, Madrid recoloured 2026-08-11): in
+# every Madrid/MP2/RPA comparison a level keeps ONE colour, regardless of
+# figure -- RPA = Cambridge crest orange, Madrid-2019 = green (cherry was
+# too close to the darker crest shades), MP2 = blue; experiment stays
+# slate.
+C_RPA, C_MAD, C_MP2 = "#FD8153", "#4DB78C", "#5366E0"
 RPA_SHADE = {1.0: "#FFBE93", 2.0: "#FD8153", 4.0: "#E2571F"}  # crest ramp
 # (ramp stays orange end to end so no RPA shade reads as Madrid cherry)
 
