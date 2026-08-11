@@ -609,22 +609,37 @@ def fig_carbon():
     Table 9.4 canon. kWh is proportional to kgCO2e (divide by 0.122), so
     one quantity per panel suffices."""
     codes = ["master", "optimised\nCPU", "optimised\nGPU"]
-    colors = [SLATE3, CAM_BLUE, C_RPA]
+    # per-code shade ramps, lightest = 1 mol/kg to darkest = 4 mol/kg
+    # (the series splits into equal thirds by concentration: 5 x 160 ps each)
+    shades = [["#9BA4B2", SLATE3, "#3A4350"],       # master: slate ramp
+              ["#66D7D2", CAM_BLUE, "#008B86"],     # CPU: Cambridge-blue ramp
+              [RPA_SHADE[1.0], RPA_SHADE[2.0], RPA_SHADE[4.0]]]  # GPU: crest
     asrun_kg = [696, 44, 29]
     ns200_t = [58.0, 3.6, 2.5]
     fig, (a, b) = plt.subplots(1, 2, figsize=(9.8, 4.2))
-    for ax, vals, ylab, title, fmt in (
-            (a, asrun_kg, r"kgCO$_2$e", "(a) the series as run (2.4 ns)", "{:,.0f}"),
-            (b, ns200_t, r"tCO$_2$e", "(b) projected to 200 ns", "{:,.1f}")):
-        bars = ax.bar(range(3), vals, width=0.62, color=colors, zorder=3)
-        for r, v in zip(bars, vals):
-            ax.text(r.get_x() + r.get_width() / 2, r.get_height(),
-                    fmt.format(v), ha="center", va="bottom",
-                    fontsize=13, color=INK, fontweight="bold")
-        ax.set_xticks(range(3))
-        ax.set_xticklabels(codes)
-        ax.set_ylim(0, max(vals) * 1.14)
-        style(ax, None, ylab, title, fs=13)
+    # (a) as run: stacked thirds per concentration
+    for i, total in enumerate(asrun_kg):
+        base = 0.0
+        for third, c in zip((total / 3,) * 3, shades[i]):
+            a.bar(i, third, width=0.62, bottom=base, color=c, zorder=3)
+            base += third
+        a.text(i, total, f"{total:,.0f}", ha="center", va="bottom",
+               fontsize=13, color=INK, fontweight="bold")
+    a.set_xticks(range(3))
+    a.set_xticklabels(codes)
+    a.set_ylim(0, max(asrun_kg) * 1.14)
+    style(a, None, r"kgCO$_2$e", "(a) the series as run (2.4 ns)", fs=13)
+    # (b) 200 ns: one trajectory, solid mid-shade bars
+    bars = b.bar(range(3), ns200_t, width=0.62,
+                 color=[s[1] for s in shades], zorder=3)
+    for r, v in zip(bars, ns200_t):
+        b.text(r.get_x() + r.get_width() / 2, r.get_height(),
+               f"{v:,.1f}", ha="center", va="bottom",
+               fontsize=13, color=INK, fontweight="bold")
+    b.set_xticks(range(3))
+    b.set_xticklabels(codes)
+    b.set_ylim(0, max(ns200_t) * 1.14)
+    style(b, None, r"tCO$_2$e", "(b) projected to 200 ns", fs=13)
     fig.tight_layout(w_pad=3)
     savefig(fig, "fig15_carbon")
 
