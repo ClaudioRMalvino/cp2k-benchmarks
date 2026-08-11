@@ -628,7 +628,7 @@ def fig_carbon():
     a.set_xticks(range(3))
     a.set_xticklabels(codes)
     a.set_ylim(0, max(asrun_kg) * 1.14)
-    style(a, None, r"kgCO$_2$e", "(a) the series as run (2.4 ns)", fs=13)
+    style(a, None, r"kgCO$_2$e", "(a) 2.4 ns", fs=13)
     # (b) 200 ns: one trajectory, solid mid-shade bars
     bars = b.bar(range(3), ns200_t, width=0.62,
                  color=[s[1] for s in shades], zorder=3)
@@ -639,7 +639,7 @@ def fig_carbon():
     b.set_xticks(range(3))
     b.set_xticklabels(codes)
     b.set_ylim(0, max(ns200_t) * 1.14)
-    style(b, None, r"tCO$_2$e", "(b) projected to 200 ns", fs=13)
+    style(b, None, r"tCO$_2$e", "(b) 200 ns", fs=13)
     fig.tight_layout(w_pad=3)
     savefig(fig, "fig15_carbon")
 
