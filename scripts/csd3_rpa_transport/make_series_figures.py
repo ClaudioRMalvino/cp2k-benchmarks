@@ -350,7 +350,7 @@ def fig_three_way_1m(pair, mad_pair, rpa, mp2):
     a level keeps its colour across the report."""
     rep = np.load(MADRID_REPL, allow_pickle=True)
 
-    fig, (a, b) = plt.subplots(1, 2, figsize=(9.8, 4.2))
+    fig, (a, b) = plt.subplots(1, 2, figsize=(9.8, 4.6))
     a.axhline(0, color=MUTED, lw=0.8)
     a.plot(mad_pair[1.0]["r"], mad_pair[1.0]["w"], color=C_MAD, lw=2.0,
            label="Madrid-2019")
@@ -360,8 +360,11 @@ def fig_three_way_1m(pair, mad_pair, rpa, mp2):
            label="RPA C-NNP")
     a.set_xlim(2.2, 8.0)
     a.set_ylim(-1.3, 1.5)
-    style(a, r"$r_{\mathrm{Na-Cl}}$ (Å)", r"$w(r)$ (kcal/mol)", "(a)",
-          fs=14)
+    a.legend(frameon=False, fontsize=11, ncol=2, labelcolor=INK2,
+             loc="lower center", bbox_to_anchor=(0.5, 1.0),
+             columnspacing=1.2, handlelength=1.8, handletextpad=0.5)
+    style(a, r"$r_{\mathrm{Na-Cl}}$ (Å)", r"$w(r)$ (kcal/mol)", fs=14)
+    a.set_title("(a)", color=INK, fontsize=15, pad=62)
 
     # (b) D_ion / D_w: Madrid YH D_0 ratio; MP2/RPA per-segment means.
     def ratio(num, den):
@@ -397,15 +400,12 @@ def fig_three_way_1m(pair, mad_pair, rpa, mp2):
                        r"$D_{\mathrm{Cl}}/D_{\mathrm{w}}$"])
     b.set_xlim(-0.5, 1.6)
     b.set_ylim(0.35, 1.0)
-    style(b, "", r"$D_{\mathrm{ion}}\,/\,D_{\mathrm{water}}$", "(b)",
-          fs=14)
-    # one legend above the panels (user rule 2026-08-11: legends sit above
-    # the graph, matching the series figures)
-    h, l = b.get_legend_handles_labels()
-    fig.legend(h, l, loc="upper center", bbox_to_anchor=(0.5, 1.08),
-               ncol=4, frameon=False, fontsize=13, columnspacing=1.6,
-               handlelength=2.0, handletextpad=0.5, labelcolor=INK2)
-    fig.tight_layout(rect=(0, 0, 1, 0.94))
+    b.legend(frameon=False, fontsize=11, ncol=2, labelcolor=INK2,
+             loc="lower center", bbox_to_anchor=(0.5, 1.0),
+             columnspacing=1.2, handlelength=1.8, handletextpad=0.5)
+    style(b, "", r"$D_{\mathrm{ion}}\,/\,D_{\mathrm{water}}$", fs=14)
+    b.set_title("(b)", color=INK, fontsize=15, pad=62)
+    fig.tight_layout()
     savefig(fig, "fig8_three_way_1m")
 
 
