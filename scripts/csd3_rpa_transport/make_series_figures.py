@@ -112,6 +112,16 @@ KT_KCAL = 0.0019872041 * 298.15
 MADRID_NCIP_1M = 0.026   # report value: coordination integral of the Madrid
                          # g_NaCl at 1 m to the 3.38 A barrier (verified)
 
+# Comparison figures on concentration axes start at 1 mol/kg (user rule
+# 2026-08-11, like-for-like with the RPA series): the Madrid campaign's
+# 0.25/0.5 molalities appear only in the baseline chapter's own figures.
+# Series x-axes use MOLALITY (user rule 2026-08-11): every model ran at the
+# same 1/2/4 mol/kg, so on a molality axis the points align exactly; molar
+# conversions differ per model density and made the points look misaligned.
+SERIES_MIN_MOL = 1.0
+SERIES_XLIM = (0.8, 4.3)
+SERIES_XLABEL = "m (mol/kg)"
+
 # 160 ps CPU-track products (round 2, complete 2026-08-10): every segment
 # recomputed from the raw trajectories, 5 x 160 ps per molality. The GPU
 # round-2 arrays were cancelled while pending; the *_gpu_*_5x80_* round-1
@@ -131,20 +141,20 @@ def tna_expt_hittorf(mol):
     return 0.3720 - 0.0118 * loga
 
 
-def style(ax, xlabel=None, ylabel=None, title=None):
+def style(ax, xlabel=None, ylabel=None, title=None, fs=10):
     ax.grid(True, color=GRID, linewidth=0.7, alpha=0.9)
     ax.set_axisbelow(True)
     for s in ("top", "right"):
         ax.spines[s].set_visible(False)
     for s in ("left", "bottom"):
         ax.spines[s].set_color(MUTED)
-    ax.tick_params(colors=INK2, labelsize=9)
+    ax.tick_params(colors=INK2, labelsize=fs - 1)
     if xlabel:
-        ax.set_xlabel(xlabel, color=INK, fontsize=10)
+        ax.set_xlabel(xlabel, color=INK, fontsize=fs)
     if ylabel:
-        ax.set_ylabel(ylabel, color=INK, fontsize=10)
+        ax.set_ylabel(ylabel, color=INK, fontsize=fs)
     if title:
-        ax.set_title(title, color=INK, fontsize=11, loc="center", pad=8)
+        ax.set_title(title, color=INK, fontsize=fs + 1, loc="center", pad=8)
 
 
 def savefig(fig, name):
@@ -339,7 +349,7 @@ def fig_three_way_1m(pair, mad_pair, rpa, mp2):
     a level keeps its colour across the report."""
     rep = np.load(MADRID_REPL, allow_pickle=True)
 
-    fig, (a, b) = plt.subplots(1, 2, figsize=(9.8, 4.1))
+    fig, (a, b) = plt.subplots(1, 2, figsize=(10.8, 4.6))
     a.axhline(0, color=MUTED, lw=0.8)
     a.plot(mad_pair[1.0]["r"], mad_pair[1.0]["w"], color=C_MAD, lw=2.0,
            label="Madrid-2019")
@@ -349,8 +359,8 @@ def fig_three_way_1m(pair, mad_pair, rpa, mp2):
            label="RPA C-NNP")
     a.set_xlim(2.2, 8.0)
     a.set_ylim(-1.3, 1.5)
-    a.legend(fontsize=8.5, frameon=False, loc="lower right", labelcolor=INK2)
-    style(a, r"$r_{\mathrm{Na-Cl}}$ (Å)", r"$w(r)$ (kcal/mol)", "(a)")
+    style(a, r"$r_{\mathrm{Na-Cl}}$ (Å)", r"$w(r)$ (kcal/mol)", "(a)",
+          fs=12)
 
     # (b) D_ion / D_w: Madrid YH D_0 ratio; MP2/RPA per-segment means.
     def ratio(num, den):
@@ -386,8 +396,15 @@ def fig_three_way_1m(pair, mad_pair, rpa, mp2):
                        r"$D_{\mathrm{Cl}}/D_{\mathrm{w}}$"])
     b.set_xlim(-0.5, 1.6)
     b.set_ylim(0.35, 1.0)
-    b.legend(fontsize=8, frameon=False, loc="upper left", labelcolor=INK2)
-    style(b, "", r"$D_{\mathrm{ion}}\,/\,D_{\mathrm{water}}$", "(b)")
+    style(b, "", r"$D_{\mathrm{ion}}\,/\,D_{\mathrm{water}}$", "(b)",
+          fs=12)
+    # one legend above the panels (user rule 2026-08-11: legends sit above
+    # the graph, matching the series figures)
+    h, l = b.get_legend_handles_labels()
+    fig.legend(h, l, loc="upper center", bbox_to_anchor=(0.5, 1.06),
+               ncol=4, frameon=False, fontsize=11, columnspacing=1.8,
+               handlelength=2.2, handletextpad=0.6, labelcolor=INK2)
+    fig.tight_layout(rect=(0, 0, 1, 0.94))
     savefig(fig, "fig8_three_way_1m")
 
 
@@ -408,21 +425,22 @@ def fig_pairing_series(pair, mad_pair):
     ax1.set_ylim(-1.3, 2.2)
     ax1.legend(frameon=False, fontsize=8.5, labelcolor=INK2, loc="upper right")
     style(ax1, r"$r_{\mathrm{NaCl}}$ (Å)", r"$w(r)$ (kcal/mol)", "(a)")
-    cr = [MOL_TO_M[m] for m in (1.0, 2.0, 4.0)]
+    cr = [1.0, 2.0, 4.0]
     y = [pair[m]["n_CIP"] for m in (1.0, 2.0, 4.0)]
     ys = [pair[m]["n_CIP_sem"] for m in (1.0, 2.0, 4.0)]
     ax2.errorbar(cr, y, yerr=ys, fmt="o--", ms=6.5, color=C_RPA, mew=0,
                  lw=1.3, elinewidth=1.0, capsize=2, label="RPA")
-    mols_mad = [m for m in sorted(mad_pair) if mad_pair.get(m) is not None]
-    ax2.errorbar([MOL_TO_M[m] for m in mols_mad],
+    mols_mad = [m for m in sorted(mad_pair) if mad_pair.get(m) is not None
+                and m >= SERIES_MIN_MOL]
+    ax2.errorbar(mols_mad,
                  [mad_pair[m]["n_CIP"] for m in mols_mad],
                  yerr=[mad_pair[m]["n_CIP_sem"] for m in mols_mad],
                  fmt="o-", ms=6.5, color=C_MAD, mfc="white", mew=1.6,
                  lw=1.4, elinewidth=1.0, capsize=2, label="Madrid-2019")
-    ax2.set_xlim(0, 3.9)
-    ax2.set_ylim(0, 0.45)
+    ax2.set_xlim(*SERIES_XLIM)
+    ax2.set_ylim(0, 0.60)
     ax2.legend(frameon=False, fontsize=8.5, labelcolor=INK2, loc="upper left")
-    style(ax2, "c (mol/L)", r"$n_{\mathrm{CIP}}$ (contact Cl per Na)", "(b)")
+    style(ax2, SERIES_XLABEL, r"$n_{\mathrm{CIP}}$ (contact Cl per Na)", "(b)")
     savefig(fig, "fig13_pairing_series")
 
 
@@ -526,50 +544,52 @@ def fig_fong_series(mad, rpa):
     comparison stays readable -- (a) molar conductivity vs sqrt(c),
     (b) Na+ mobility, (c) Cl- mobility magnitude (both Hittorf frame)."""
     mf = madrid_fong(mad)
+    sel = np.asarray(mf["mol"], float) >= SERIES_MIN_MOL
+    mf = {k: np.asarray(v)[sel] for k, v in mf.items()}
     mols = np.array(sorted(set(mf["mol"])))
     ce, lam_e, una_e, ucl_e = expt_fong(mols)
-    cm = np.array([MOL_TO_M[m] for m in mols])
-    cr = np.array([MOL_TO_M[m] for m in sorted(rpa)])
-    fig, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(13.5, 4.0))
+    cm = mols
+    cr = np.array(sorted(rpa), float)
+    fig, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(14.5, 4.6))
 
-    # (a) molar conductivity vs sqrt(c), Kohlrausch presentation
+    # (a) molar conductivity vs sqrt(m), Kohlrausch presentation
     _, lam, lam_s = pooled(mf["mol"], mf["Lambda"])
-    ax1.errorbar(np.sqrt(cm), lam, yerr=lam_s, fmt="o-", ms=6, color=C_MAD,
+    ax1.errorbar(np.sqrt(cm), lam, yerr=lam_s, fmt="o-", ms=6.5, color=C_MAD,
                  mfc="white", mew=1.5, lw=1.4, elinewidth=1.0, capsize=2,
                  label="Madrid-2019")
     y = [rpa[m]["Lambda"].mean() for m in sorted(rpa)]
     ys = [sem(rpa[m]["Lambda"]) for m in sorted(rpa)]
-    ax1.errorbar(np.sqrt(cr) + 0.03, y, yerr=ys, fmt="o--", ms=6.5,
+    ax1.errorbar(np.sqrt(cr), y, yerr=ys, fmt="o--", ms=7,
                  color=C_RPA, mew=0, lw=1.3, elinewidth=1.0, capsize=2,
                  label="RPA")
     # expt: Lambda(c) is Chambers-Stokes primary data; u = t^H kappa / F c
     # combines Chambers-Stokes kappa with Smits-Duyvis t^H (exact algebra,
     # same identity as our points -- not independent of fig9/fig11)
-    ax1.plot(np.sqrt(ce), lam_e, marker="o", ms=5, ls="", color=SLATE3,
+    ax1.plot(np.sqrt(mols), lam_e, marker="o", ms=6, ls="", color=SLATE3,
              label="Experiment", zorder=5)
-    ax1.set_xlim(0.3, 2.05)
-    style(ax1, r"$\sqrt{c}$ ((mol/L)$^{1/2}$)",
-          r"$\Lambda$ (S cm$^2$ mol$^{-1}$)", "(a)")
+    ax1.set_xlim(0.9, 2.1)
+    style(ax1, r"$\sqrt{m}$ ((mol/kg)$^{1/2}$)",
+          r"$\Lambda$ (S cm$^2$ mol$^{-1}$)", "(a)", fs=12.5)
 
     # (b, c) electrophoretic mobilities, one species per panel (Hittorf
     # frame; the Cl- magnitude is shown)
     for ax, key, ue, title in ((ax2, "uNa", una_e, r"(b) Na$^+$"),
                                (ax3, "uCl", ucl_e, r"(c) $-$Cl$^-$")):
         _, um, us = pooled(mf["mol"], mf[key])
-        ax.errorbar(cm, um, yerr=us, fmt="o-", ms=6, color=C_MAD,
+        ax.errorbar(cm, um, yerr=us, fmt="o-", ms=6.5, color=C_MAD,
                     mfc="white", mew=1.5, lw=1.4, elinewidth=1.0, capsize=2)
         y = [rpa[m][key].mean() for m in sorted(rpa)]
         ys = [sem(rpa[m][key]) for m in sorted(rpa)]
-        ax.errorbar(cr + 0.07, y, yerr=ys, fmt="o--", ms=6.5, color=C_RPA,
+        ax.errorbar(cr, y, yerr=ys, fmt="o--", ms=7, color=C_RPA,
                     mew=0, lw=1.3, elinewidth=1.0, capsize=2)
-        ax.plot(ce, ue, marker="o", ms=5, ls="", color=SLATE3, zorder=5)
-        ax.set_xlim(0, 3.9)
+        ax.plot(mols, ue, marker="o", ms=6, ls="", color=SLATE3, zorder=5)
+        ax.set_xlim(*SERIES_XLIM)
         ax.set_ylim(0, 7.0)
-        style(ax, "c (mol/L)", r"$u$ ($10^{-8}$ m$^2$ V$^{-1}$ s$^{-1}$)",
-              title)
+        style(ax, SERIES_XLABEL,
+              r"$u$ ($10^{-8}$ m$^2$ V$^{-1}$ s$^{-1}$)", title, fs=12.5)
     h, l = ax1.get_legend_handles_labels()
     fig.legend(h, l, loc="upper center", bbox_to_anchor=(0.5, 1.07), ncol=4,
-               frameon=False, fontsize=9.5, columnspacing=2.0,
+               frameon=False, fontsize=12, columnspacing=2.0,
                handlelength=2.4, handletextpad=0.6, labelcolor=INK2)
     fig.tight_layout(w_pad=2.5)
     savefig(fig, "fig14_fong_series")
@@ -578,7 +598,11 @@ def fig_fong_series(mad, rpa):
 def fig_kappa_series(mad, rpa):
     mols, kNE, kNE_s = pooled(mad["runs_mol"], mad["runs_kNE"])
     _, kOns, kOns_s = pooled(mad["runs_mol"], mad["runs_kOns"])
-    c = np.array([MOL_TO_M[m] for m in mols])
+    keep = np.asarray(mols, float) >= SERIES_MIN_MOL
+    mols = list(np.asarray(mols, float)[keep])
+    kNE, kNE_s, kOns, kOns_s = (np.asarray(a)[keep]
+                                for a in (kNE, kNE_s, kOns, kOns_s))
+    c = np.asarray(mols, float)
     fig, ax = plt.subplots(figsize=(5.2, 4.0))
     ax.errorbar(c, kNE, yerr=kNE_s, fmt="^-", ms=6, color=C_MAD, mfc="white",
                 mew=1.5, lw=1.4, elinewidth=1.0, capsize=2,
@@ -586,23 +610,24 @@ def fig_kappa_series(mad, rpa):
     ax.errorbar(c, kOns, yerr=kOns_s, fmt="o-", ms=6.5, color=C_MAD,
                 mfc="white", mew=1.6, lw=1.8, elinewidth=1.0, capsize=2,
                 label="Madrid Onsager")
-    cr = np.array([MOL_TO_M[m] for m in sorted(rpa)])
+    cr = np.array(sorted(rpa), float)
     for key, mk, lab in (("kNE", "^", "RPA NE"),
                          ("kOns", "o", "RPA Onsager")):
         y = [rpa[m][key].mean() for m in sorted(rpa)]
         ys = [sem(rpa[m][key]) for m in sorted(rpa)]
-        ax.errorbar(cr + 0.07, y, yerr=ys, fmt=mk + "--", ms=6.5, color=C_RPA,
+        ax.errorbar(cr, y, yerr=ys, fmt=mk + "--", ms=6.5, color=C_RPA,
                     mew=0, lw=1.3, elinewidth=1.0, capsize=2, label=lab)
-    ce = [EXPT_C[m] for m in EXPT_KAPPA]
-    ax.plot(ce, list(EXPT_KAPPA.values()), marker="o", ms=5, ls="",
+    me = [m for m in EXPT_KAPPA if m >= SERIES_MIN_MOL]
+    ax.plot(me, [EXPT_KAPPA[m] for m in me],
+            marker="o", ms=5, ls="",
             color=SLATE3, label="Experiment", zorder=5)
     h, l = ax.get_legend_handles_labels()
     fig.legend(h, l, loc="upper center", bbox_to_anchor=(0.5, 1.09), ncol=3,
                frameon=False, fontsize=8.5, columnspacing=1.4,
                handlelength=2.2, handletextpad=0.5, labelcolor=INK2)
-    ax.set_xlim(0, 3.9)
+    ax.set_xlim(*SERIES_XLIM)
     ax.set_ylim(0, 24)
-    style(ax, "c (mol/L)", r"$\kappa$ (S/m)")
+    style(ax, SERIES_XLABEL, r"$\kappa$ (S/m)")
     savefig(fig, "fig9_kappa_series")
 
 
@@ -613,8 +638,10 @@ def fig_dne_series(mad, rpa):
     dNaNa = kNaNa - pref * 6.0 * mad["runs_nNa"] * mad["runs_DNa"]
     dClCl = kClCl - pref * 6.0 * mad["runs_nCl"] * mad["runs_DCl"]
     kNE, mol = mad["runs_kNE"], mad["runs_mol"]
-    c = np.array([MOL_TO_M[m] for m in sorted(set(mol))])
-    cr = np.array([MOL_TO_M[m] for m in sorted(rpa)])
+    mols_all = np.array(sorted(set(mol)), float)
+    keep = mols_all >= SERIES_MIN_MOL
+    c = mols_all[keep]
+    cr = np.array(sorted(rpa), float)
 
     fig, axes = plt.subplots(2, 2, figsize=(9.2, 7.2), sharex=True, sharey=True)
     parts = ((-dNaNa / kNE, "chNaNa", "s", "Na–Na distinct"),
@@ -624,18 +651,19 @@ def fig_dne_series(mad, rpa):
               r"total $\Delta_{\mathrm{NE}}$"))
     for ax, (y_mad, key, mk, lab) in zip(axes.flat, parts):
         _, ym, ys = pooled(mol, y_mad)
+        ym, ys = np.asarray(ym)[keep], np.asarray(ys)[keep]
         ax.errorbar(c, ym, yerr=ys, fmt=mk + "-", ms=5.5, color=C_MAD,
                     mfc="white", mew=1.5, lw=1.4, elinewidth=1.0, capsize=2,
                     label="Madrid-2019")
         y = [rpa[m][key].mean() for m in sorted(rpa)]
         ys = [sem(rpa[m][key]) for m in sorted(rpa)]
-        ax.errorbar(cr + 0.07, y, yerr=ys, fmt=mk, ms=6, color=C_RPA,
+        ax.errorbar(cr, y, yerr=ys, fmt=mk, ms=6, color=C_RPA,
                     mew=0, elinewidth=1.0, capsize=2, label="RPA")
         ax.axhline(0, color=MUTED, lw=0.8)
-        ax.set_xlim(0, 3.9)
+        ax.set_xlim(*SERIES_XLIM)
         style(ax, None, None, lab)
     for ax in axes[1]:
-        ax.set_xlabel("c (mol/L)", color=INK, fontsize=10)
+        ax.set_xlabel(SERIES_XLABEL, color=INK, fontsize=10)
     for ax in axes[:, 0]:
         ax.set_ylabel(r"contribution to $\Delta_{\mathrm{NE}}$",
                       color=INK, fontsize=10)
@@ -649,47 +677,50 @@ def fig_dne_series(mad, rpa):
 
 
 def fig_tna_series(mad, rpa):
-    mols = np.array(sorted(set(mad["runs_mol"])))
-    c = np.array([MOL_TO_M[m] for m in mols])
+    mols_all = np.array(sorted(set(mad["runs_mol"])), float)
+    keep = mols_all >= SERIES_MIN_MOL
+    mols = mols_all[keep]
+    c = mols
     sNN, sCC, sNC = (mad[f"runs_s{s}"] for s in ("NaNa", "ClCl", "NaCl"))
     s_sum = sNN + sCC - 2.0 * sNC
     tH_runs = (mad["runs_tNa"]
                + mad["runs_mol"] * (M_NA * (sNN - sNC) - M_CL * (sCC - sNC)) / s_sum)
     _, tH, tH_s = pooled(mad["runs_mol"], tH_runs)
+    tH, tH_s = np.asarray(tH)[keep], np.asarray(tH_s)[keep]
     fig, ax = plt.subplots(figsize=(5.2, 4.0))
     ax.errorbar(c, tH, yerr=tH_s, fmt="D-", ms=5.5, color=C_MAD,
                 mfc="white", mew=1.3, lw=1.3, elinewidth=1.0, capsize=2,
                 label="Madrid, Hittorf")
-    cr = np.array([MOL_TO_M[m] for m in sorted(rpa)])
+    cr = np.array(sorted(rpa), float)
     y = [rpa[m]["tH"].mean() for m in sorted(rpa)]
     ys = [sem(rpa[m]["tH"]) for m in sorted(rpa)]
-    ax.errorbar(cr + 0.07, y, yerr=ys, fmt="D--", ms=5.5, color=C_RPA,
+    ax.errorbar(cr, y, yerr=ys, fmt="D--", ms=5.5, color=C_RPA,
                 mew=0, lw=1.1, elinewidth=1.0, capsize=2, label="RPA, Hittorf")
-    ax.plot([EXPT_C[m] for m in mols], tna_expt_hittorf(mols), marker="o",
+    ax.plot(mols, tna_expt_hittorf(mols), marker="o",
             ms=5, ls="", color=SLATE3, label="Experiment", zorder=5)
-    ax.set_xlim(0, 3.9)
+    ax.set_xlim(*SERIES_XLIM)
     h, l = ax.get_legend_handles_labels()
     fig.legend(h, l, loc="upper center", bbox_to_anchor=(0.5, 1.05), ncol=2,
                frameon=False, fontsize=9, columnspacing=2.0,
                handlelength=2.4, handletextpad=0.6, labelcolor=INK2)
-    style(ax, "c (mol/L)", r"$t_{\mathrm{Na}^+}$ (Hittorf frame)")
+    style(ax, SERIES_XLABEL, r"$t_{\mathrm{Na}^+}$ (Hittorf frame)")
     savefig(fig, "fig11_tna_series")
 
 
 def fig_eta_series(rpa_eta, mp2_eta):
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(9.8, 4.0))
     # (a) eta(c)
-    cr = np.array([MOL_TO_M[m] for m in sorted(rpa_eta)])
+    cr = np.array(sorted(rpa_eta), float)
     y = [rpa_eta[m]["etas"].mean() * 1e3 for m in sorted(rpa_eta)]
     ys = [sem(rpa_eta[m]["etas"] * 1e3) for m in sorted(rpa_eta)]
     ax1.errorbar(cr, y, yerr=ys, fmt="o--", ms=6.5, color=C_RPA, mew=0,
                  lw=1.3, elinewidth=1.0, capsize=2, label="RPA")
-    ce = [0.0] + [EXPT_C[m] for m in (1.0, 2.0, 4.0)]
-    ax1.plot(ce, [ETA_EXP[m] for m in (0.0, 1.0, 2.0, 4.0)], marker="o",
-             ms=5, ls="", color=SLATE3, label="Experiment", zorder=5)
-    ax1.set_xlim(-0.12, 3.9)
+    ax1.plot([1.0, 2.0, 4.0], [ETA_EXP[m] for m in (1.0, 2.0, 4.0)],
+             marker="o", ms=5, ls="", color=SLATE3, label="Experiment",
+             zorder=5)
+    ax1.set_xlim(*SERIES_XLIM)
     ax1.legend(frameon=False, fontsize=8.5, labelcolor=INK2, loc="upper left")
-    style(ax1, "c (mol/L)", r"$\eta$ (mPa s)", "(a)")
+    style(ax1, SERIES_XLABEL, r"$\eta$ (mPa s)", "(a)")
     # (b) GK running integrals, per-molality segment mean
     for m in (1.0, 2.0, 4.0):
         e = rpa_eta[m]
