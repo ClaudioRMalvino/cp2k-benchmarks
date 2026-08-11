@@ -350,7 +350,7 @@ def fig_three_way_1m(pair, mad_pair, rpa, mp2):
     a level keeps its colour across the report."""
     rep = np.load(MADRID_REPL, allow_pickle=True)
 
-    fig, (a, b) = plt.subplots(1, 2, figsize=(10.8, 4.6))
+    fig, (a, b) = plt.subplots(1, 2, figsize=(9.8, 4.2))
     a.axhline(0, color=MUTED, lw=0.8)
     a.plot(mad_pair[1.0]["r"], mad_pair[1.0]["w"], color=C_MAD, lw=2.0,
            label="Madrid-2019")
@@ -361,7 +361,7 @@ def fig_three_way_1m(pair, mad_pair, rpa, mp2):
     a.set_xlim(2.2, 8.0)
     a.set_ylim(-1.3, 1.5)
     style(a, r"$r_{\mathrm{Na-Cl}}$ (Å)", r"$w(r)$ (kcal/mol)", "(a)",
-          fs=12)
+          fs=14)
 
     # (b) D_ion / D_w: Madrid YH D_0 ratio; MP2/RPA per-segment means.
     def ratio(num, den):
@@ -398,13 +398,13 @@ def fig_three_way_1m(pair, mad_pair, rpa, mp2):
     b.set_xlim(-0.5, 1.6)
     b.set_ylim(0.35, 1.0)
     style(b, "", r"$D_{\mathrm{ion}}\,/\,D_{\mathrm{water}}$", "(b)",
-          fs=12)
+          fs=14)
     # one legend above the panels (user rule 2026-08-11: legends sit above
     # the graph, matching the series figures)
     h, l = b.get_legend_handles_labels()
-    fig.legend(h, l, loc="upper center", bbox_to_anchor=(0.5, 1.06),
-               ncol=4, frameon=False, fontsize=11, columnspacing=1.8,
-               handlelength=2.2, handletextpad=0.6, labelcolor=INK2)
+    fig.legend(h, l, loc="upper center", bbox_to_anchor=(0.5, 1.08),
+               ncol=4, frameon=False, fontsize=13, columnspacing=1.6,
+               handlelength=2.0, handletextpad=0.5, labelcolor=INK2)
     fig.tight_layout(rect=(0, 0, 1, 0.94))
     savefig(fig, "fig8_three_way_1m")
 
@@ -725,10 +725,10 @@ def fig_eta_series(rpa_eta, mp2_eta):
              marker="o", ms=5, ls="", color=SLATE3, label="Experiment",
              zorder=5)
     ax1.set_xlim(*SERIES_XLIM)
-    ax1.legend(frameon=False, fontsize=9, labelcolor=INK2, ncol=2,
+    ax1.legend(frameon=False, fontsize=11, labelcolor=INK2, ncol=1,
                loc="lower center", bbox_to_anchor=(0.5, 1.0))
-    style(ax1, SERIES_XLABEL, r"$\eta$ (mPa s)")
-    ax1.set_title("(a)", color=INK, fontsize=11, pad=32)
+    style(ax1, SERIES_XLABEL, r"$\eta$ (mPa s)", fs=13)
+    ax1.set_title("(a)", color=INK, fontsize=14, pad=58)
     # (b) GK running integrals, per-molality segment mean
     for m in (1.0, 2.0, 4.0):
         e = rpa_eta[m]
@@ -742,11 +742,11 @@ def fig_eta_series(rpa_eta, mp2_eta):
     lo, hi = rpa_eta[1.0]["plateau"]
     ax2.axvspan(lo, hi, color=GRID, alpha=0.5, zorder=0)
     ax2.set_xlim(0, float(rpa_eta[1.0]["t_ps"].max()))
-    ax2.legend(frameon=False, fontsize=9, labelcolor=INK2, ncol=4,
+    ax2.legend(frameon=False, fontsize=11, labelcolor=INK2, ncol=2,
                loc="lower center", bbox_to_anchor=(0.5, 1.0),
                columnspacing=1.0, handlelength=1.6, handletextpad=0.4)
-    style(ax2, "t (ps)", r"$\eta_{\mathrm{GK}}(t)$ (mPa s)")
-    ax2.set_title("(b)", color=INK, fontsize=11, pad=32)
+    style(ax2, "t (ps)", r"$\eta_{\mathrm{GK}}(t)$ (mPa s)", fs=13)
+    ax2.set_title("(b)", color=INK, fontsize=14, pad=58)
     savefig(fig, "fig12_eta_series")
 
 
