@@ -541,6 +541,18 @@ Europe, Oxford and WWF), endpoint `/intensity/stats/{from}/{to}/24`, gives
 of 231.12 is a 2021 vintage and would nearly double the answer — grid intensity
 has roughly halved since. Cite the API and the window.
 
+> **Addendum 2026-08-11 (laptop): regional figure computed and adopted.**
+> `/regional/intensity/{from}/{to}/regionid/10` (East England, the region
+> containing CSD3), half-hourly forecast intensities aggregated to 93 full
+> daily means over 2026-05-10 → 2026-08-10: **mean 146.0 gCO2e/kWh**
+> (daily means 46–250). About 20% above the national 122.0, so the
+> regional basis makes the footprint larger, not smaller. The report's
+> tab:carbon and §9.4 now use 146.0; carbon numbers there: as-run
+> 833 / 53 / 35 kgCO2e, 200 ns 69,468 / 4,322 / 2,933 kgCO2e, avoided
+> 0.78 tCO2e as run and ~65 t at 200 ns. Note the regional service
+> publishes forecast intensities (no regional actuals), disclosed in the
+> report's bib entry.
+
 > This is the **national** figure. The same API serves regional data and
 > Cambridge (CB3) is region 10, "East England"/UKPN East, whose generation mix
 > differs. Recomputing regionally is a two-minute job if the report wants the
