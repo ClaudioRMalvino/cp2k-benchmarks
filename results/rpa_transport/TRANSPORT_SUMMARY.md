@@ -505,6 +505,77 @@ rather than hiding: it explains why κ_Ons and t_Na are unconverged here
 it frames our contribution as a large-cell, short-trajectory study rather
 than pretending to compete on sampling.
 
+### 8.8 Carbon footprint — Green Algorithms methodology
+
+Produced by `scripts/csd3_rpa_transport/green_algorithms_footprint.py`, which
+implements Lannelongue, Grealey & Inouye, *Adv. Sci.* **8** (2021) 2100707 —
+the methodology the CSD3 docs point to at
+`cambridge-ceu.github.io/csd3/systems/GreenAlgorithms.html`. Their configured
+copy of the `GreenAlgorithms4HPC` tool sits in another project's RDS space and
+is not readable; our own copy is installed and configured for CSD3 at
+`/rds/user/crm98/hpc-work/GreenAlgorithms4HPC` if a cross-check is wanted, but
+it derives node-hours by parsing `sacct` and **only the optimised-CPU row ever
+ran** — `master` and both 200 ns rows are projections with no job records — so
+the numbers below are computed from the Table 9.4 hour canon directly.
+
+    E [kWh] = t[h] x (n_cores x TDP_core x usage + n_GPU x TDP_GPU
+                      + mem_GB x 0.3725 W/GB) / 1000 x PUE x PSF
+
+**Inputs, all taken from the machines rather than spec sheets.** icelake:
+`AllocTRES` of a production job is `cpu=76,mem=256120M,node=1`; Xeon 8368Q is
+270 W per 38-core socket, so 7.105 W/core → **633.2 W/node**. ampere:
+`cpu=32,gres/gpu=1,mem=250G` — a *quarter node* per GPU; EPYC 7763 is
+4.375 W/core and an A100-SXM4-80GB is 400 W (not the 250–300 W PCIe figure)
+→ **633.1 W/GPU**.
+
+> **Correction to Table 9.4.** The GPU row is costed there at "3 SPME cores".
+> That is right for the £ column, since CSD3 bills GPU-hours, but wrong for
+> energy: the jobs *reserved* 32 cores and 250 GB, which no one else could use
+> while they held them. Carbon accounting charges reserved, not used.
+
+**Carbon intensity is measured, not assumed.** The UK National Grid API
+(`api.carbonintensity.org.uk`) gives **122.0 gCO2e/kWh** as the mean over the
+93 days the campaign ran (2026-05-10 → 08-11; daily range 57–209). The Green
+Algorithms UK default of 231.12 is a 2021 vintage and would nearly double the
+answer — grid intensity has roughly halved since. Use the measured figure and
+say which window it covers.
+
+**PUE = 1.67**, the Green Algorithms global default. CSD3 publishes no PUE and
+RCS have not replied; 1.67 is what other published CSD3 footprint calculations
+use, so it is the defensible choice. Modern facilities target ~1.2.
+
+| | hours | kWh | kgCO2e | tree-months | car-km |
+|---|---:|---:|---:|---:|---:|
+| **as run, 2.4 ns** | | | | | |
+| master (projected) | 5,396 node-h | 5,706 | 695.8 | 759 | 3,976 |
+| optimised CPU (ran) | 340 node-h | 360 | 43.8 | 48 | 251 |
+| optimised GPU (projected) | 227 GPU-h | 240 | 29.3 | 32 | 167 |
+| **projected, 200 ns** | | | | | |
+| master | 450,000 node-h | 475,826 | 58,030 | 63,283 | 331,602 |
+| optimised CPU | 28,000 node-h | 29,607 | 3,611 | 3,938 | 20,633 |
+| optimised GPU | 19,000 GPU-h | 20,089 | 2,450 | 2,672 | 14,000 |
+
+**What the optimisation avoided.** At the campaign as run, 5,346 kWh /
+0.65 tCO2e (CPU) and 5,466 kWh / 0.67 tCO2e (GPU) against master — about 13
+Paris–London flights each. At O'Neill-scale sampling it is 54.4 and
+55.6 tCO2e, roughly 1,100 flights.
+
+**The finding that is easy to miss:** an icelake node and a quarter ampere node
+draw within 0.1 W of each other (633.2 vs 633.1). The GPU track's advantage is
+therefore *entirely* that it needs fewer hours — 227 vs 340, a factor 1.5 — and
+not the ~2× that comparing 550 W/A100 against 700 W/node would suggest. Any
+claim that the GPU port is dramatically greener per unit time is unsupported.
+
+**Sensitivity.** Both PUE and CI are pure multipliers on a fixed,
+job-dependent core, so state them and let the reader rescale: PUE 1.67 → 1.2
+multiplies everything by 0.72; CI 122.0 → 231.12 multiplies carbon by 1.90.
+Equilibration (30 ps × 3) adds ~4% to the as-run rows for an all-in number.
+
+**Caveat that must survive into the report.** These are *modelled* figures. CSD3
+has `AcctGatherEnergyType = (null)`, so `ConsumedEnergyRaw` is zero for every
+job cluster-wide and no measured per-job energy exists on this machine for
+anyone. Label the column "estimated".
+
 ---
 
 ## 9. Files to use
