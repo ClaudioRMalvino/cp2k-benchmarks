@@ -1,5 +1,13 @@
 # Core-hours for the RPA transport series — energy/CO2 calculator inputs
 
+> **Superseded for energy/carbon**: the authoritative footprint now comes
+> from `scripts/csd3_rpa_transport/green_algorithms_footprint.py` and
+> TRANSPORT_SUMMARY.md §8.8 (Green Algorithms model, reserved-allocation
+> draws of 633 W per unit, measured UK CI 122 gCO2e/kWh, PUE 1.67 stated
+> as an assumption). The kWh column below uses the older 700/550 W TDP
+> guess and is kept only as a rough cross-check. The hour columns remain
+> the canon.
+
 Written 2026-08-11. All rates are the measured values of the report
 (Table 9.4): `master` 4.05 s/step, optimised CPU 0.26 s/step, optimised
 GPU 0.17 s/step, all on the 5064-atom, 37.3 Å series cell. Only the
