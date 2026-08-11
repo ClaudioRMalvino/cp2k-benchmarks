@@ -75,20 +75,20 @@ def tna_expt_hittorf(mol):
     return 0.3720 - 0.0118 * loga
 
 
-def style(ax, xlabel=None, ylabel=None, title=None):
+def style(ax, xlabel=None, ylabel=None, title=None, fs=10):
     ax.grid(True, color=GRID, linewidth=0.7, alpha=0.9)
     ax.set_axisbelow(True)
     for s in ("top", "right"):
         ax.spines[s].set_visible(False)
     for s in ("left", "bottom"):
         ax.spines[s].set_color(MUTED)
-    ax.tick_params(colors=INK2, labelsize=9)
+    ax.tick_params(colors=INK2, labelsize=fs - 1)
     if xlabel:
-        ax.set_xlabel(xlabel, color=INK, fontsize=10)
+        ax.set_xlabel(xlabel, color=INK, fontsize=fs)
     if ylabel:
-        ax.set_ylabel(ylabel, color=INK, fontsize=10)
+        ax.set_ylabel(ylabel, color=INK, fontsize=fs)
     if title:
-        ax.set_title(title, color=INK, fontsize=11, loc="center", pad=8)
+        ax.set_title(title, color=INK, fontsize=fs + 1, loc="center", pad=8)
 
 
 def savefig(fig, out, name):
@@ -124,7 +124,7 @@ def load_vacf_D(plat_min=3.0, plat_max=5.0):
 def fig_msd_vs_vacf(out, rep, vacf_D, curves):
     Ls = list(rep["Ls"])
     species = list(rep["species"])
-    fig, (a, b) = plt.subplots(1, 2, figsize=(9.0, 3.8))
+    fig, (a, b) = plt.subplots(1, 2, figsize=(9.0, 4.0))
 
     # (a) seed-averaged VACF (normalized) + running integral, largest box
     for sp in ("O", "Na", "Cl"):
@@ -134,7 +134,7 @@ def fig_msd_vs_vacf(out, rep, vacf_D, curves):
     a.axhline(0, color=MUTED, lw=0.8)
     a.set_xlim(0, 2.0)
     style(a, "t (ps)", r"$\langle v(0)\cdot v(t)\rangle$ / $\langle v^2\rangle$",
-          "(a)")
+          "(a)", fs=13)
 
     # (b) parity: D_VACF vs D_MSD, all boxes x species
     lims = [0.06, 0.23]
@@ -154,15 +154,15 @@ def fig_msd_vs_vacf(out, rep, vacf_D, curves):
     b.set_ylim(*lims)
     hs = [plt.Line2D([], [], marker=markers[L], ls="", mfc="white", mew=1.6,
                      color=INK2, ms=6, label=f"L = {L:.1f} Å") for L in Ls]
-    b.legend(handles=hs, fontsize=8, frameon=False, loc="upper left",
+    b.legend(handles=hs, fontsize=10.5, frameon=False, loc="upper left",
              labelcolor=INK2)
-    style(b, r"$D$ from MSD slope (Å$^2$/ps)", r"$D$ from VACF integral (Å$^2$/ps)",
-          "(b)")
+    style(b, r"$D_{E}$ from MSD slope (Å$^2$/ps)",
+          r"$D_{GK}$ from VACF integral (Å$^2$/ps)", "(b)", fs=13)
     # one species legend above the figure instead of per-panel annotations
     sp_hs = [plt.Line2D([], [], color=SPECIES_COLOR[sp], lw=2.5, label=sp)
              for sp in ("O", "Na", "Cl")]
-    fig.legend(handles=sp_hs, loc="upper center", bbox_to_anchor=(0.5, 1.06),
-               ncol=3, frameon=False, fontsize=10, columnspacing=2.0,
+    fig.legend(handles=sp_hs, loc="upper center", bbox_to_anchor=(0.5, 1.08),
+               ncol=3, frameon=False, fontsize=13, columnspacing=2.0,
                handlelength=1.8, labelcolor=INK2)
     fig.tight_layout(w_pad=3)
     savefig(fig, out, "fig1_msd_vs_vacf")
