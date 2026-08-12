@@ -257,6 +257,62 @@ def fig_kappa(out, kap):
     savefig(fig, out, "fig3_kappa_vs_c")
 
 
+def fig_kappa_tna(out, kap):
+    """fig35: conductivity and transport number against experiment in one
+    two-panel figure (report request 2026-08-12, replaces the separate
+    fig3/fig5 in the validation section)."""
+    mol = kap["runs_mol"]
+    mols = np.array(sorted(set(mol)))
+    c = np.array([MOL_TO_M[m] for m in mols])
+    fig, (a, b) = plt.subplots(1, 2, figsize=(9.8, 4.4))
+
+    _, kOns, kOns_s = pooled(mol, kap["runs_kOns"])
+    _, kNE, kNE_s = pooled(mol, kap["runs_kNE"])
+    a.errorbar(c, kNE, yerr=kNE_s, fmt="^--", ms=6, color=C_O, mfc="white",
+               mew=1.5, lw=1.4, elinewidth=1.0, capsize=2,
+               label="Nernst-Einstein")
+    a.errorbar(c, kOns, yerr=kOns_s, fmt="o-", ms=6.5, color=C_NA,
+               mfc="white", mew=1.6, lw=1.8, elinewidth=1.0, capsize=2,
+               label=r"Onsager, $z=\pm1$")
+    a.errorbar(c, kOns * 0.7225, yerr=kOns_s * 0.7225, fmt="s-", ms=6,
+               color=C_CL, mfc="white", mew=1.6, lw=1.4, elinewidth=1.0,
+               capsize=2, label=r"Onsager, $z=\pm0.85$")
+    a.plot([EXPT_C[m] for m in EXPT_KAPPA], list(EXPT_KAPPA.values()),
+           marker="o", ms=5, ls="", color=SLATE3, label="Experiment",
+           zorder=5)
+    a.set_xlim(0, 3.9)
+    a.set_ylim(0, 24)
+    a.legend(frameon=False, fontsize=10, labelcolor=INK2, ncol=2,
+             loc="lower center", bbox_to_anchor=(0.5, 1.0),
+             columnspacing=1.2, handlelength=1.9, handletextpad=0.5)
+    style(a, "c (mol/L)", r"$\kappa$ (S/m)", fs=13)
+    a.set_title("(a)", color=INK, fontsize=14, pad=52)
+
+    _, tNa, tNa_s = pooled(mol, kap["runs_tNa"])
+    sNN, sCC, sNC = kap["runs_sNaNa"], kap["runs_sClCl"], kap["runs_sNaCl"]
+    s_sum = sNN + sCC - 2.0 * sNC
+    tH_runs = (kap["runs_tNa"]
+               + mol * (M_NA * (sNN - sNC) - M_CL * (sCC - sNC)) / s_sum)
+    _, tH, tH_s = pooled(mol, tH_runs)
+    b.errorbar(c, tNa, yerr=tNa_s, fmt="o-", ms=6.5, color=CAM_BLUE,
+               mfc="white", mew=1.6, lw=1.8, elinewidth=1.0, capsize=2,
+               label="Barycentric")
+    b.errorbar(c, tH, yerr=tH_s, fmt="D--", ms=5.5, color=SLATE3,
+               mfc="white", mew=1.3, lw=1.3, elinewidth=1.0, capsize=2,
+               label="Hittorf frame")
+    b.plot([EXPT_C[m] for m in mols], tna_expt_hittorf(mols), marker="o",
+           ms=5, ls="", color=SLATE3, label="Experiment", zorder=5)
+    b.set_xlim(0, 3.9)
+    b.set_ylim(0.28, 0.56)
+    b.legend(frameon=False, fontsize=10, labelcolor=INK2, ncol=2,
+             loc="lower center", bbox_to_anchor=(0.5, 1.0),
+             columnspacing=1.2, handlelength=1.9, handletextpad=0.5)
+    style(b, "c (mol/L)", r"$t_{\mathrm{Na}^+}$", fs=13)
+    b.set_title("(b)", color=INK, fontsize=14, pad=52)
+    fig.tight_layout(w_pad=3)
+    savefig(fig, out, "fig35_kappa_tna")
+
+
 def fig_ne_deviation(out, kap):
     mol = kap["runs_mol"]
     c = np.array([MOL_TO_M[m] for m in sorted(set(mol))])
@@ -532,6 +588,7 @@ def main():
     fig_kappa(args.out, kap)
     fig_ne_deviation(args.out, kap)
     fig_tna(args.out, kap)
+    fig_kappa_tna(args.out, kap)
     fig_onsager_decomp(args.out, kap)
     fig_nnp_anchor(args.out, rep)
 
