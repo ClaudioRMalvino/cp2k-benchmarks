@@ -311,7 +311,10 @@ other job on that node in the window).
 | s/step (ledger) | 0.2554 | **4.0473** |
 | s/step (steady state, recomputed) | 0.2438 ± 0.0114 | 4.0196 ± 0.0233 |
 
-**Speedup 15.85×** (16.49× on the steady-state recomputation).
+**Speedup 15.85×** (16.49× on the steady-state recomputation). Both are
+*same-configuration* figures — same rank split for both binaries, so the code
+is the only variable. Best-vs-best is **≥14.4×**; see the rank-split caveat
+below before quoting either unqualified.
 
 The physics cross-check is exact — step-0 potential energy on identical
 coordinates is **−30777.866694782 Ha** and conserved quantity
@@ -325,7 +328,24 @@ Two caveats to state:
   global velocity rescale, so the cost impact is negligible, but this is not
   a byte-identical deck and should not be claimed as one;
 - the 68/8 MIXED rank split was tuned on the PR binary and never re-tuned for
-  master. That biases *against* master, so 15.85× is if anything conservative.
+  master: the sweep (job 31514523, 2026-07-18) ran `BIN_LABEL=dhruv-cell-list`
+  only, and `sbatch_master_ref.sh` hardcodes `FIST_RANKS=8` inherited from it.
+  **This inflates the ratio and must not be described as conservative** — an
+  earlier revision of this line said it "biases against master, so 15.85× is if
+  anything conservative", which is backwards: handicapping master raises
+  `t_master`, and `t_master/t_optimised` rises with it.
+  The size is boundable from the sweep without new runs. In a MIXED force_eval
+  `GROUP_PARTITION` runs the two subsystems on disjoint rank sets concurrently,
+  so the step is ~`max(t_nnp, t_fist)`. Master's step is 4.05 s against a FIST
+  side costing at most 0.57 s (the `cube3 fist=1` row, which is FIST-bound), so
+  master is overwhelmingly NNP-bound and its own optimum hands the network every
+  spare rank rather than matching 68/8. At *perfect* strong scaling 68 → 75 NNP
+  ranks that is 4.0473 → 3.670 s/step, −9.3%, and master stays NNP-bound there
+  (3.67 s ≫ 0.57 s) so it never hits the FIST wall that penalises the optimised
+  binary at fist=1. Real scaling is imperfect, so 9% is an upper bound.
+  **Quote both figures: 15.85× on the shared configuration, ≥14.4× best-vs-best.**
+  The same-configuration number is still the right headline — it isolates the
+  code as the only variable — but it is the generous end of the range.
 
 ### 8.2 On-the-fly DFT cost ladder — COMPLETE, 4 rungs
 
