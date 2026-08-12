@@ -410,7 +410,8 @@ def fig_three_way_1m(pair, mad_pair, rpa, mp2):
 
 
 def fig_pairing_series(pair, mad_pair):
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(9.8, 4.6))
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(7.6, 4.2),
+                                   gridspec_kw={"width_ratios": [1.3, 1]})
     ax1.plot(mad_pair[1.0]["r"], mad_pair[1.0]["w"], color=C_MAD, lw=1.6,
              label="Madrid 1 mol/kg")
     if mad_pair.get(4.0) is not None:
@@ -424,11 +425,12 @@ def fig_pairing_series(pair, mad_pair):
     ax1.axhline(0, color=MUTED, lw=0.8)
     ax1.set_xlim(2.2, 7.0)
     ax1.set_ylim(-1.3, 2.2)
-    ax1.legend(frameon=False, fontsize=12, labelcolor=INK2, ncol=3,
+    ax1.set_xticks([3, 4, 5, 6, 7])
+    ax1.legend(frameon=False, fontsize=12, labelcolor=INK2, ncol=2,
                loc="lower center", bbox_to_anchor=(0.5, 1.0),
                columnspacing=1.0, handlelength=1.6, handletextpad=0.4)
     style(ax1, r"$r_{\mathrm{NaCl}}$ (Å)", r"$w(r)$ (kcal/mol)", fs=15)
-    ax1.set_title("(a)", color=INK, fontsize=15, pad=58)
+    ax1.set_title("(a)", color=INK, fontsize=15, pad=76)
     cr = [1.0, 2.0, 4.0]
     y = [pair[m]["n_CIP"] for m in (1.0, 2.0, 4.0)]
     ys = [pair[m]["n_CIP_sem"] for m in (1.0, 2.0, 4.0)]
@@ -443,10 +445,11 @@ def fig_pairing_series(pair, mad_pair):
                  lw=1.4, elinewidth=1.0, capsize=2, label="Madrid-2019")
     ax2.set_xlim(*SERIES_XLIM)
     ax2.set_ylim(0, 0.60)
+    ax2.set_xticks([1, 2, 3, 4])
     ax2.legend(frameon=False, fontsize=12, labelcolor=INK2, ncol=2,
                loc="lower center", bbox_to_anchor=(0.5, 1.0))
     style(ax2, SERIES_XLABEL, r"$n_{\mathrm{CIP}}$ (contact Cl per Na)", fs=15)
-    ax2.set_title("(b)", color=INK, fontsize=15, pad=58)
+    ax2.set_title("(b)", color=INK, fontsize=15, pad=76)
     fig.tight_layout(w_pad=4)
     savefig(fig, "fig13_pairing_series")
 
@@ -696,7 +699,7 @@ def fig_dne_series(mad, rpa):
     fig, axes = plt.subplots(2, 2, figsize=(9.2, 7.2), sharex=True, sharey=True)
     parts = ((-dNaNa / kNE, "chNaNa", "s", "Na–Na distinct"),
              (-dClCl / kNE, "chClCl", "^", "Cl–Cl distinct"),
-             (2 * kNaCl / kNE, "chNaCl", "D", "Na–Cl distinct (pairing)"),
+             (2 * kNaCl / kNE, "chNaCl", "D", "Na–Cl distinct"),
              (1.0 - mad["runs_kOns"] / kNE, "dNE", "o",
               r"total $\Delta_{\mathrm{NE}}$"))
     for ax, (y_mad, key, mk, lab) in zip(axes.flat, parts):
