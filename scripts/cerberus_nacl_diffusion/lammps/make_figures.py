@@ -282,11 +282,11 @@ def fig_kappa_tna(out, kap):
            zorder=5)
     a.set_xlim(0, 3.9)
     a.set_ylim(0, 24)
-    a.legend(frameon=False, fontsize=10, labelcolor=INK2, ncol=2,
+    a.legend(frameon=False, fontsize=13, labelcolor=INK2, ncol=2,
              loc="lower center", bbox_to_anchor=(0.5, 1.0),
              columnspacing=1.2, handlelength=1.9, handletextpad=0.5)
-    style(a, "c (mol/L)", r"$\kappa$ (S/m)", fs=13)
-    a.set_title("(a)", color=INK, fontsize=14, pad=52)
+    style(a, "c (mol/L)", r"$\kappa$ (S/m)", fs=15)
+    a.set_title("(a)", color=INK, fontsize=15, pad=58)
 
     _, tNa, tNa_s = pooled(mol, kap["runs_tNa"])
     sNN, sCC, sNC = kap["runs_sNaNa"], kap["runs_sClCl"], kap["runs_sNaCl"]
@@ -304,11 +304,11 @@ def fig_kappa_tna(out, kap):
            ms=5, ls="", color=SLATE3, label="Experiment", zorder=5)
     b.set_xlim(0, 3.9)
     b.set_ylim(0.28, 0.56)
-    b.legend(frameon=False, fontsize=10, labelcolor=INK2, ncol=2,
+    b.legend(frameon=False, fontsize=13, labelcolor=INK2, ncol=2,
              loc="lower center", bbox_to_anchor=(0.5, 1.0),
              columnspacing=1.2, handlelength=1.9, handletextpad=0.5)
-    style(b, "c (mol/L)", r"$t_{\mathrm{Na}^+}$", fs=13)
-    b.set_title("(b)", color=INK, fontsize=14, pad=52)
+    style(b, "c (mol/L)", r"$t_{\mathrm{Na}^+}$", fs=15)
+    b.set_title("(b)", color=INK, fontsize=15, pad=58)
     fig.tight_layout(w_pad=3)
     savefig(fig, out, "fig35_kappa_tna")
 
