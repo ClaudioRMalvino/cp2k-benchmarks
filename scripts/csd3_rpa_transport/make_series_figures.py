@@ -360,11 +360,11 @@ def fig_three_way_1m(pair, mad_pair, rpa, mp2):
            label="RPA C-NNP")
     a.set_xlim(2.2, 8.0)
     a.set_ylim(-1.3, 1.5)
-    a.legend(frameon=False, fontsize=11, ncol=2, labelcolor=INK2,
+    a.legend(frameon=False, fontsize=13, ncol=2, labelcolor=INK2,
              loc="lower center", bbox_to_anchor=(0.5, 1.0),
              columnspacing=1.2, handlelength=1.8, handletextpad=0.5)
-    style(a, r"$r_{\mathrm{Na-Cl}}$ (Å)", r"$w(r)$ (kcal/mol)", fs=14)
-    a.set_title("(a)", color=INK, fontsize=15, pad=62)
+    style(a, r"$r_{\mathrm{Na-Cl}}$ (Å)", r"$w(r)$ (kcal/mol)", fs=15)
+    a.set_title("(a)", color=INK, fontsize=16, pad=64)
 
     # (b) D_ion / D_w: Madrid YH D_0 ratio; MP2/RPA per-segment means.
     def ratio(num, den):
@@ -400,11 +400,11 @@ def fig_three_way_1m(pair, mad_pair, rpa, mp2):
                        r"$D_{\mathrm{Cl}}/D_{\mathrm{w}}$"])
     b.set_xlim(-0.5, 1.6)
     b.set_ylim(0.35, 1.0)
-    b.legend(frameon=False, fontsize=11, ncol=2, labelcolor=INK2,
+    b.legend(frameon=False, fontsize=13, ncol=2, labelcolor=INK2,
              loc="lower center", bbox_to_anchor=(0.5, 1.0),
              columnspacing=1.2, handlelength=1.8, handletextpad=0.5)
-    style(b, "", r"$D_{\mathrm{ion}}\,/\,D_{\mathrm{water}}$", fs=14)
-    b.set_title("(b)", color=INK, fontsize=15, pad=62)
+    style(b, "", r"$D_{\mathrm{ion}}\,/\,D_{\mathrm{water}}$", fs=15)
+    b.set_title("(b)", color=INK, fontsize=16, pad=64)
     fig.tight_layout()
     savefig(fig, "fig8_three_way_1m")
 
@@ -424,11 +424,11 @@ def fig_pairing_series(pair, mad_pair):
     ax1.axhline(0, color=MUTED, lw=0.8)
     ax1.set_xlim(2.2, 7.0)
     ax1.set_ylim(-1.3, 2.2)
-    ax1.legend(frameon=False, fontsize=9, labelcolor=INK2, ncol=3,
+    ax1.legend(frameon=False, fontsize=12, labelcolor=INK2, ncol=3,
                loc="lower center", bbox_to_anchor=(0.5, 1.0),
-               columnspacing=1.2, handlelength=1.8, handletextpad=0.5)
-    style(ax1, r"$r_{\mathrm{NaCl}}$ (Å)", r"$w(r)$ (kcal/mol)")
-    ax1.set_title("(a)", color=INK, fontsize=11, pad=44)
+               columnspacing=1.0, handlelength=1.6, handletextpad=0.4)
+    style(ax1, r"$r_{\mathrm{NaCl}}$ (Å)", r"$w(r)$ (kcal/mol)", fs=15)
+    ax1.set_title("(a)", color=INK, fontsize=15, pad=58)
     cr = [1.0, 2.0, 4.0]
     y = [pair[m]["n_CIP"] for m in (1.0, 2.0, 4.0)]
     ys = [pair[m]["n_CIP_sem"] for m in (1.0, 2.0, 4.0)]
@@ -443,10 +443,11 @@ def fig_pairing_series(pair, mad_pair):
                  lw=1.4, elinewidth=1.0, capsize=2, label="Madrid-2019")
     ax2.set_xlim(*SERIES_XLIM)
     ax2.set_ylim(0, 0.60)
-    ax2.legend(frameon=False, fontsize=9, labelcolor=INK2, ncol=2,
+    ax2.legend(frameon=False, fontsize=12, labelcolor=INK2, ncol=2,
                loc="lower center", bbox_to_anchor=(0.5, 1.0))
-    style(ax2, SERIES_XLABEL, r"$n_{\mathrm{CIP}}$ (contact Cl per Na)")
-    ax2.set_title("(b)", color=INK, fontsize=11, pad=44)
+    style(ax2, SERIES_XLABEL, r"$n_{\mathrm{CIP}}$ (contact Cl per Na)", fs=15)
+    ax2.set_title("(b)", color=INK, fontsize=15, pad=58)
+    fig.tight_layout(w_pad=4)
     savefig(fig, "fig13_pairing_series")
 
 
@@ -671,12 +672,12 @@ def fig_kappa_series(mad, rpa):
             marker="o", ms=5, ls="",
             color=SLATE3, label="Experiment", zorder=5)
     h, l = ax.get_legend_handles_labels()
-    fig.legend(h, l, loc="upper center", bbox_to_anchor=(0.5, 1.09), ncol=3,
-               frameon=False, fontsize=8.5, columnspacing=1.4,
-               handlelength=2.2, handletextpad=0.5, labelcolor=INK2)
+    fig.legend(h, l, loc="upper center", bbox_to_anchor=(0.5, 1.12), ncol=3,
+               frameon=False, fontsize=11.5, columnspacing=1.2,
+               handlelength=2.0, handletextpad=0.4, labelcolor=INK2)
     ax.set_xlim(*SERIES_XLIM)
     ax.set_ylim(0, 24)
-    style(ax, SERIES_XLABEL, r"$\kappa$ (S/m)")
+    style(ax, SERIES_XLABEL, r"$\kappa$ (S/m)", fs=13)
     savefig(fig, "fig9_kappa_series")
 
 
@@ -710,18 +711,16 @@ def fig_dne_series(mad, rpa):
                     mew=0, elinewidth=1.0, capsize=2, label="RPA")
         ax.axhline(0, color=MUTED, lw=0.8)
         ax.set_xlim(*SERIES_XLIM)
-        style(ax, None, None, lab)
+        style(ax, None, None, lab, fs=13)
     for ax in axes[1]:
-        ax.set_xlabel(SERIES_XLABEL, color=INK, fontsize=10)
+        ax.set_xlabel(SERIES_XLABEL, color=INK, fontsize=13)
     for ax in axes[:, 0]:
         ax.set_ylabel(r"contribution to $\Delta_{\mathrm{NE}}$",
-                      color=INK, fontsize=10)
+                      color=INK, fontsize=13)
     h, l = axes.flat[0].get_legend_handles_labels()
     fig.legend(h, l, loc="upper center", bbox_to_anchor=(0.5, 1.02), ncol=3,
-               frameon=False, fontsize=9.5, columnspacing=2.0,
+               frameon=False, fontsize=13, columnspacing=2.0,
                handlelength=2.2, handletextpad=0.5, labelcolor=INK2)
-    fig.text(0.5, 0.955, "hollow: Madrid-2019 (lines)   filled: RPA / MP2 (points)",
-             ha="center", fontsize=8, color=INK2)
     savefig(fig, "fig10_dne_series")
 
 
@@ -749,10 +748,10 @@ def fig_tna_series(mad, rpa):
             ms=5, ls="", color=SLATE3, label="Experiment", zorder=5)
     ax.set_xlim(*SERIES_XLIM)
     h, l = ax.get_legend_handles_labels()
-    fig.legend(h, l, loc="upper center", bbox_to_anchor=(0.5, 1.05), ncol=2,
-               frameon=False, fontsize=9, columnspacing=2.0,
-               handlelength=2.4, handletextpad=0.6, labelcolor=INK2)
-    style(ax, SERIES_XLABEL, r"$t_{\mathrm{Na}^+}$ (Hittorf frame)")
+    fig.legend(h, l, loc="upper center", bbox_to_anchor=(0.5, 1.08), ncol=2,
+               frameon=False, fontsize=11.5, columnspacing=1.6,
+               handlelength=2.2, handletextpad=0.5, labelcolor=INK2)
+    style(ax, SERIES_XLABEL, r"$t_{\mathrm{Na}^+}$ (Hittorf frame)", fs=13)
     savefig(fig, "fig11_tna_series")
 
 
@@ -768,10 +767,10 @@ def fig_eta_series(rpa_eta, mp2_eta):
              marker="o", ms=5, ls="", color=SLATE3, label="Experiment",
              zorder=5)
     ax1.set_xlim(*SERIES_XLIM)
-    ax1.legend(frameon=False, fontsize=11, labelcolor=INK2, ncol=1,
+    ax1.legend(frameon=False, fontsize=13, labelcolor=INK2, ncol=1,
                loc="lower center", bbox_to_anchor=(0.5, 1.0))
-    style(ax1, SERIES_XLABEL, r"$\eta$ (mPa s)", fs=13)
-    ax1.set_title("(a)", color=INK, fontsize=14, pad=58)
+    style(ax1, SERIES_XLABEL, r"$\eta$ (mPa s)", fs=15)
+    ax1.set_title("(a)", color=INK, fontsize=15, pad=62)
     # (b) GK running integrals, per-molality segment mean
     for m in (1.0, 2.0, 4.0):
         e = rpa_eta[m]
@@ -785,11 +784,11 @@ def fig_eta_series(rpa_eta, mp2_eta):
     lo, hi = rpa_eta[1.0]["plateau"]
     ax2.axvspan(lo, hi, color=GRID, alpha=0.5, zorder=0)
     ax2.set_xlim(0, float(rpa_eta[1.0]["t_ps"].max()))
-    ax2.legend(frameon=False, fontsize=11, labelcolor=INK2, ncol=2,
+    ax2.legend(frameon=False, fontsize=13, labelcolor=INK2, ncol=2,
                loc="lower center", bbox_to_anchor=(0.5, 1.0),
                columnspacing=1.0, handlelength=1.6, handletextpad=0.4)
-    style(ax2, "t (ps)", r"$\eta_{\mathrm{GK}}(t)$ (mPa s)", fs=13)
-    ax2.set_title("(b)", color=INK, fontsize=14, pad=58)
+    style(ax2, "t (ps)", r"$\eta_{\mathrm{GK}}(t)$ (mPa s)", fs=15)
+    ax2.set_title("(b)", color=INK, fontsize=15, pad=62)
     savefig(fig, "fig12_eta_series")
 
 

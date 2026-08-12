@@ -30,8 +30,8 @@ CAM = {
 plt.rcParams.update({
     "font.family": "serif",
     "font.serif": ["DejaVu Serif", "Liberation Serif", "serif"],
-    "font.size": 12, "axes.labelsize": 13, "axes.titlesize": 13,
-    "xtick.labelsize": 11, "ytick.labelsize": 11, "legend.fontsize": 10,
+    "font.size": 15, "axes.labelsize": 18, "axes.titlesize": 17,
+    "xtick.labelsize": 15, "ytick.labelsize": 15, "legend.fontsize": 13,
     "text.color": CAM["slate_4"], "axes.edgecolor": CAM["slate_4"],
     "axes.labelcolor": CAM["slate_4"], "xtick.color": CAM["slate_4"],
     "ytick.color": CAM["slate_4"], "axes.linewidth": 0.8,
@@ -71,7 +71,7 @@ ax[0].set_xlabel("lag time [ps]")
 ax[0].set_ylabel("water-O MSD [$\\AA^2$]")
 ax[0].set_title("(a)")
 ax[0].legend(frameon=False, loc="lower center", bbox_to_anchor=(0.5, 1.09),
-             ncol=2, columnspacing=1.8, handlelength=2.0, handletextpad=0.6)
+             ncol=2, columnspacing=1.2, handlelength=1.6, handletextpad=0.4)
 
 # ---- (b) Yeh-Hummer D vs 1/L -----------------------------------------------
 pts = {}
@@ -103,7 +103,7 @@ ax[1].set_xlabel("1/L [$\\AA^{-1}$]")
 ax[1].set_ylabel("$D_{\\mathrm{H_2O}}$ [$10^{-9}$ m$^2$ s$^{-1}$]")
 ax[1].set_title("(b)")
 ax[1].legend(frameon=False, loc="lower center", bbox_to_anchor=(0.5, 1.09),
-             ncol=3, columnspacing=1.4, handlelength=1.8, handletextpad=0.5)
+             ncol=3, columnspacing=1.0, handlelength=1.4, handletextpad=0.35)
 
 for ext in ("png", "pdf"):
     fig.savefig(f"{OUT}/nacl_diffusion_yh.{ext}")

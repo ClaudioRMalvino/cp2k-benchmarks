@@ -324,7 +324,7 @@ def fig_ne_deviation(out, kap):
                 mfc="white", mew=1.6, lw=1.8, elinewidth=1.0, capsize=2)
     ax.set_ylim(-0.05, 0.32)
     ax.set_xlim(0, 3.9)
-    style(ax, "c (mol/L)", r"$\Delta_{\mathrm{NE}}$")
+    style(ax, "c (mol/L)", r"$\Delta_{\mathrm{NE}}$", fs=13)
     savefig(fig, out, "fig4_ne_deviation")
 
 
@@ -446,11 +446,11 @@ def fig_onsager_decomp(out, kap):
                    mew=1.5, lw=lw, elinewidth=1.0, capsize=2, label=label)
     a.axhline(0, color=MUTED, lw=0.8)
     a.set_xlim(0, 3.9)
-    a.legend(frameon=False, fontsize=10, labelcolor=INK2, ncol=2,
+    a.legend(frameon=False, fontsize=13, labelcolor=INK2, ncol=2,
              loc="lower center", bbox_to_anchor=(0.5, 1.0),
              columnspacing=1.2, handlelength=1.9, handletextpad=0.5)
-    style(a, "c (mol/L)", r"$\kappa$ contribution (S/m)", fs=13)
-    a.set_title("(a)", color=INK, fontsize=14, pad=52)
+    style(a, "c (mol/L)", r"$\kappa$ contribution (S/m)", fs=15)
+    a.set_title("(a)", color=INK, fontsize=15, pad=58)
     for y, color, fmt, label in ((-dNaNa / kNE, C_NA, "s-", "Na-Na distinct"),
                                  (-dClCl / kNE, C_CL, "^-", "Cl-Cl distinct"),
                                  (2 * kNaCl / kNE, C_O, "D-", "Na-Cl distinct")):
@@ -464,11 +464,11 @@ def fig_onsager_decomp(out, kap):
     b.axhline(0, color=MUTED, lw=0.8)
     b.set_xlim(0, 3.9)
     b.set_ylim(-0.19, 0.31)
-    b.legend(frameon=False, fontsize=10, labelcolor=INK2, ncol=2,
+    b.legend(frameon=False, fontsize=13, labelcolor=INK2, ncol=2,
              loc="lower center", bbox_to_anchor=(0.5, 1.0),
              columnspacing=1.2, handlelength=1.9, handletextpad=0.5)
-    style(b, "c (mol/L)", r"contribution to $\Delta_{\mathrm{NE}}$", fs=13)
-    b.set_title("(b)", color=INK, fontsize=14, pad=52)
+    style(b, "c (mol/L)", r"contribution to $\Delta_{\mathrm{NE}}$", fs=15)
+    b.set_title("(b)", color=INK, fontsize=15, pad=58)
     fig.tight_layout(w_pad=3)
     savefig(fig, out, "fig67_decomposition")
 
