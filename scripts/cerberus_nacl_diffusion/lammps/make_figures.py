@@ -433,6 +433,45 @@ def fig_onsager_decomp(out, kap):
     style(ax, "c (mol/L)", r"contribution to $\Delta_{\mathrm{NE}}$")
     savefig(fig, out, "fig7_ne_origin")
 
+    # fig67: both decompositions as one two-panel figure (report request
+    # 2026-08-12, replaces the separate fig6/fig7 in section 9.1)
+    fig, (a, b) = plt.subplots(1, 2, figsize=(9.8, 4.6))
+    for y, color, fmt, lw, label in (
+            (kap["runs_kOns"], SLATE3, "o-", 1.8, r"total $\kappa_{\mathrm{Ons}}$"),
+            (kNaNa, C_NA, "s-", 1.4, r"$\kappa_{\mathrm{NaNa}}$"),
+            (kClCl, C_CL, "^-", 1.4, r"$\kappa_{\mathrm{ClCl}}$"),
+            (-2 * kNaCl, C_O, "D-", 1.4, r"$-2\,\kappa_{\mathrm{NaCl}}$")):
+        _, ym, ys = pooled(mol, y)
+        a.errorbar(c, ym, yerr=ys, fmt=fmt, ms=5.5, color=color, mfc="white",
+                   mew=1.5, lw=lw, elinewidth=1.0, capsize=2, label=label)
+    a.axhline(0, color=MUTED, lw=0.8)
+    a.set_xlim(0, 3.9)
+    a.legend(frameon=False, fontsize=10, labelcolor=INK2, ncol=2,
+             loc="lower center", bbox_to_anchor=(0.5, 1.0),
+             columnspacing=1.2, handlelength=1.9, handletextpad=0.5)
+    style(a, "c (mol/L)", r"$\kappa$ contribution (S/m)", fs=13)
+    a.set_title("(a)", color=INK, fontsize=14, pad=52)
+    for y, color, fmt, label in ((-dNaNa / kNE, C_NA, "s-", "Na-Na distinct"),
+                                 (-dClCl / kNE, C_CL, "^-", "Cl-Cl distinct"),
+                                 (2 * kNaCl / kNE, C_O, "D-", "Na-Cl distinct")):
+        _, ym, ys = pooled(mol, y)
+        b.errorbar(c, ym, yerr=ys, fmt=fmt, ms=5.5, color=color, mfc="white",
+                   mew=1.5, lw=1.4, elinewidth=1.0, capsize=2, label=label)
+    _, tot, tot_s = pooled(mol, 1.0 - kap["runs_kOns"] / kNE)
+    b.errorbar(c, tot, yerr=tot_s, fmt="o-", ms=5.5, color=SLATE3,
+               mfc="white", mew=1.5, lw=1.8, elinewidth=1.0, capsize=2,
+               label=r"total $\Delta_{\mathrm{NE}}$")
+    b.axhline(0, color=MUTED, lw=0.8)
+    b.set_xlim(0, 3.9)
+    b.set_ylim(-0.19, 0.31)
+    b.legend(frameon=False, fontsize=10, labelcolor=INK2, ncol=2,
+             loc="lower center", bbox_to_anchor=(0.5, 1.0),
+             columnspacing=1.2, handlelength=1.9, handletextpad=0.5)
+    style(b, "c (mol/L)", r"contribution to $\Delta_{\mathrm{NE}}$", fs=13)
+    b.set_title("(b)", color=INK, fontsize=14, pad=52)
+    fig.tight_layout(w_pad=3)
+    savefig(fig, out, "fig67_decomposition")
+
     print("  pooled decomposition (z=1, S/m):")
     for name, y in (("kNaNa", kNaNa), ("kClCl", kClCl), ("-2kNaCl", -2 * kNaCl),
                     ("dNaNa", dNaNa), ("dClCl", dClCl), ("dNaCl", kNaCl)):
