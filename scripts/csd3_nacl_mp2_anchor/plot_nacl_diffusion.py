@@ -50,7 +50,7 @@ CELLS = {"cube2": (24.84, CAM["crest"], "s"),
 summ = np.genfromtxt(os.path.join(R, "diffusion_summary.csv"),
                      delimiter=",", names=True, dtype=None, encoding=None)
 
-fig, ax = plt.subplots(1, 2, figsize=(11, 4.3))
+fig, ax = plt.subplots(1, 2, figsize=(11, 4.7))
 
 # ---- (a) MSD curves --------------------------------------------------------
 # The CSVs span half of each cell's trajectory (cube2 50 ps, cube3 80 ps);
@@ -105,7 +105,7 @@ ax[1].set_title("(b)")
 ax[1].legend(frameon=False, loc="lower center", bbox_to_anchor=(0.5, 1.09),
              ncol=3, columnspacing=1.0, handlelength=1.4, handletextpad=0.35)
 
-fig.tight_layout(w_pad=4)
+fig.tight_layout(w_pad=2.2)
 for ext in ("png", "pdf"):
     fig.savefig(f"{OUT}/nacl_diffusion_yh.{ext}")
 plt.close(fig)
