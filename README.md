@@ -1,7 +1,9 @@
 # cp2k-benchmarks
 
-Build, benchmark, and analysis harness for the MPhil thesis work on
-optimising the CP2K Neural Network Potential (NNP) module.
+Build, benchmark, and analysis harness for the MPhil thesis work:
+**Report 1** (Part I: optimising the CP2K Neural Network Potential
+module) and **Report 2** (Part II: NaCl(aq) transport with the
+optimised implementation).
 
 The repository holds:
 
@@ -9,12 +11,40 @@ The repository holds:
   **optimised** CP2K trees on CSD3 (Cambridge HPC) and Cerberus (lab
   workstation),
 - SLURM driver scripts for the size, strong-scaling, and OMP scaling
-  sweeps,
-- MAQAO and `perf` profiling drivers,
-- the H₂O-64 NNP input deck plus the bulk-water neural-network
-  potentials (Schran et al., JCP 2020) used by every benchmark,
-- a single Python entry point that regenerates every figure and
-  appendix table in the thesis from the raw CSVs.
+  sweeps, plus MAQAO and `perf` profiling drivers (Report 1),
+- the complete Report 2 simulation and analysis pipelines: the
+  Madrid-2019 force-field campaigns (LAMMPS), the MP2 and RPA
+  committee-potential runs (CP2K), the on-the-fly DFT cost ladder,
+  and the cost/carbon accounting,
+- the input decks and the external neural-network potentials used by
+  every run (Schran et al. bulk water; O'Neill et al. NaCl(aq)
+  committee models),
+- the derived data (`results/`) and Python scripts that regenerate
+  **every figure and table in both reports** on any machine — no
+  cluster access needed.
+
+## Reproducing the results — what an assessor needs to know
+
+Every number and figure in both reports regenerates from data bundled
+in this repository. Reproduction has two tiers:
+
+1. **Analysis and figures (any machine, minutes).** `results/` holds
+   the derived data of every campaign (scaling CSVs, pooled MSD /
+   Onsager / viscosity / RDF outputs, profiling reports). The Python
+   scripts below turn them into exactly the figures shipped in the
+   reports. Set up once:
+
+   ```bash
+   python3 -m venv .venv && source .venv/bin/activate
+   pip install numpy matplotlib pandas scipy
+   ```
+
+2. **Full re-simulation (HPC, weeks).** The SLURM drivers, input
+   decks, build scripts and per-pipeline READMEs regenerate the raw
+   data from scratch on a CSD3-like machine. Raw MD trajectories are
+   not shipped (terabytes); everything derived from them is.
+
+The two sections below give the per-report commands.
 
 ---
 
@@ -37,7 +67,7 @@ cp2k-benchmarks/
 │   └── CSD3_build_scripts/
 │
 ├── scripts/
-│   ├── CSD3_benchmark_scripts/
+│   ├── CSD3_benchmark_scripts/        — Report 1 —
 │   │   ├── cp2k_CSD3_env.sh           module + toolchain setup
 │   │   ├── rebuild_all_branches.sh    full 3-branch rebuild + cache
 │   │   ├── scaling/                   size/core/OMP scaling SLURM drivers
@@ -45,18 +75,27 @@ cp2k-benchmarks/
 │   │   ├── figS4/                     fig S4 (diffusion / viscosity)
 │   │   └── nnp_acs_pub/               RDF reproduction of the cnnp paper
 │   ├── cerberus_benchmark_scripts/    size + core scaling on Cerberus
-│   └── maqao_scripts/                 MAQAO profile + CQA configs
+│   ├── maqao_scripts/                 MAQAO profile + CQA configs
+│   ├── benchmark_figures/             Report-1 + Chebyshev figure scripts
+│   ├── cerberus_nacl_diffusion/       — Report 2 — Madrid-2019 LAMMPS
+│   │   └── lammps/                    campaigns 1-3 + make_figures.py (see its README)
+│   ├── csd3_nacl_mp2{,_anchor}/       MP2 C-NNP runs + two-cell anchor analysis
+│   ├── csd3_rpa_transport/            RPA series runs, Onsager/viscosity/pairing
+│   │                                  analysis, make_series_figures.py (see README)
+│   └── csd3_dft_cost/                 on-the-fly revPBE-D3 cost ladder (see README)
 │
-├── results/                   raw CSVs / per-step traces, by tree
-│   ├── cp2k_master/
-│   ├── cp2k_optimized/
-│   ├── cp2k_feature_native_spline/
-│   ├── cp2k_feature_native_spline_omp/
-│   ├── cp2k_feature_verlet_cells/
+├── results/                   derived data, by campaign
+│   ├── cp2k_master/ cp2k_feature_* cp2k_dhruv_*   Report-1 scaling CSVs
 │   ├── maqao/                 MAQAO profile reports
 │   ├── perf_cache/            perf stat outputs (per timestamp)
 │   ├── figS4/                 MSD / viscosity outputs
-│   └── paper_fig2/            cnnp-paper RDF replication
+│   ├── paper_fig2/            cnnp-paper RDF replication
+│   ├── cheby_benchmark/       Chebyshev-kernel benchmark tables
+│   ├── lammps_madrid/         Report-2 force-field pooled analysis (.npz/.csv)
+│   ├── nacl_mp2_anchor/       MP2 two-cell diffusion anchor
+│   ├── mp2_transport/ rpa_transport/   C-NNP segment analysis outputs
+│   ├── transport_comparison/  cross-level series summaries (CSV)
+│   └── dft_cost/              revPBE-D3 timing ladder
 │
 ├── plots/                     rendered figures ONLY (no code, no data)
 │   ├── thesis_figures/        thesis figure PDFs (output)
@@ -76,7 +115,7 @@ only the build glue lives here.
 
 ---
 
-## Quick start
+## Reproducing Report 1 (Part I: the CP2K NNP optimisation)
 
 ### 1. Build the binaries (one-time)
 
@@ -160,6 +199,74 @@ by fig 5 are produced by:
 ```bash
 python3 scripts/maqao_scripts/maqao_data_analysis.py
 ```
+
+---
+
+## Reproducing Report 2 (Part II: NaCl(aq) transport)
+
+### Figures and numbers from the bundled data (any machine)
+
+Three scripts regenerate every Report 2 figure from `results/`:
+
+```bash
+python3 scripts/cerberus_nacl_diffusion/lammps/make_figures.py      # -> plots/lammps_madrid/
+python3 scripts/csd3_nacl_mp2_anchor/plot_nacl_diffusion.py         # -> plots/nacl_mp2_anchor/
+python3 scripts/csd3_rpa_transport/make_series_figures.py           # -> plots/transport_comparison/
+python3 scripts/benchmark_figures/plot_cheby_full_suite.py          # -> plots/cheby_benchmark_figs/
+python3 scripts/benchmark_figures/plot_cheby_hybrid_mem.py          # -> plots/cheby_benchmark_figs/
+```
+
+Mapping to the figure numbers in Report 2:
+
+| Report figure | File | Script |
+|---|---|---|
+| 8.1 | MD snapshots (`nacl_*molkg_md.png`) | rendered by hand in OVITO (only unscripted figure) |
+| 8.2 | `fig1_msd_vs_vacf.pdf` | `make_figures.py` |
+| 8.3 | `fig2_yeh_hummer.pdf` | `make_figures.py` |
+| 8.4 | `fig35_kappa_tna.pdf` | `make_figures.py` |
+| 8.5 | `nacl_diffusion_yh.pdf` | `plot_nacl_diffusion.py` |
+| 9.1 | `fig4_ne_deviation.pdf` | `make_figures.py` |
+| 9.2 | `fig67_decomposition.pdf` | `make_figures.py` |
+| 9.3 | `fig8_three_way_1m.pdf` | `make_series_figures.py` |
+| 9.4–9.8 | `fig9`–`fig13` series PDFs | `make_series_figures.py` |
+| 9.9 | `fig15_carbon.pdf` | `make_series_figures.py` |
+| A.1 | `fig5_size_scaling.pdf` | `plot_cheby_full_suite.py` |
+| A.2 | `fig2_speed_vs_memory_N1024.pdf` | `plot_cheby_hybrid_mem.py` |
+| A.3 | `fig3_cheby_omp_scaling.pdf` | `plot_cheby_hybrid_mem.py` |
+
+`make_series_figures.py` also rewrites the pooled series tables
+(`results/transport_comparison/transport_series_summary.csv` and
+`pairing_summary_cube3.csv`) that back the numbers quoted in
+Chapters 8–9, and the cost/carbon numbers of §9.4 come from
+`scripts/csd3_rpa_transport/energy_cost_ledger.py` and
+`green_algorithms_footprint.py`.
+
+### Full re-simulation (HPC)
+
+Each pipeline has a README written for exactly this purpose:
+
+- **Madrid-2019 force field (LAMMPS)** —
+  `scripts/cerberus_nacl_diffusion/lammps/README.md`. Three
+  campaigns: (1) self-diffusion + Yeh–Hummer boxes, (2) the 50-run
+  conductivity/Onsager series, (3) NVE velocity dumps for the
+  Green–Kubo cross-checks; each is one sbatch driver plus one
+  analysis script.
+- **MP2 anchor (CP2K C-NNP)** — `scripts/csd3_nacl_mp2_anchor/`:
+  `run_equil.sh` / `run_production.sh` submit the two cells
+  (24.8 / 37.3 Å) on CSD3, `analyze_diffusion.py` produces
+  `results/nacl_mp2_anchor/`.
+- **RPA concentration series (CP2K C-NNP)** —
+  `scripts/csd3_rpa_transport/README.md`: the 1/2/4 mol kg⁻¹
+  segments and the `analyze_{onsager,viscosity,ion_pairing}_cp2k.py`
+  chain feeding `results/{mp2,rpa}_transport/`.
+- **On-the-fly DFT cost ladder (revPBE-D3)** —
+  `scripts/csd3_dft_cost/README.md`: the four-cell timing ladder
+  behind Table 9.4, analysed by `analyze_dft_ladder.py` into
+  `results/dft_cost/`.
+
+The committee models themselves are the published O'Neill et al.
+parameters, redistributed unchanged under CC-BY-SA-4.0 in
+`potentials/oneill-nacl-water-2024/` (see its README and LICENSE).
 
 ---
 
