@@ -102,16 +102,10 @@ fig.tight_layout(); save(fig, "fig1_hybrid_sweep_N1024")
 fig, ax = plt.subplots(figsize=(W_TEXT, 4.6))
 for b in ("master", "native-spline", "chebyshev"):
     ax.plot(tps_1024[b], mem_1024[b], M[b] + "-", color=C[b], label=LBL[b], alpha=0.95)
-ax.annotate("chebyshev 1$\\times$76\n0.057 s, 476 MiB", (0.057025, 476), textcoords="offset points",
-            xytext=(42, 12), fontsize=9, color=C["chebyshev"],
-            arrowprops=dict(arrowstyle="->", color=C["chebyshev"], lw=1.0))
-ax.annotate("native-spline 38$\\times$2\n0.056 s, 10450 MiB", (0.055525, 10450), textcoords="offset points",
-            xytext=(42, -6), fontsize=9, color=C["native-spline"],
-            arrowprops=dict(arrowstyle="->", color=C["native-spline"], lw=1.0))
 ax.set_xscale("log"); ax.set_yscale("log")
 ax.set_xlabel(r"Time per MD step (s) $\longleftarrow$ faster")
 ax.set_ylabel(r"Aggregate node memory (MiB) $\longleftarrow$ lower")
-ax.set_title("Speed vs node memory, 1024 H$_2$O, 1 node\n(each point = one MPI$\\times$OMP decomposition)")
+ax.set_title("Speed vs node memory, 1024 H$_2$O, 1 node")
 ax.grid(True, which="both")
 ax.legend(title="Branch", title_fontsize=9, frameon=True, framealpha=0.93)
 fig.tight_layout(); save(fig, "fig2_speed_vs_memory_N1024")
@@ -122,9 +116,6 @@ speedup = omp_tps[0] / omp_tps
 ax.plot(omp_threads, speedup, M["chebyshev"] + "-", color=C["chebyshev"],
         label="feature/nnp-chebyshev (measured)")
 ax.plot(omp_threads, omp_threads, "--", color=CAM["slate_3"], lw=1.0, label="Ideal (linear)")
-for t, s in zip(omp_threads, speedup):
-    ax.annotate(f"{s:.1f}$\\times$", (t, s), textcoords="offset points", xytext=(7, -3),
-                fontsize=9, color=CAM["slate_4"])
 ax.set_xlabel("OpenMP threads (1 MPI rank)")
 ax.set_ylabel(r"Speedup vs 1 thread")
 ax.set_title("Chebyshev centre-level OpenMP scaling, 1024 H$_2$O")

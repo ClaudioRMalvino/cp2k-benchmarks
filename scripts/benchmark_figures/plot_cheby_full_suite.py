@@ -114,9 +114,6 @@ a2.set_xscale("log", base=2); a2.set_xticks(Nsz); a2.set_xticklabels(Nsz)
 a2.set_xlabel(r"System size ($N$ water molecules)"); a2.set_ylabel("Speedup vs master")
 a2.set_title("Speedup over master grows with system size")
 a2.grid(True); panel_letter(a2, "b")
-for n, b in zip(Nsz, sz["master"] / sz["chebyshev"]):
-    a2.annotate(f"{b:.1f}$\\times$", (n, b), textcoords="offset points", xytext=(0, 7),
-                fontsize=9, ha="center", color=C["chebyshev"])
 top_legend(fig, branch_handles(("master", "native-spline", "chebyshev")), ncol=3)
 save(fig, "fig5_size_scaling")
 
