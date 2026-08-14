@@ -1,14 +1,8 @@
 #!/usr/bin/env bash
-# Trajectory health check for CP2K .ener files (login-node, free).
-#
-#   ./check_ener.sh file1.ener [file2.ener ...]
-#   ./check_ener.sh /path/to/equil/N*/equil_*.ener
-#
-# Reports, per file: steps, T range, conserved-quantity drift, and the
-# count of single-step jumps: Pot > 0.10 Ha (the May neighbour-list bug
-# signature; legitimate NVT relaxation can reach ~0.05) and ConsQty
-# > 0.05 Ha (CQ should be near-flat regardless of relaxation).  Exit
-# code 1 if any file shows jumps or T > 1000 K, to gate pipelines.
+# Trajectory health check for CP2K .ener files. Usage: ./check_ener.sh *.ener
+# Flags single-step Pot jumps >0.10 Ha (May neighbour-list bug signature; NVT
+# relaxation can legitimately reach ~0.05) and ConsQty jumps >0.05 Ha.
+# Exit 1 on any jump or T>1000 K, to gate pipelines.
 
 set -u
 fail=0

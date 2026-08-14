@@ -10,9 +10,8 @@ plus <tag>.final.data (box volume + ion counts), and computes per run:
   t_Na       (slope C_NaNa - slope C_NaCl) / slope(C_sum)   [charge-free]
   Delta_NE   1 - kappa_Ons/kappa_NE  (ion-correlation deviation)
 
-Both charge conventions are reported: the displacement correlations are
-charge-free, so z = 0.85 (model) and z = 1 (formal) differ by the exact
-factor 0.85^2 = 0.7225. Aggregation: mean +- SEM over seeds per (m, L).
+Both charge conventions reported (displacement correlations are charge-free):
+z = 0.85 (model) vs z = 1 (formal) differ by exactly 0.7225. Mean +- SEM over seeds.
 """
 import argparse
 import glob
@@ -114,11 +113,9 @@ def main():
               f"{sem(kOns):6.3f} | {kOns.mean()*0.7225:9.3f} | "
               f"{tNa.mean():6.3f} {sem(tNa):6.3f} | {1-kOns.mean()/kNE.mean():8.3f}")
 
-    # Onsager decomposition: kappa = k_NaNa + k_ClCl - 2 k_NaCl, with each
-    # k_ss' = e^2 z^2 slope(C_ss')/(6 kB T V). Splitting the diagonal terms
-    # into self (6 N_i D_i) + distinct isolates the pure correlation part:
-    # a positive distinct NaCl term (cation-anion co-motion, e.g. ion pairing)
-    # REDUCES kappa. All in S/m at z = 1.
+    # Onsager decomposition: kappa = k_NaNa + k_ClCl - 2 k_NaCl, k_ss' = e^2 z^2
+    # slope(C_ss')/(6 kB T V); diagonals split into self (6 N_i D_i) + distinct.
+    # Positive distinct NaCl (co-motion, e.g. pairing) REDUCES kappa. S/m at z=1.
     print(f"\nOnsager decomposition (z=1, S/m): kappa = kNaNa + kClCl - 2 kNaCl")
     print(f"{'m':>5} {'L':>7} | {'kNaNa':>7} {'kClCl':>7} {'-2kNaCl':>8} | "
           f"{'dNaNa':>7} {'dClCl':>7} {'dNaCl':>7} | {'2kNaCl/kNE':>10}")

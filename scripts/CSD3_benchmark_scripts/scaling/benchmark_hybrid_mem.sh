@@ -1,20 +1,8 @@
 #!/usr/bin/env bash
-# Extensive 3-way comparison driver: master vs native-spline vs chebyshev.
-# Captures the three axes the pros/cons table needs:
-#   1. hybrid MPI x OMP decomposition at fixed 76 cores
-#      -> does the branch convert threads to speed, or idle them?
-#   2. aggregate node memory per decomposition (peak/proc x mpi)
-#      -> cost of many ranks (replication) vs few-ranks/many-threads
-#   3. OMP thread scaling at 1 rank (chebyshev ladder)
-# Pure-MPI size/strong scaling already exists; native-spline core is re-run
-# fresh to remove the May-vs-June cross-month caveat.
-#
-# Note: low-MPI decompositions on master/native-spline are pathologically slow
-# (NNP path is serial per rank: 1 rank x N=4096 ~ 260 s/step). Those branches
-# gain nothing from threads, so at N=4096 they are run ONLY at high-MPI points;
-# the full hybrid ladder runs for all branches at N=1024 (where 1x76 ~ 11 min)
-# and for chebyshev at N=4096.
-#
+# 3-way driver: master vs native-spline vs chebyshev. Hybrid MPI x OMP decomp at
+# 76 cores, aggregate node memory per decomp (peak/proc x mpi), chebyshev OMP
+# ladder; native-spline core re-run fresh to drop the May-vs-June caveat.
+# Master/native-spline NNP is serial per rank (1 rank x N=4096 ~260 s/step), so at N=4096 they run high-MPI points only.
 #SBATCH -J NNP_hybrid_mem
 #SBATCH -A NIKIFORAKIS-CSC-FUNDS-SL3-CPU
 #SBATCH -p icelake

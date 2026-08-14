@@ -1,16 +1,8 @@
 #!/usr/bin/env bash
-# Multi-node strong scaling: master vs feature/nnp-chebyshev across
-# 1 / 2 / 4 Peta4-IceLake nodes (76 ranks per node, pure MPI), at two
-# fixed system sizes.  Measures the cross-node MPI_Allreduce wall that
-# Report 1 SS5.2 predicted but never measured past one socket.
-#
-# One allocation of MAX nodes; each sweep point sruns a SUBSET of the
-# allocated nodes, so node count varies without resubmitting.  Same
-# methodology as run_nnp_core_scaling_slurm.sh: N_REPS timed reps + 1
-# discarded warm-up, time/step from qs_mol_dyn_low, CSV per branch.
-#
-# Submit with:  sbatch run_nnp_multinode_scaling_slurm.sh
-# Budget: 4 nodes x <=2 h = <=2432 CPU-h worst case; realistically ~300.
+# Multi-node strong scaling: master vs feature/nnp-chebyshev on 1/2/4 IceLake
+# nodes (76 ranks/node, pure MPI) at two fixed sizes — the cross-node
+# MPI_Allreduce wall Report 1 SS5.2 predicted. One MAX-node allocation; each point
+# sruns a subset. Methodology as run_nnp_core_scaling_slurm.sh. Budget <=2432 CPU-h worst case, ~300 realistic.
 
 #SBATCH -J NNP_multinode
 #SBATCH -A NIKIFORAKIS-CSC-FUNDS-SL3-CPU
@@ -79,11 +71,8 @@ open(os.environ['target_file'], 'w').write(txt)
 PYEOF
 }
 
-# BRANCH_LIST override lets a rerun measure one branch only, e.g.
-#   BRANCH_LIST=feature-nnp-chebyshev sbatch run_nnp_multinode_scaling_slurm.sh
-# NOTE: the 10-06 multinode data (job 30351703, both branches) was taken at
-# STEPS=50; Report 2 standardises on STEPS=100, so the default both-branch
-# run is the right one unless you are only refreshing chebyshev.
+# BRANCH_LIST=<branch> restricts a rerun to one branch. The 10-06 multinode data
+# (job 30351703) was STEPS=50; Report 2 standardises on STEPS=100.
 for branch in ${BRANCH_LIST:-master feature-nnp-chebyshev}; do
    case "$branch" in
       master) LABEL=upstream-master; PROJECT_ROOT=/home/crm98/cp2k_master; OUTDIR_PARENT=cp2k_master ;;

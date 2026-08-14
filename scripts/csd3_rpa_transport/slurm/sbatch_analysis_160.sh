@@ -9,69 +9,14 @@
 #SBATCH --mail-type=FAIL
 #SBATCH --output=/home/crm98/cp2k-benchmarks/logs/rpa_ana160_%j.out
 
-# Round-2 transport analysis over the completed 5 x 160 ps CPU campaign.
-#
-#   usage: sbatch sbatch_analysis_160.sh
-#
-# Round 1 analysed 80 ps and its products (labels *_5x80_*, *_final_*) are
-# LEFT UNTOUCHED - every output here carries a *_5x160_* label so the two
-# rounds sit side by side and the doubling can be shown as a convergence
-# check rather than asserted.
-#
-# WHY THIS IS A BATCH JOB AND NOT A LOGIN-NODE RUN. Rebuilding the reduced
-# trajectory caches streams all fifteen *-pos-1.xyz files - 10.8 GB each,
-# 162 GB total, 162 M lines through awk. That is not a login-node workload.
-#
-# SIZING - 16 CORES, MEASURED NOT ASSUMED. The parallelism here is one
-# single-threaded process per segment, so the job needs as many cores as the
-# widest phase has processes: 15 (phase A). Phases B/C/D peak at 9. Nothing
-# in this job threads, so cores beyond that would sit idle - and icelake is
-# select/cons_tres with billing=cpu, i.e. we are charged for cores reserved,
-# not cores used, so an oversized request is a straight waste of the SL3
-# allocation and needlessly hard to schedule.
-#
-# Timings from a full pilot on cubic_1M/seg1 (2026-08-10, login node):
-#   gawk 4.2.1 over the pos file .... 151 MB/s  -> 72 s for 10.8 GB
-#   full reduce_segment ............. 84 s      -> 1601 frames, 160.0 ps
-#   peak RSS ........................ 624 MB per process
-# So phase A is ~84 s of work x 15 processes wide (a few minutes once Lustre
-# contention is allowed for), B/C/D a few minutes more. --time=01:30:00 is a
-# ~4x margin on that; 16 x 3370 MB/core = 53.9 GB against a ~10 GB peak
-# (15 x 624 MB).
-#
-# WHY icelake-himem AND NOT icelake. Same Ice Lake silicon, same QOS (cpu2),
-# but on 2026-08-10 plain icelake estimated a start 15 h out against under
-# 3 h on himem - this job is pure post-processing, so the node's DRAM size is
-# irrelevant to the result and we take whichever queue is shorter. A comma
-# list of both would be neater but CSD3 sets the partition in the
-# association, and Slurm rejects multi-partition requests in that case.
-# (cclake looks empty in sinfo but is not: ~640 of its "idle" nodes sit
-# inside the Retired_Cclake / Arcus_Hypervisors / service_action
-# reservations.)
-#
-# PHASE ORDER MATTERS:
-#   A  rebuild reduced_traj_e20.npz for all 15 segments (--refresh); the
-#      round-1 caches hold 80 ps and would silently truncate everything
-#      downstream. 15-way parallel, one process per segment.
-#   B  Onsager/kappa/D/t_Na, three fit windows per concentration.
-#      SERIALISED WITHIN A CONCENTRATION: every window rewrites
-#      onsager_cp2k.dat inside each segment directory, so running the
-#      windows concurrently would have three processes writing one file.
-#      The three concentrations still run in parallel.
-#   C  Green-Kubo viscosity. Reads *-1.stress, touches nothing in common
-#      with B or D, so it overlaps them.
-#   D  Na-Cl pairing / PMF. READS the phase-A caches, never re-streams the
-#      pos files - which is exactly why it must not start before A finishes.
-#
-# Phases B, C and D all run concurrently once A is done.
-#
-# Nothing here writes into ~/cp2k_master or any pristine tree; the only
-# writes are the npz caches + onsager_cp2k.dat inside the run directories,
-# and the labelled products under results/rpa_transport/.
+# Round-2 transport analysis over the 5 x 160 ps CPU campaign (usage: sbatch).
+# Reads runs/RPA/{cubic_1M,cubic_2m,cubic_4m}/production/cube3/seg{1..5};
+# writes *_5x160_* products to results/rpa_transport/ (round-1 *_5x80_* untouched).
+# Batch not login-node: phase A streams 15 x 10.8 GB pos files (162 GB total).
+# 16 cores = widest phase (A, 15 single-threaded procs; icelake bills reserved cores).
+# Pilot 2026-08-10: 84 s + 624 MB RSS per segment; himem chosen for queue time, not memory.
 
-# Deliberately NOT set -e: one concentration failing must not throw away the
-# other two. Each phase reports its own exit status and the job ends with a
-# tally.
+# No set -e: one concentration failing must not throw away the other two.
 set -uo pipefail
 
 BENCH=/home/crm98/cp2k-benchmarks
@@ -83,8 +28,7 @@ EVERY=20           # 20 x 5 fs dumps = 0.1 ps sampling, matches round 1
 LOGD="$BENCH/logs/rpa_ana160_${SLURM_JOB_ID:-manual}"
 mkdir -p "$LOGD" "$RES"
 
-# One thread per process: the parallelism here is across segments and
-# concentrations, so letting MKL/OpenMP also thread would oversubscribe.
+# single-threaded workers; parallelism is across segments/concentrations
 export OMP_NUM_THREADS=1
 export MKL_NUM_THREADS=1
 export OPENBLAS_NUM_THREADS=1
@@ -98,17 +42,14 @@ echo "results   : $RES"
 echo
 
 CONCS="cubic_1M cubic_2m cubic_4m"
-# label stems follow the round-1 convention exactly (1 m carries no molality
-# token in the kappa/eta labels but does in the pairing label) so the figure
-# scripts need a one-line dictionary change, not a rewrite.
+# label stems follow the round-1 convention (1 m has no molality token in kappa/eta labels)
 stem_kappa() { case "$1" in cubic_1M) echo rpa_cpu_cube3    ;; cubic_2m) echo rpa_cpu_cube3_2m ;; cubic_4m) echo rpa_cpu_cube3_4m ;; esac; }
 stem_pair()  { case "$1" in cubic_1M) echo rpa_cpu_cube3_1M ;; cubic_2m) echo rpa_cpu_cube3_2m ;; cubic_4m) echo rpa_cpu_cube3_4m ;; esac; }
 
 segdirs() { for s in 1 2 3 4 5; do echo "$RR/$1/production/cube3/seg$s"; done; }
 
 # ---------------------------------------------------------------- preflight
-# Refuse to spend six hours analysing a short segment. Every segment must
-# have reached 320,000 steps = 160 ps before any of this means anything.
+# every segment must be at step 320000 = 160 ps
 fail=0
 for c in $CONCS; do
   for s in 1 2 3 4 5; do
@@ -181,10 +122,8 @@ for c in $CONCS; do
 ) &
 done
 
-# ---- C: viscosity. Two plateaus per concentration, serialised for tidy logs.
-#   *_final : acf 40 ps, plateau 10-18 ps - the window 160 ps actually buys
-#   *_p0210 : acf 20 ps, plateau 2-10 ps  - identical to round 1, so the
-#             80-vs-160 ps comparison is like-for-like
+# ---- C: viscosity. *_final: acf 40 / plateau 10-18 ps (what 160 ps buys);
+#         *_p0210: acf 20 / plateau 2-10 ps (matches round 1, like-for-like).
 for c in $CONCS; do
 (
   k=$(stem_kappa "$c")

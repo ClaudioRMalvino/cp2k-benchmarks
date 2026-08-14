@@ -1,19 +1,11 @@
 #!/usr/bin/env python3
 """Ion self-diffusion + Na-Cl RDF/PMF from the NaCl(aq) MP2 C-NNP anchor runs.
 
-Companion to analyze_diffusion.py (water O). Single streaming pass per
-production segment: awk prefilters the Na/Cl rows of -pos-1.xyz, then
-  - MSD per ion species (min-image unwrap, FFT multiple-origin), D from the
-    same 10-25 ps lag window as the water analysis, one row per (cell, seg);
-  - Na-Cl distance histogram (min-image, all Na x Cl pairs), pooled over
-    segments per cell -> g(r) -> w(r) = -kT ln g referenced to the tail.
-
-Outputs (results/nacl_mp2_anchor/, per benchmarks layout):
-  ion_diffusion_summary.csv   one row per (cell, segment, species)
-  msd_ions_<cell>.csv         lag_ps + one MSD column per (species, segment)
-  rdf_nacl_<cell>.csv         r_A, g_NaCl, w_kcalmol (segment-pooled)
-
-Usage: analyze_ions_rdf.py [cube2] [cube3]   (default: both)
+Companion to analyze_diffusion.py (water O). One streaming pass per segment: awk
+prefilters Na/Cl rows of -pos-1.xyz; per-species FFT multi-origin MSD (D over the
+same 10-25 ps window); pooled Na-Cl histogram -> g(r) -> w(r) = -kT ln g (tail-ref).
+Writes results/nacl_mp2_anchor/{ion_diffusion_summary, msd_ions_<cell>,
+rdf_nacl_<cell>}.csv. Usage: analyze_ions_rdf.py [cube2] [cube3] (default: both)
 """
 import io
 import os
@@ -48,13 +40,9 @@ os.makedirs(CACHE, exist_ok=True)
 
 
 def read_ions(xyz, n_frames_max):
-    """Stream Na/Cl rows of the first n_frames_max frames.
-
-    Returns (labels, pos): labels (nIon,) of 'Na'/'Cl' in file order,
-    pos (F, nIon, 3). Assumes fixed atom order across frames (CP2K prints
-    topology order every frame). Extracted positions are cached as npz so
-    re-analysis never re-streams the multi-GB trajectories.
-    """
+    """Stream Na/Cl rows of the first n_frames_max frames -> (labels, pos (F,nIon,3)).
+    Assumes fixed atom order (CP2K prints topology order); cached as npz so
+    re-analysis never re-streams the multi-GB trajectories."""
     cache = os.path.join(
         CACHE, os.path.basename(xyz).replace(".xyz", f"_ions_{n_frames_max}.npz"))
     if os.path.exists(cache):
@@ -99,12 +87,8 @@ def autocorr_fft(x):
 
 
 def msd_fft(pos):
-    """MSD(lag) averaged over atoms. pos: (T, N, 3) unwrapped.
-
-    Vectorized (over atoms) form of the verified per-atom algorithm in
-    lammps/msd_multiorigin.py: s1[m] = sum_{k>=m} sq_k + sum_{k<=T-1-m} sq_k,
-    the second term being the reversed cumulative sum.
-    """
+    """MSD(lag) averaged over atoms; pos (T, N, 3) unwrapped. Vectorized form of
+    the verified per-atom algorithm in lammps/msd_multiorigin.py."""
     t, n, _ = pos.shape
     d = np.square(pos).sum(axis=2)
     csum = np.cumsum(d, axis=0)

@@ -3,15 +3,8 @@ set -e
 
 source /home/crm98/cp2k-benchmarks/scripts/CSD3_benchmark_scripts/cp2k_CSD3_env.sh
 
-# --- MACE (symmetrix) backend ----------------------------------------------
-# feature/nnp-mace adds an optional MACE manybody potential via the symmetrix
-# library. Default ON; run with CP2K_USE_MACE=OFF to build without it. On a
-# branch that has no MACE support (e.g. feature/nnp-chebyshev) the CMake flag
-# is simply unused (CMake prints a harmless "unused variable" warning), so the
-# block below is safe to keep across branches.
-# FindSymmetrix expects a lib/+include/ prefix and resolves it via the
-# SYMMETRIX_ROOT environment variable, so we stage one from the symmetrix
-# build tree (~/symmetrix/libsymmetrix) here.
+# MACE (symmetrix) backend: default ON, CP2K_USE_MACE=OFF to disable; flag is unused on non-MACE branches.
+# FindSymmetrix resolves SYMMETRIX_ROOT as a lib/+include/ prefix, staged here from the symmetrix build tree.
 CP2K_USE_MACE=${CP2K_USE_MACE:-ON}
 SYMMETRIX_SRC=${SYMMETRIX_SRC:-$HOME/symmetrix/libsymmetrix}
 SYMMETRIX_PREFIX=${SYMMETRIX_PREFIX:-$HOME/symmetrix/cp2k_prefix}

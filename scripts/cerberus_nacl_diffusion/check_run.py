@@ -1,26 +1,11 @@
 #!/usr/bin/env python3
 """Physics sanity check for NaCl(aq) MD run directories.
 
-Reads the CP2K .ener file (+ committee energies + trajectory) of each run
-directory and reports the three canaries that catch broken forces or an
-exploding simulation:
-
-  1. temperature   - mean/max over the last half of the run (NVT should sit
-                     near 300 K; NVE should stay near where equilibration
-                     left it; > TEMP_HARD K anywhere = exploded)
-  2. energy drift  - linear drift of the conserved quantity per atom per ps
-                     (THE standard test that integration + forces are
-                     consistent; NVE production must pass this)
-  3. committee     - mean disagreement (sigma) of the 8 C-NNP models per
-                     atom; large values mean the trajectory left the
-                     models' training distribution (results untrustworthy
-                     even if nothing "crashed")
-
-Usage:
-  check_run.py <rundir> [<rundir> ...]
-  check_run.py /data/.../np1/production/cell*/seg*     # glob from shell
-
-Exit code 0 = all PASS/WARN, 1 = any FAIL.
+Reads each rundir's CP2K .ener (+ committee energies + trajectory) and reports
+three canaries: temperature (last-half mean/max; > TEMP_HARD anywhere = exploded),
+conserved-quantity drift per atom per ps (integration/forces consistency; NVE must
+pass), committee sigma per atom (large = outside the 8 C-NNP models' training set).
+Usage: check_run.py <rundir> [...]; exit 0 = all PASS/WARN, 1 = any FAIL.
 """
 import glob
 import os

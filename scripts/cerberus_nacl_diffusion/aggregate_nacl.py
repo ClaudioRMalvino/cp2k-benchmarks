@@ -1,19 +1,11 @@
 #!/usr/bin/env python3
 """Aggregate NaCl(aq) NVE production segments into diffusion/viscosity CSVs.
 
-Adapted from scripts/CSD3_benchmark_scripts/figS4/aggregate_figS4.py, with
-two generalizations: cells are labelled by their tiling ("111", "211", ...)
-of the 12.42 A base cell, and diffusion is computed per species (O = water,
-Na, Cl) using the same trajectory and the segment's Green-Kubo viscosity.
-
-Reuses compute_viscosity.py / compute_diffusion.py from the figS4 directory
-unchanged (Yeh-Hummer: D_0 = D_PBC + kB*T*xi/(6*pi*eta*L), xi = 2.837297,
-T = 300 K, L = V^(1/3)).
-
-Usage:
-  python3 aggregate_nacl.py \
-      --prod-root /data/cerberus1/crm98/nacl_diffusion/revPBE-D3/production \
-      --out-dir   /data/cerberus1/crm98/nacl_diffusion/revPBE-D3/analysis
+Adapted from figS4/aggregate_figS4.py: cells labelled by tiling ("111", ...) of
+the 12.42 A base cell; diffusion per species (O/Na/Cl). Reuses the figS4
+compute_viscosity.py / compute_diffusion.py unchanged (Yeh-Hummer:
+D_0 = D_PBC + kB*T*xi/(6*pi*eta*L), xi = 2.837297, T = 300 K, L = V^(1/3)).
+Usage: aggregate_nacl.py --prod-root <.../production> --out-dir <.../analysis>
 """
 import argparse
 import glob

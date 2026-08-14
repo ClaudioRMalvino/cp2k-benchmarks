@@ -1,18 +1,8 @@
 #!/usr/bin/env python3
-"""Head-to-head: Dhruv's pristine PR head (8be1dfa50f) vs the SAME head with
-the bit-exact atom-level OpenMP graft (omp-atom-bitexact-v2). Both binaries
-built from the SAME configured CMake tree (-O3 -xCORE-AVX2 -fp-model=precise
--qopenmp, Intel 2022.1.0), run on the SAME icelake node in the SAME job
-(31837144) -> the ONLY variable is the graft.
-
-Two axes, H2O-1024 NNP MD (3072 atoms), 100 MD steps, 5 reps + warm-up,
-t/step from qs_mol_dyn_low:
-  (1) OMP thread scaling   1 MPI rank, threads {1..76}
-  (2) pure-MPI strong scale OMP=1, ranks {1..76}
-Accuracy leg of the same job: forces bit-identical (max abs diff 0.0) between
-the two binaries at OMP=1 and OMP=76; energy diff 0.0 Ha.
-Styled to match scripts/benchmark_figures/thesis_figures.py.
-"""
+"""Head-to-head: Dhruv's PR head (8be1dfa50f) vs same head + bit-exact atom-level
+OpenMP graft (omp-atom-bitexact-v2); same CMake tree, same icelake node, job
+31837144. H2O-1024 NNP MD, 100 steps, 5 reps + warm-up, t/step from
+qs_mol_dyn_low; forces bit-identical at OMP=1/76. Styled per thesis_figures.py."""
 import glob
 import os
 import numpy as np
@@ -50,7 +40,7 @@ W_TEXT = 6.3
 
 
 def panel_letter(ax, letter):
-    # top-left, above the axes, so it never collides with the centred title
+    # above the axes so it clears the centred title
     ax.text(-0.02, 1.07, f"({letter})", transform=ax.transAxes, fontsize=12,
             fontweight="bold", va="bottom", ha="left", color=CAM["slate_4"])
 
@@ -72,10 +62,8 @@ def load(kind, label):
 omp_b, omp_g = load("omp_thread", BASE), load("omp_thread", OMP)
 mpi_b, mpi_g = load("core", BASE), load("core", OMP)
 
-# Thesis colour semantics (thesis_figures.py BRANCH_STYLE): the unmodified
-# reference is neutral slate with marker "o" (like master); the optimised
-# variant is Cambridge warm blue with marker "^" (like native-spline).
-# Linestyle separates the parallel mode: OMP solid, pure MPI dotted.
+# Colours per thesis_figures.py BRANCH_STYLE: reference = slate "o",
+# optimised = warm blue "^"; linestyle: OMP solid, pure MPI dotted.
 SER = {
     "base_omp": (omp_b, CAM["slate_3"], "o", "-", "PR head, OMP (1 rank)"),
     "graft_omp": (omp_g, CAM["blue_warm"], "^", "-", "PR head + graft, OMP (1 rank)"),
@@ -111,8 +99,7 @@ ax[1].legend([h_ideal], ["Ideal (linear)"],
              loc="upper left", fontsize=10, frameon=True, framealpha=0.93)
 panel_letter(ax[1], "b")
 
-# One frameless figure-level legend, thesis-style: ncol=2 column-major gives
-# row 1 = PR head (OMP | MPI), row 2 = PR head + graft (OMP | MPI).
+# figure-level legend, ncol=2 column-major: rows = head/graft, cols = OMP/MPI
 handles = [plt.Line2D([0], [0], color=c, marker=m, ls=ls, lw=1.7, ms=6.5,
                       label=lab) for _, c, m, ls, lab in SER.values()]
 fig.legend(handles=handles, loc="upper center", bbox_to_anchor=(0.5, 1.00),
@@ -125,7 +112,7 @@ for ext in ("png", "pdf"):
     fig.savefig(f"{OUT}/omp_headtohead_scaling.{ext}")
 plt.close(fig)
 
-# ---- console summary table (markdown, ready for the PR / report) -----------
+# ---- console summary table (markdown) ----
 def row(a, i):
     return a[i, 4], a[i, 5], a[i, 10], a[i, 11]
 

@@ -7,16 +7,13 @@
 #SBATCH -p icelake
 #SBATCH --nodes=1
 #SBATCH --ntasks=76
-# 12 h (SL3 cap): N256 equil measured 0.046 s/step at 76 ranks; ~O(N) scaling
-# puts N1024 at ~0.18 s/step x 210k steps = ~10.7 h.  6 h killed nothing only
-# because N64/N128/N256 are small; it was a sure kill for array 4 (N1024).
+# 12 h (SL3 cap): N256 measured 0.046 s/step @76 ranks; ~O(N) puts N1024 at ~10.7 h, so 6 h kills array 4
 #SBATCH --time=12:00:00
 #SBATCH --array=0-4
 #SBATCH --mail-type=NONE
 #SBATCH --output=/home/crm98/cp2k-benchmarks/logs/figS4_equil_%A_%a.out
 
-# Source toolchain env BEFORE strict mode: 'setup' references unbound
-# CP_DFLAGS that would trip `set -u`.
+# env before strict mode: 'setup' references unbound CP_DFLAGS (trips set -u)
 . /etc/profile.d/modules.sh
 module purge
 source /home/crm98/cp2k-benchmarks/scripts/CSD3_benchmark_scripts/cp2k_CSD3_env.sh
@@ -28,9 +25,7 @@ source "$BIN_ROOT/setup"
 
 set -euo pipefail
 
-# Bash expands here-docs/here-strings via temp files in TMPDIR; node-local
-# /tmp can be full (job 30395309 died on cpu-q-179 with ENOSPC at a
-# here-string).  Point TMPDIR at scratch so a full node disk cannot kill us.
+# TMPDIR on scratch: here-doc temp files on full node-local /tmp ENOSPC'd job 30395309 (cpu-q-179)
 export TMPDIR=/rds/user/$USER/hpc-work/tmp
 mkdir -p "$TMPDIR"
 

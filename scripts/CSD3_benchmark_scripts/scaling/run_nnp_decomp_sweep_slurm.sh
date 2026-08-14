@@ -1,19 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Hybrid MPI x OMP decomposition sweep at FIXED total cores and FIXED system
-# size.  For each (mpi, omp) factorisation of $TOTAL_CORES it records the mean
-# qs_mol_dyn_low time per MD step AND the CP2K-reported per-process peak memory,
-# then derives aggregate node memory = peak_per_proc * mpi.
-#
-# Purpose: quantify (a) whether a branch can convert OMP threads into speed
-# (chebyshev) or merely idles them (master / native-spline, whose NNP path is
-# pure-MPI), and (b) the aggregate-memory cost of needing many MPI ranks
-# (each replicates the model + tables) vs few ranks x many threads.
-#
-#   run_nnp_decomp_sweep_slurm.sh <branch>
-# env: N_MOLECULES (1024), STEPS (100), N_REPS (3), TOTAL_CORES (76),
-#      DECOMP_LIST ("76x1 38x2 19x4 4x19 2x38 1x76")
+# Hybrid MPI x OMP decomposition sweep at fixed total cores and system size:
+# per (mpi,omp) factorisation records mean qs_mol_dyn_low time/step and CP2K
+# peak memory per process (aggregate = peak x mpi). Usage: run_nnp_decomp_sweep_slurm.sh <branch>
+# env: N_MOLECULES (1024), STEPS (100), N_REPS (3), TOTAL_CORES (76), DECOMP_LIST ("76x1 38x2 19x4 4x19 2x38 1x76")
 
 CORES_PER_NODE=76
 BIN_ROOT=/rds/user/$USER/hpc-work/cp2k_binaries/csd3
@@ -92,9 +83,8 @@ read -r mx my mz <<<"${MULT[$N_MOLECULES]}"
 echo "Decomposition sweep: $LABEL  N=$N_MOLECULES  total_cores=$TOTAL_CORES  reps=$N_REPS"
 echo "------------------------------------------------------------------------"
 
-# Preflight: catch a node-local SLURM/SPANK fault (e.g. lua.so failing to
-# dlopen liblua-5.3.so) BEFORE burning the whole campaign on silent reps=0.
-# Job 30882875 died this way on a bad node and recorded zeros everywhere.
+# Preflight: catch a node-local SLURM/SPANK fault (lua.so dlopen) before burning
+# the campaign on silent reps=0 — job 30882875 died this way, recording zeros.
 preflight="${OUTDIR}/srun_preflight.log"
 srun --ntasks=1 hostname >"$preflight" 2>&1 || true
 if grep -qiE 'Plug-in initialization failed|spank:|Dlopen of plugin' "$preflight"; then

@@ -1,21 +1,8 @@
 #!/usr/bin/env python3
-"""Consolidated MAQAO-derived analysis for the thesis report.
-
-Two data sources are wired in:
-
-  1. LEGACY (May-14 ONE View, hand-typed):
-       GLOBAL_METRICS, HOTSPOTS, CQA_LOOPS  -- a frozen snapshot retained for
-       backwards compatibility with the existing plots & disclaimer.
-
-  2. FRESH (May-26 CSV from `maqao cqa --fct-loops="nnp_" --output-format=csv`,
-       three branches, login-node CQA, ptrace-independent):
-       loaded by load_cqa_csvs() into a single DataFrame and aggregated with
-       Hoefler & Belli SC'15 rule-compliant means
-       (arithmetic for costs, harmonic for rates, geometric for ratios).
-
-The CLI exposes both via --only.  Default runs the fresh-CSV-driven outputs
-first, then the legacy outputs.
-"""
+"""Consolidated MAQAO analysis. Sources: legacy May-14 ONE View snapshot
+(GLOBAL_METRICS/HOTSPOTS/CQA_LOOPS, hand-typed) + fresh May-26 login-node CQA CSVs
+aggregated with Hoefler & Belli SC'15 rule-compliant means.
+Writes figures to plots/maqao_plots, tables to results/maqao; --only selects a section."""
 import argparse
 import hashlib
 import os
@@ -33,13 +20,8 @@ OUTDIR_FIG = "/home/crm98/cp2k-benchmarks/plots/maqao_plots"    # figures (pdf)
 OUTDIR_DATA = "/home/crm98/cp2k-benchmarks/results/maqao"     # tables/aggregates (csv, txt, md)
 THREE_BRANCHES = ["master", "native-spline (pre-port)", "native-spline-omp"]
 
-# =============================================================================
-# Fresh CQA CSVs (one per branch).  Produced on the CSD3 login node via
-#   maqao cqa <binary> --fct-loops="nnp_" --output-format=csv \
-#             --output-path=<path>
-# CQA is pure static disassembly; same binary in -> identical numbers out,
-# so the data is deterministic (Rule 5: no CIs required).
-# =============================================================================
+# Fresh CQA CSVs (one per branch), from `maqao cqa <binary> --fct-loops="nnp_" --output-format=csv` on the CSD3 login node.
+# CQA is static disassembly -> deterministic (Rule 5: no CIs required).
 FRESH_CSV_DIR = "/home/crm98/cp2k-benchmarks/maqao_login_cqa"
 FRESH_CSV_PATHS = {
     "master":                    f"{FRESH_CSV_DIR}/master_nnp.csv",
@@ -52,8 +34,7 @@ FRESH_BINARY_PATHS = {
     "native-spline (post-port)": "/home/crm98/cp2k_optimized/install/bin/cp2k.psmp",
     "native-spline-omp":         "/rds/user/crm98/hpc-work/cp2k_binaries/csd3/feature-nnp-native-spline-omp/cp2k.psmp",
 }
-# Restrict to NNP Fortran sources -- the CQA --fct-loops filter catches some
-# inlined helium_interactions wrappers; this drops the tail of unrelated loops.
+# The --fct-loops filter also catches inlined helium_interactions wrappers; restrict to NNP sources.
 NNP_SRC_BASENAMES = {"nnp_acsf.F", "nnp_force.F", "nnp_model.F", "nnp_environment.F"}
 # Function-name shorteners (Fortran module-prefixed symbols are long).
 def _short_fn(s):
@@ -143,12 +124,9 @@ CQA_LOOPS = pd.DataFrame([
 ])
 
 
-# =============================================================================
-# Fresh CQA CSV: loader, per-branch aggregator, per-loop table, summary plots
-# =============================================================================
+# ===== Fresh CQA CSV: loader, aggregator, tables, plots =====
 def load_cqa_csvs(paths=FRESH_CSV_PATHS, nnp_only=True):
-    """Read each branch's CQA CSV, tag with `branch`, optionally restrict to
-    the NNP Fortran sources (drops unrelated inlined helium wrappers etc.)."""
+    """Read each branch's CQA CSV, tag with `branch`, optionally restrict to NNP sources."""
     parts = []
     for branch, p in paths.items():
         if not os.path.exists(p):
@@ -168,8 +146,7 @@ def load_cqa_csvs(paths=FRESH_CSV_PATHS, nnp_only=True):
 
 
 def _harmean(s):
-    """Harmonic mean over a Series; drops NaN and non-positive entries
-    (zero-rate or sentinel rows would otherwise divide by zero)."""
+    """Harmonic mean; drops NaN and non-positive entries (avoid divide-by-zero)."""
     s = pd.Series(s).dropna()
     s = s[s > 0]
     if len(s) == 0: return float("nan")
@@ -177,10 +154,8 @@ def _harmean(s):
 
 
 def _geomean(s):
-    """Geometric mean over a Series; drops NaN and zeros (log(0) undefined).
-    For percentage columns this means scalar loops with vec_ratio=0 are
-    EXCLUDED from the average; they are reported separately as the
-    'n_loops_with_vec_ratio=0' tail count."""
+    """Geometric mean of positives; vec_ratio=0 loops are excluded here and
+    counted separately as the 'n_loops with vec_ratio == 0' tail."""
     s = pd.Series(s).dropna()
     s = s[s > 0]
     if len(s) == 0: return float("nan")
@@ -188,13 +163,8 @@ def _geomean(s):
 
 
 def aggregate_branch_metrics(df):
-    """Per-branch Hoefler-correct aggregates:
-       costs   -> arithmetic + median + p25/p75    (Rule 3, Rule 8)
-       rates   -> harmonic mean                    (Rule 3)
-       ratios  -> geometric mean of positives      (Rule 4)
-       tails   -> count of loops at 0% / >=50%     (Rule 8: don't reduce to
-                  one number when the distribution is bimodal)
-    Returns one row per branch (DataFrame)."""
+    """One row per branch, Hoefler-correct: arithmetic+quantiles for costs (R3/R8),
+    harmonic for rates (R3), geometric of positives for ratios (R4), tail counts (R8)."""
     def per_branch(g):
         cyc       = g["[L1] Nb cycles: min"].astype(float)
         cyc_full  = g["[L1] Nb cycles if fully vectorized: min"].astype(float)
@@ -208,24 +178,20 @@ def aggregate_branch_metrics(df):
         ai        = g["Arith. intensity (FLOP / ld+st bytes)"].astype(float)
         return pd.Series({
             "n_loops":                                len(g),
-            # costs: arithmetic + distribution
             "cycles/iter (arith mean)":               cyc.mean(),
             "cycles/iter (median)":                   cyc.median(),
             "cycles/iter (p25)":                      cyc.quantile(0.25),
             "cycles/iter (p75)":                      cyc.quantile(0.75),
-            # Rule 11: upper-bound model -- what perfect vec / clean code buys
+            # Rule 11 upper-bound columns
             "cycles/iter (full-vec, arith mean)":     cyc_full.mean(),
             "cycles/iter (FP-vec, arith mean)":       cyc_fp.mean(),
             "cycles/iter (clean, arith mean)":        cyc_clean.mean(),
-            # rates: harmonic
             "IPC (harm mean)":                        _harmean(ipc),
             "FLOP/cycle (harm mean)":                 _harmean(flopcyc),
-            # ratios: geometric of positives
             "Vec ratio % (geo mean, > 0)":            _geomean(vr),
             "Vec ratio FP % (geo mean, > 0)":         _geomean(vrf),
             "Vec efficiency % (geo mean, > 0)":       _geomean(ve),
             "Arith intensity (median)":               ai.median(),
-            # tails of the vec ratio distribution -- the scalar vs SIMD split
             "n_loops with vec_ratio == 0":            int((vr.fillna(-1) == 0).sum()),
             "n_loops with vec_ratio >= 50%":          int((vr.fillna(-1) >= 50).sum()),
         })
@@ -233,8 +199,7 @@ def aggregate_branch_metrics(df):
 
 
 def write_fresh_branch_aggregate():
-    """Rule-3/4/8/11 aggregate across all NNP loops, one row per branch.
-       Saved as CSV + readable .txt with the rule annotations baked in."""
+    """Rule-compliant aggregate across NNP loops; saves CSV + annotated .txt."""
     print("\n[fresh-1] CSV-driven per-branch aggregate (rule-correct means)")
     df = load_cqa_csvs()
     if df is None:
@@ -266,10 +231,7 @@ def write_fresh_branch_aggregate():
 
 
 def write_fresh_per_loop_table(top_n=20):
-    """Per-loop CQA stats across all branches, restricted to the heaviest
-       loops (by cycles/iter).  Pairs every Rule-11 upper-bound with the
-       absolute base case (Rule 1).
-    """
+    """Top-N loops per branch by cycles/iter; pairs Rule-11 upper bounds with the absolute base (Rule 1)."""
     print(f"\n[fresh-2] CSV-driven per-loop table (top {top_n} per branch by cycles/iter)")
     df = load_cqa_csvs()
     if df is None: print("  no CSVs found -- skipping"); return
@@ -287,20 +249,17 @@ def write_fresh_per_loop_table(top_n=20):
     ]
     keep = df[cols_keep].copy()
     keep = keep.sort_values(["branch","[L1] Nb cycles: min"], ascending=[True, False])
-    # take top_n per branch
     top = keep.groupby("branch", sort=False).head(top_n)
-    # Rule 1: paired speedup -- vec-headroom relative to base (avoid div by 0)
+    # Rule 1: pair headroom with its absolute base (guard div-by-0)
     base = top["[L1] Nb cycles: min"].astype(float)
     fullv = top["[L1] Nb cycles if fully vectorized: min"].astype(float)
     top["headroom (base/fullvec)"] = (base / fullv.where(fullv > 0)).round(2)
-    # round numeric columns for readability
     for c in cols_keep[6:]:
         if c in top.columns:
             top[c] = pd.to_numeric(top[c], errors="coerce").round(2)
     csv_p = os.path.join(OUTDIR_DATA, "fresh_per_loop_table.csv")
     top.to_csv(csv_p, index=False)
     print(f"  saved {csv_p}  ({len(top)} rows)")
-    # also save a compact text version
     txt_p = os.path.join(OUTDIR_DATA, "fresh_per_loop_table.txt")
     with open(txt_p, "w") as f:
         f.write("Top NNP loops per branch (ranked by cycles/iter, min)\n")
@@ -313,8 +272,7 @@ def write_fresh_per_loop_table(top_n=20):
 
 
 def plot_fresh_vec_ratio_distribution():
-    """Rule 8: when the per-loop distribution is wide, plot the spread,
-       not just the mean.  Box+strip per branch."""
+    """Rule 8: plot the per-loop vec-ratio spread (box + strip) per branch."""
     print("\n[fresh-3] per-loop vec-ratio distribution (boxplot)")
     df = load_cqa_csvs()
     if df is None: print("  no CSVs found -- skipping"); return
@@ -329,7 +287,6 @@ def plot_fresh_vec_ratio_distribution():
     colors = ["#7fb3d5", "#2ecc71", "#f39c12"]
     for patch, col in zip(box["boxes"], colors):
         patch.set_facecolor(col); patch.set_alpha(0.75); patch.set_edgecolor("black")
-    # overlay actual points (strip plot) with horizontal jitter
     rng = np.random.default_rng(0)
     for i, d in enumerate(data):
         xs = rng.normal(i + 1, 0.05, size=len(d))
@@ -352,10 +309,8 @@ def plot_fresh_vec_ratio_distribution():
 
 
 def plot_fresh_speedup_with_baseline(top_n=8):
-    """Rule 1: any speedup needs the absolute base-case.  Paired-bar plot of
-       (current cycles/iter, full-vec cycles/iter) for the top NNP loops on
-       the post-port native-spline branch -- shows the headroom in absolute
-       cycles, not a unit-less speedup ratio."""
+    """Rule 1: paired (base, full-vec) cycles/iter bars for the top post-port
+    NNP loops - headroom in absolute cycles, not a unit-less ratio."""
     print(f"\n[fresh-4] post-port paired (base, full-vec) cycles/iter, top {top_n}")
     df = load_cqa_csvs()
     if df is None: print("  no CSVs found -- skipping"); return
@@ -388,11 +343,8 @@ def plot_fresh_speedup_with_baseline(top_n=8):
 
 
 def write_methodology_md():
-    """Auto-generate a methodology.md tying together: environment, MAQAO version,
-       invocation, binary md5, statistical choices, and which Hoefler rule each
-       table satisfies."""
+    """Generate methodology.md: environment, MAQAO version, invocation, binary md5s, Hoefler rule mapping."""
     print("\n[methodology] writing methodology.md")
-    # collect binary md5s
     md5s = {}
     for label, b in FRESH_BINARY_PATHS.items():
         try:
@@ -400,14 +352,12 @@ def write_methodology_md():
                 md5s[label] = hashlib.md5(f.read()).hexdigest()
         except FileNotFoundError:
             md5s[label] = "(file not present)"
-    # maqao version
     try:
         ver = subprocess.check_output(
             ["/home/crm98/maqao.x86_64.2026.0.0-b/bin/maqao", "--version"],
             text=True, stderr=subprocess.STDOUT, timeout=10).strip().splitlines()[0]
     except Exception:
         ver = "MAQAO 2026.0.0-b (build path)"
-    # csv mtimes
     csv_mtimes = {}
     for label, p in FRESH_CSV_PATHS.items():
         try:

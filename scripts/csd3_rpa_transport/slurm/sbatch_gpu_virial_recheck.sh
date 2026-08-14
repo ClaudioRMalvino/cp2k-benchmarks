@@ -9,13 +9,11 @@
 #SBATCH --mail-type=ALL
 #SBATCH --output=/home/crm98/cp2k-benchmarks/logs/rpa_gpu_vircheck_%j.out
 
-# Pair-active GPU virial validation: the smoke's ON-vs-OFF stress check ran
-# from the builder geometry, where ion-ion angular groups have EMPTY pair
-# lists (the very condition that exposed the max_n_ang2 bug) - so those
-# kernel instances were skipped in both paths. This job repeats the same
-# 20-step USE_GPU ON vs OFF comparison from equil snapshot_1, where ion
-# pairs exist and every kernel instance is live. Gates GPU production.
-# Expected agreement ~1e-9 relative; hard-fail above 1e-6.
+# Pair-active GPU virial validation: the smoke's ON-vs-OFF check ran from the
+# builder geometry, where ion-ion angular pair lists are EMPTY (the max_n_ang2
+# bug condition). Repeats the 20-step USE_GPU ON vs OFF diff from equil
+# snapshot_1, where every kernel instance is live. Gates GPU production.
+# Expected ~1e-9 relative; hard-fail above 1e-6.
 set -uo pipefail
 CONC=${1:-cubic_1M}
 ADIR=/home/crm98/cp2k-benchmarks/scripts/csd3_nacl_mp2_anchor

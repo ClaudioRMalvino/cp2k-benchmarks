@@ -7,41 +7,18 @@
 #SBATCH --mail-type=FAIL
 #SBATCH --output=/home/crm98/cp2k-benchmarks/logs/dft_probe_%j.out
 
-# Diagnostic probe for the 5064-atom (37.26 A) rung of the on-the-fly DFT
-# ladder, which will not start its SCF.
-#
-# WHAT IS KNOWN SO FAR
-#   33128702  76 ranks x 1 thread            6 h 25 min, zero SCF iterations
-#   33170265  19 ranks x 4 threads           1 h,        zero SCF iterations
-#   33170266  19 x 4, RS_GRID REPLICATED     1 h,        zero SCF iterations
-# A gdb backtrace of 33128702 put every rank in
-#     qs_forces -> qs_energies_init_hamiltonians -> qs_env_update_s_mstruct
-#     -> calculate_rho_core_c1d_gs -> transfer_rs2pw_distributed -> mp_waitany
-# i.e. inside the realspace->planewave transfer of the core density, before the
-# SCF. It is not memory (80 GB of 502 GB used on the node) and it is not the
-# FULL_ALL preconditioner, which the code has not reached.
-#
-# The obvious slab-vs-halo explanation does not survive: three rank/thread
-# layouts and a replicated grid all stall identically, and CP2K's multigrid
-# puts the diffuse (large-radius) Gaussians on the COARSE grids, so the fine
-# grid never sees the 14.85 bohr radius that EPS_PGF_ORB 1e-14 implies for the
-# most diffuse O function. Something else is wrong, so this probe stops
-# guessing and samples the stack live.
-#
-# WHAT THIS RUN DOES DIFFERENTLY
-#   - srun is wrapped in `timeout` so the reporting section below always runs.
-#     The 1 h probes above were killed at the wall mid-srun and printed nothing,
-#     which is why their diagnosis had to be dug out of the run directory.
-#   - PRINT_LEVEL MEDIUM, so CP2K prints the grid tables (level sizes, cutoffs,
-#     distribution) before it reaches the stall - turning the grid geometry
-#     from an estimate into a measurement.
-#   - two gdb backtraces of a live rank, at 8 and 20 minutes, so we see whether
-#     it is stuck at one point or grinding forward.
-#
-# Accuracy settings (cutoff, EPS_*, XC, basis, D3) are untouched: those define
-# the level of theory the NNP was fitted to. Layout, FFT planning and print
-# level change no computed number.
-#
+# Diagnostic probe for the 5064-atom (37.26 A) rung of the DFT ladder, which
+# never starts its SCF. Evidence: 33128702 (76x1, 6 h 25), 33170265 (19x4, 1 h),
+# 33170266 (19x4 + RS_GRID REPLICATED, 1 h) - zero SCF iterations each; gdb on
+# 33128702 put every rank in calculate_rho_core -> transfer_rs2pw_distributed ->
+# mp_waitany (rs->pw transfer of the core density, pre-SCF). Not memory (80 of
+# 502 GB), not the FULL_ALL preconditioner (never reached); slab-vs-halo ruled out
+# (three layouts + replicated grid stall identically; diffuse Gaussians live on
+# the COARSE multigrids).
+# This probe: srun under `timeout` so the report below always runs; PRINT_LEVEL
+# MEDIUM prints the grid tables before the stall; two gdb backtraces (8/20 min)
+# distinguish stuck from grinding. Accuracy settings (cutoff/EPS_*/XC/basis/D3)
+# untouched - layout, FFT planning and print level change no computed number.
 #   sbatch --ntasks=19 --cpus-per-task=4 sbatch_dft_probe.sh 19 4 base 2700
 set -euo pipefail
 RANKS=${1:?usage: sbatch_dft_probe.sh <ranks> <threads> <base|replicated> [run_seconds]}

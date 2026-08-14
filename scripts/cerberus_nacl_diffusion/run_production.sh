@@ -1,16 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# STAGE 2 - NVE production for the NaCl(aq) diffusion study on cerberus.
-# Mirrors scripts/CSD3_benchmark_scripts/figS4/run_nnp_figS4_production_*.sh:
-# 100 ps NVE per segment, 5 independent segments started from the stage-1
-# snapshots (positions + velocities only). Stress every step, positions
-# every 10 steps - exactly what compute_viscosity.py / compute_diffusion.py
-# expect.
-#
-# Usage:   ./run_production.sh
-# Env:     MODEL=revPBE-D3   CELLS="111 211 221 222"   SEGMENTS="1 2 3 4 5"
-#          TOTAL_RANKS=48    PROD_PS=100
+# STAGE 2 - NVE production for the NaCl(aq) diffusion study on cerberus (mirrors
+# figS4 production scripts): PROD_PS ps NVE per segment, 5 segments from stage-1
+# snapshots (positions + velocities only). Stress every step, positions every 10
+# steps (what compute_viscosity.py / compute_diffusion.py expect).
+# Usage: ./run_production.sh   Env: MODEL CELLS SEGMENTS TOTAL_RANKS PROD_PS
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 TEMPLATE="$SCRIPT_DIR/nacl_diffusion_template.inp"
@@ -112,11 +107,9 @@ EOF
     if [ -f "$rundir/${proj}-1.restart" ] && \
        ! grep -q "PROGRAM ENDED" "$rundir/prod.out" 2>/dev/null; then
       INPUT="${proj}-1.restart"
-      # Restore the step counter on continuation so the run stops at the total
-      # STEPS instead of doing a whole fresh segment. The initial launch keeps
-      # counters OFF (production must start at step 0 from the equil snapshot);
-      # a continuation must turn them ON, otherwise CP2K treats STEPS as a
-      # per-invocation count and overruns to 2x the segment length.
+      # counters ON on continuation so the run stops at the total STEPS (initial
+      # launch keeps them OFF: production starts at step 0 from the snapshot);
+      # otherwise CP2K treats STEPS as per-invocation and overruns 2x
       sed -i -E 's/^( *RESTART_COUNTERS +)[FT.]+/\1T/' "$rundir/$INPUT"
       echo "cell$cell seg$seg: continuing from checkpoint $INPUT (counters restored)"
     fi

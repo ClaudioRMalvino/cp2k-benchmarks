@@ -1,16 +1,10 @@
 #!/usr/bin/env python3
 """Water-oxygen self-diffusion from the NaCl(aq) MP2 C-NNP anchor runs.
 
-For each cell (cube2 24.84 A, cube3 37.26 A) and each of the 5 NVE production
-segments: stream the -pos-1.xyz (O atoms only, via awk prefilter), unwrap
-minimum-image, MSD by the FFT multiple-origin algorithm, D from a linear fit
-of MSD over a common lag window. Segments are truncated to a common length
-per cell so all five are statistically equivalent.
-
-Outputs (data -> results/, per benchmarks layout):
-  results/nacl_mp2_anchor/diffusion_summary.csv   one row per (cell, segment)
-  results/nacl_mp2_anchor/msd_<cell>.csv          lag_ps + one MSD column/segment
-
+Per cell (cube2 24.84 A, cube3 37.26 A) and NVE segment: stream -pos-1.xyz
+(O only, awk prefilter), min-image unwrap, FFT multi-origin MSD, D from a linear
+fit over a common lag window; segments truncated to a common length per cell.
+Writes results/nacl_mp2_anchor/{diffusion_summary.csv, msd_<cell>.csv}.
 Usage: analyze_diffusion.py [cube2] [cube3]   (default: both)
 """
 import io

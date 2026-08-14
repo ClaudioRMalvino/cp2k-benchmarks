@@ -8,11 +8,9 @@
 #SBATCH --mail-type=NONE
 #SBATCH --output=/home/crm98/cp2k-benchmarks/logs/nacl_mp2_split_%j.out
 
-# GROUP_PARTITION (NNP ranks / Fist ranks) sweep. The 75/1 split inherited
-# from cerberus leaves the single Coulomb rank as the bottleneck on CSD3
-# (smoke 31514146: fist 0.134 s/step vs nnp 0.057 s/step). This measures
-# 4 splits on both boxes and prints a table -> pick the fastest for
-# production. Rank split changes performance only, never the physics.
+# GROUP_PARTITION (NNP/Fist ranks) sweep: the 75/1 cerberus split leaves the single
+# Coulomb rank as the bottleneck (smoke 31514146: fist 0.134 vs nnp 0.057 s/step).
+# Measures 4 splits on both boxes; rank split is performance-only, physics-neutral.
 set -euo pipefail
 SDIR=/home/crm98/cp2k-benchmarks/scripts/csd3_nacl_mp2_anchor
 source "$SDIR/env_csd3.sh"

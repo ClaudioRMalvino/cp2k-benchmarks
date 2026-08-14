@@ -1,18 +1,12 @@
 #!/usr/bin/env python3
 """Build the NaCl(aq) base simulation cell for the diffusion study.
 
-Default mode ("substitute"): take the first 64-water frame from the O'Neill
-training data (data-sets/<model>/input_water.xyz, 12.42 A cell), remove
-2*n_pairs waters at maximally separated oxygen sites, and place Na+/Cl-
-at the removed oxygen positions. With n_pairs=1 this gives
-1 Na + 1 Cl + 62 H2O = 188 atoms/cell, ~0.90 mol/kg.
-
-Alternative mode ("extract"): take the first config_type=NaCl frame from
-data-sets/<model>/input.xyz verbatim (typically 2 NaCl + 52 H2O, ~2.1 mol/kg).
-
-Output is a plain "El x y z" coordinate file suitable for @INCLUDE inside
-a CP2K &COORD section. Equilibrate before production: the substituted ions
-start at water oxygen sites and need their solvation shells to form.
+"substitute" (default): first 64-water frame of the O'Neill training data
+(data-sets/<model>/input_water.xyz, 12.42 A), remove 2*n_pairs waters at
+maximally separated O sites, place Na+/Cl- there (n_pairs=1: 188 atoms, ~0.90
+mol/kg). "extract": first config_type=NaCl frame of input.xyz verbatim.
+Writes a plain "El x y z" file for @INCLUDE in &COORD. Equilibrate before
+production: substituted ions start at water O sites with no solvation shell.
 """
 import argparse
 import sys

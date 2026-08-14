@@ -12,8 +12,7 @@
 #SBATCH --mail-type=NONE
 #SBATCH --output=/home/crm98/cp2k-benchmarks/logs/figS4_prod_N1024_%A_%a.out
 
-# Source toolchain env BEFORE strict mode: 'setup' references unbound
-# CP_DFLAGS that would trip `set -u`.
+# env before strict mode: 'setup' references unbound CP_DFLAGS (trips set -u)
 . /etc/profile.d/modules.sh
 module purge
 source /home/crm98/cp2k-benchmarks/scripts/CSD3_benchmark_scripts/cp2k_CSD3_env.sh
@@ -43,8 +42,7 @@ esac
 export LD_LIBRARY_PATH="$LIB:${LD_LIBRARY_PATH:-}"
 export OMP_NUM_THREADS=1
 
-# Same rank count for both branches at a given size keeps timing comparable.
-# Smaller sizes use fewer ranks to avoid over-decomposition.
+# same ranks for both branches per size (comparable timing); fewer ranks at small sizes avoids over-decomposition
 declare -A MULT RANKS
 MULT[64]="1 1 1";  MULT[128]="2 1 1"; MULT[256]="2 2 1"
 MULT[512]="2 2 2"; MULT[1024]="4 2 2"

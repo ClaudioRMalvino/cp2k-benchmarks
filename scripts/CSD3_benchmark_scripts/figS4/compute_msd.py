@@ -1,15 +1,8 @@
 #!/usr/bin/env python3
-"""Read an NVE positions trajectory (XYZ) and compute the self-diffusion
-coefficient of water (oxygen atoms only) by a linear fit of the mean
-squared displacement.
-
-Usage:
-    compute_msd.py <traj.xyz> <dt_fs> <box_Lx_A> <box_Ly_A> <box_Lz_A>
-
-dt_fs is the time between frames in femtoseconds (frame interval × MD timestep).
-box dimensions used only for unwrapping (NVE positions printed by CP2K are
-typically wrapped into the cell).
-"""
+"""Self-diffusion of water (O atoms) from an NVE XYZ trajectory via linear MSD fit.
+Usage: compute_msd.py <traj.xyz> <dt_fs> <Lx_A> <Ly_A> <Lz_A>
+dt_fs = time between frames (frame interval x MD timestep); box dims used only
+to unwrap CP2K-wrapped positions."""
 import sys
 import numpy as np
 
@@ -21,7 +14,6 @@ path  = sys.argv[1]
 dt_fs = float(sys.argv[2])
 box   = np.array([float(sys.argv[3]), float(sys.argv[4]), float(sys.argv[5])])
 
-# --- read trajectory ---------------------------------------------------------
 frames = []
 syms   = None
 with open(path) as f:
@@ -41,23 +33,20 @@ with open(path) as f:
 coords = np.array(frames)                # (n_frames, n_atoms, 3)  Angstrom
 n_frames, n_atoms, _ = coords.shape
 
-# --- oxygen atoms only -------------------------------------------------------
 o_idx = [i for i, s in enumerate(syms) if s.upper() == 'O']
 pos_o = coords[:, o_idx, :]              # (n_frames, n_O, 3)
 n_O   = pos_o.shape[1]
 
-# --- unwrap (minimum-image, walking forward) ---------------------------------
+# unwrap: minimum-image, walking forward
 unwrap = pos_o.copy()
 for t in range(1, n_frames):
     d = unwrap[t] - unwrap[t-1]
     unwrap[t] = unwrap[t-1] + d - box * np.round(d / box)
 
-# --- MSD by FFT trick (Allen & Tildesley appendix; O(N log N) per atom) ----
-# msd(tau) = <|r(t+tau) - r(t)|^2>_t,atoms
+# MSD by FFT (Allen & Tildesley appendix; O(N log N) per atom)
 def msd_fft(x):
     """x : (n_frames, n_atoms, 3) → MSD : (n_frames,)"""
     N = x.shape[0]
-    # square term: 2*<r_t·r_t> averaged
     D = np.square(x).sum(axis=2)         # (N, n_atoms)
     D2 = np.append(D, np.zeros(D.shape[1])[None, :], axis=0)
     Q = 2 * D.sum(axis=0)                 # (n_atoms,)
@@ -65,7 +54,6 @@ def msd_fft(x):
     for t in range(N):
         Q  = Q - D2[t-1] - D2[N-t]
         S1[t] = Q / (N - t)
-    # autocorrelation S2[t] = <r_{i+t}·r_i>_i via FFT
     S2 = np.zeros((N, x.shape[1]))
     for dim in range(3):
         f = np.fft.fft(x[:, :, dim], n=2*N, axis=0)
@@ -79,7 +67,7 @@ def msd_fft(x):
 msd = msd_fft(unwrap)                    # (n_frames,)  Å²
 t_ps = np.arange(n_frames) * dt_fs / 1000.0
 
-# --- linear fit over the middle of the trajectory (10%..50%) ----------------
+# linear fit over 10%..50% of trajectory
 i0, i1 = int(n_frames * 0.10), int(n_frames * 0.50)
 slope, intercept = np.polyfit(t_ps[i0:i1], msd[i0:i1], 1)
 

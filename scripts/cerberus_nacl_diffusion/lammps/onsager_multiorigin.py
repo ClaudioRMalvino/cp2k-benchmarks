@@ -1,19 +1,13 @@
 #!/usr/bin/env python3
 """Multi-time-origin self AND collective (Onsager) MSDs from a LAMMPS dump.
 
-Self MSDs give D_i (Nernst-Einstein ingredients). Collective MSDs of the
-summed species displacement vectors R_s(t) = sum_i r_i(t) give the Onsager
-coefficients via the Einstein-Helfand relation:
-
-    C_ss'(tau) = < [R_s(t+tau) - R_s(t)] . [R_s'(t+tau) - R_s'(t)] >_t
-    L_ss'    ~ slope(C_ss') / 6            (analysis applies V, kB T factors)
-
-kappa = e^2 z^2 / (6 kB T V) * d/dt (C_NaNa + C_ClCl - 2 C_NaCl), evaluated
-with z = 0.85 (model charge) and z = 1 (formal charge) at analysis time --
-the displacement correlations themselves are charge-free.
-
-All time-origin averages use the FFT trick (Calandrini et al., Collection SFN
-12, 201 (2011)), extended here to cross-correlations. Verify with --selftest.
+Self MSDs -> D_i (Nernst-Einstein). Collective MSDs of R_s(t) = sum_i r_i(t)
+give the Onsager coefficients via Einstein-Helfand:
+    C_ss'(tau) = <[R_s(t+tau)-R_s(t)] . [R_s'(t+tau)-R_s'(t)]>_t
+kappa = e^2 z^2 / (6 kB T V) * d/dt (C_NaNa + C_ClCl - 2 C_NaCl), z applied at
+analysis time (the correlations are charge-free; z = 0.85 model, 1 formal).
+FFT time-origin trick (Calandrini et al. 2011) extended to cross-correlations;
+verify with --selftest.
 """
 import argparse
 import sys
@@ -58,13 +52,8 @@ def _crosscorr_fft(a, b):
 
 
 def cross_msd_fft(A, B):
-    """< [A(t+tau)-A(t)] . [B(t+tau)-B(t)] >_t for A, B of shape (T, 3).
-
-    S1 - S2 decomposition per dimension:
-      S1(tau) = <a(t)b(t) + a(t+tau)b(t+tau)>_t   (prefix sums)
-      S2(tau) = <a(t)b(t+tau) + a(t+tau)b(t)>_t   (two FFT cross-correlations)
-    A is B reduces to the standard single-species FFT MSD.
-    """
+    """< [A(t+tau)-A(t)] . [B(t+tau)-B(t)] >_t, A/B (T, 3), via the S1 - S2
+    decomposition (prefix sums + two FFT cross-correlations); A=B = standard FFT MSD."""
     T = len(A)
     tau = np.arange(T)
     out = np.zeros(T)

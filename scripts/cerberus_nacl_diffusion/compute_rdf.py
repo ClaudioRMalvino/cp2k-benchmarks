@@ -1,18 +1,10 @@
 #!/usr/bin/env python3
 """Radial distribution functions from CP2K XYZ trajectories.
 
-Physics-validation companion to the NaCl(aq) diffusion pipeline: computes
-g(r) for O-O, Na-O and Cl-O (the pairs shown in Fig. 1 of O'Neill et al.
-JPCL 2024) so the production trajectories can be checked against the
-published curves before the diffusion numbers are trusted.
-
-Accepts one or more trajectory files (e.g. all five NVE segments of one
-cell size - they are simply concatenated for statistics). Orthorhombic
-minimum-image convention.
-
-Example:
-  compute_rdf.py /data/.../np1/production/cell221/seg*/**-pos-1.xyz \
-      --cell-ang 24.84 24.84 12.42 --out-prefix rdf_cell221 --plot
+Computes g(r) for O-O, Na-O, Cl-O (the pairs in Fig. 1 of O'Neill et al. JPCL
+2024) to check production trajectories against the published curves. Accepts
+several trajectory files (concatenated for statistics); orthorhombic min-image.
+Example: compute_rdf.py seg*/*-pos-1.xyz --cell-ang 24.84 24.84 12.42 --out-prefix rdf_cell221 --plot
 """
 import argparse
 

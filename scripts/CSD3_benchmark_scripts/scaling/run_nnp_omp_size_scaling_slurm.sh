@@ -10,8 +10,7 @@ CORES_PER_NODE=76
 BIN_ROOT=/rds/user/$USER/hpc-work/cp2k_binaries/csd3
 BENCHMARK_ROOT=/home/crm98/cp2k-benchmarks
 
-# Strict mode relaxed across the sourcing: cp2k_CSD3_env.sh pulls in the
-# toolchain 'setup' which references unbound CP_DFLAGS - trips `set -u`.
+# set -u relaxed across sourcing: the toolchain 'setup' references unbound CP_DFLAGS.
 . /etc/profile.d/modules.sh
 set +u
 source /home/crm98/cp2k-benchmarks/scripts/CSD3_benchmark_scripts/cp2k_CSD3_env.sh
@@ -170,9 +169,8 @@ done
 echo "Wrote $CSV_FILE"
 echo "      $RAW_CSV"
 
-# Transitional shim: if reached from an older driver submitted before the
-# decomposition sweep existed (DECOMP_VIA_DRIVER unset), run the sweep here
-# so an already-queued job picks it up with no cancel/resubmit.
+# Transitional shim: drivers queued before the decomp sweep existed
+# (DECOMP_VIA_DRIVER unset) chain the sweep here, no cancel/resubmit needed.
 if [[ "${DECOMP_VIA_DRIVER:-0}" != 1 ]]; then
    echo
    echo "=== MPI:OMP DECOMPOSITION SWEEP (chained) ==="

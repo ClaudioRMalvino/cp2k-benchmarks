@@ -1,21 +1,8 @@
 #!/usr/bin/env bash
-# Report-1-consistent PURE-MPI strong (core) scaling.
-# Re-runs master, native-spline, and chebyshev under the EXACT methodology of
-# the report-1 thesis (Ch.4, fig 4.4) so all three are directly comparable and
-# feed thesis_figures.py (fig1 panel + fig2) as a matched set.
-#
-# Methodology locked to report 1 (thesis 4.1.1):
-#   * fixed system size N = 1024 H2O (3072 atoms)
-#   * NUMA-aware pure-MPI core counts: {1,2,4,8,16,19,32,38,76}
-#       (19 = half-socket, 38 = full socket, 76 = full node; 64 omitted as it
-#        straddles the two NUMA domains unevenly)
-#   * 100 MD steps, velocity-Verlet 0.5 fs
-#   * 5 timed repetitions + 1 discarded warm-up  (n = 5 -> Student-t CI95)
-#   * timed cost = qs_mol_dyn_low / steps, excludes MPI_Init / weight load /
-#     first-step init (handled by the inner harness)
-# native-spline-omp is intentionally EXCLUDED: this is a pure-MPI comparison of
-# the spline (native-spline) vs table-free (chebyshev) kernels against master.
-#
+# Report-1-methodology (thesis 4.1.1, fig 4.4) pure-MPI strong scaling: master,
+# native-spline, chebyshev as a matched set for thesis_figures.py (fig1+fig2).
+# N=1024 H2O, NUMA-aware cores (19=half socket, 38=socket, 76=node; 64 straddles
+# NUMA, omitted), 100 steps @ 0.5 fs, 5 reps + 1 warm-up, cost = qs_mol_dyn_low/steps; native-spline-omp excluded (pure-MPI comparison).
 #SBATCH -J NNP_strong_r1
 #SBATCH -A NIKIFORAKIS-CSC-FUNDS-SL3-CPU
 #SBATCH -p icelake

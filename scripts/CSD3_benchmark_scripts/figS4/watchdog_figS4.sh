@@ -1,13 +1,8 @@
 #!/usr/bin/env bash
-# Runaway watchdog for Fig. S4 jobs.  Login-node, no compute cost.
-#
-#   nohup ./watchdog_figS4.sh JOBID=/path/to/rundir [JOBID=/path/...] \
-#         > ~/cp2k-benchmarks/logs/watchdog.log 2>&1 &
-#
-# Each argument pairs a SLURM job id with the directory whose *.ener it
-# writes.  Polls once a minute; scancels a job if its latest T exceeds
-# KILL_T (default 1500 K) or if a single-step Pot jump > 0.1 Ha appears.
-# Exits when no monitored job is left running, or after MAX_HOURS.
+# Runaway watchdog for Fig. S4 jobs (login-node, free).
+# Usage: nohup ./watchdog_figS4.sh JOBID=/run/dir [...] > watchdog.log 2>&1 &
+# Polls every POLL_S; scancels a job when latest T > KILL_T (default 1500 K) or
+# a single-step Pot jump >0.1 Ha appears. Exits when none left or after MAX_HOURS.
 
 set -u
 KILL_T=${KILL_T:-1500}

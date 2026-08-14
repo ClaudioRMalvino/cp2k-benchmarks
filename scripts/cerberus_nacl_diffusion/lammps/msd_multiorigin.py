@@ -1,16 +1,11 @@
 #!/usr/bin/env python3
 """Multi-time-origin MSD from a LAMMPS unwrapped-coordinate dump.
 
-`compute msd` in LAMMPS measures displacement from one fixed origin, so a 2 ns
-run gives a single sample per atom. Diffusion is time-translation invariant, so
-we can instead average |r(t0+tau) - r(t0)|^2 over every origin t0. That is ~1000x
-more samples for free -- decisive for the ions, where we only have 9-48 of them.
-
-Done naively this is O(T^2) per atom; we use the FFT method of Calandrini et al.
-(Collection SFN 12, 201 (2011)), which is O(T log T) and exact, not approximate.
-
-Usage:
-  msd_multiorigin.py --dump L37.26.pos.lammpstrj --dt-ps 1.0 --out L37.26.msdmo
+LAMMPS `compute msd` uses one fixed origin (one sample per atom per run);
+averaging |r(t0+tau)-r(t0)|^2 over every origin gives ~1000x more samples -
+decisive for the 9-48 ions. FFT method of Calandrini et al. (Collection SFN 12,
+201 (2011)): O(T log T) and exact.
+Usage: msd_multiorigin.py --dump L37.26.pos.lammpstrj --dt-ps 1.0 --out L37.26.msdmo
 """
 import argparse
 

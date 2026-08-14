@@ -1,16 +1,8 @@
 #!/usr/bin/env bash
-# Head-to-head: Dhruv's linked-cell NNP (pr/nnp-cpu-cell-list) vs my
-# feature/nnp-mace, both built at the SAME AVX-2 profile
-# (-O3 -xCORE-AVX2 -fp-model=precise) + sequential MKL on the same toolchain,
-# so the ONLY difference is the NNP source. Measures his spline-tabulated
-# radials vs my table-free minimax, plus my MPI-collective shrink.
-#
-# Two report-1-matched axes (Ch.4 methodology):
-#   * SIZE scaling  : 76 MPI x 1 OMP, N = 64..4096 H2O
-#   * PURE-MPI STRONG scaling : N = 1024 H2O, NUMA cores {1,2,4,8,16,19,32,38,76}
-# Both: 100 MD steps, 5 timed reps + 1 discarded warm-up, t/step from
-# qs_mol_dyn_low. (Hybrid MPI x OMP sweep is a separate focused follow-up.)
-#
+# Head-to-head: Dhruv's linked-cell NNP (pr/nnp-cpu-cell-list) vs feature/nnp-mace,
+# both built -O3 -xCORE-AVX2 -fp-model=precise + sequential MKL on the same
+# toolchain, so the only difference is the NNP source. Report-1 axes (Ch.4): size
+# scaling (76 MPI x 1 OMP, N=64..4096) + pure-MPI strong scaling (N=1024); 100 steps, 5 reps + 1 warm-up, qs_mol_dyn_low.
 #SBATCH -J NNP_dhruv_vs_mace
 #SBATCH -A NIKIFORAKIS-CSC-FUNDS-SL3-CPU
 #SBATCH -p icelake

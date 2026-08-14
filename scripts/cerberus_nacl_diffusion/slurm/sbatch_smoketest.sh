@@ -8,12 +8,10 @@
 #SBATCH --time=00:20:00
 #SBATCH --output=/home/raid/crm98/cp2k-benchmarks/logs/nacl_smoketest_%j.out
 
-# Run this FIRST, once, before any real SLURM jobs. It verifies on the
-# allocated compute node that:
-#   1. the scratch filesystem with the binary + models is mounted,
-#   2. the cerberus1-compiled (-march=native Ice Lake) binary runs on this
-#      node's CPU without SIGILL,
-#   3. a 200-step MD of the real NaCl deck completes and prints its speed.
+# Run FIRST, once, before any real SLURM jobs. Verifies on the allocated node:
+# scratch fs with binary + models is mounted; the cerberus1-compiled
+# (-march=native Ice Lake) binary runs without SIGILL; a 200-step MD of the real
+# NaCl deck completes and prints its speed.
 set -euo pipefail
 mkdir -p /home/raid/crm98/cp2k-benchmarks/logs
 

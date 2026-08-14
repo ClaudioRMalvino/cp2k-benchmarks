@@ -1,22 +1,8 @@
 #!/usr/bin/env bash
-# Full Report-2 single-node battery -- the same measurement sets Report 1
-# ran for native-spline / native-spline-omp, EVERY ONE AT STEPS=100 (Report
-# 1 mixed 50- and 100-step runs; Report 2 is uniform):
-#   1. pure-MPI size scaling   (N=64..4096, 76 ranks)        chebyshev
-#   2. pure-MPI core scaling   (N=1024, cores 1..76)         chebyshev
-#   3. pure-MPI core scaling   (N=1024, cores 1..76)         MASTER
-#      -- re-measured because the Report 1 master curve used STEPS=50;
-#      reusing it would break the uniform-steps rule.  One-off ~2 h.
-#   4. OMP thread scaling      (N=64, 1 rank, 1..16 threads) chebyshev
-#   5. OMP x size 2D sweep     (1 rank, OMP 1..8, N=64..2048) chebyshev
-# Master size scaling from 10-06 was already STEPS=100 and stays reused.
-#
-# Walltime budget (conservative, pre-rework chebyshev speeds): size ~1 h +
-# cheby core ~1.5 h + master core ~2 h + OMP thread ~0.75 h + OMP x size
-# ~4 h (the N=2048 single-thread row alone is ~1 h at 100 steps) => ~9.5 h;
-# 11 h walltime for headroom (SL3 cap is 12 h).
-#
-# Submit with:  sbatch benchmark_core_omp_slurm.sh
+# Report-2 single-node battery, all at STEPS=100 (Report 1 mixed 50/100-step runs):
+# chebyshev size + core scaling, master core scaling re-measured (Report-1 master
+# curve was STEPS=50), chebyshev OMP thread scaling and OMP x size sweep.
+# Master size scaling from 10-06 already STEPS=100, reused. Budget ~9.5 h; 11 h walltime (SL3 cap 12 h).
 
 #SBATCH -J NNP_suite_100
 #SBATCH -A NIKIFORAKIS-CSC-FUNDS-SL3-CPU

@@ -10,12 +10,9 @@
 #SBATCH --output=/home/raid/crm98/cp2k-benchmarks/logs/nacl_prod_%A_%a.out
 
 # One array task = one (box size, NVE segment): index = cell*5 + (seg-1).
-# Requires the matching equilibration snapshots (run sbatch_equil.sh first;
-# chain with: sbatch --dependency=afterok:<equil job id> sbatch_production.sh).
-# Idempotent: finished segments are skipped; walltime-killed segments resume
-# from their 5 ps checkpoints on resubmission (cell222 segments need ~9 h,
-# i.e. two 6 h passes).
-#
+# Chain after equil: sbatch --dependency=afterok:<equil id> sbatch_production.sh.
+# Idempotent: finished segments skipped; killed ones resume from 5 ps checkpoints
+# (cell222 segments need ~9 h = two 6 h passes).
 # Concentration series: sbatch --export=ALL,N_PAIRS=2 sbatch_production.sh
 set -euo pipefail
 mkdir -p /home/raid/crm98/cp2k-benchmarks/logs

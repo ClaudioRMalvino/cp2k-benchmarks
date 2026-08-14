@@ -8,22 +8,15 @@
 #SBATCH --mail-type=ALL
 #SBATCH --output=/home/crm98/cp2k-benchmarks/logs/rpa_equil_%j.out
 
-# MP2 transport campaign: NVT (CSVR) equilibration of one concentration's
-# cube3 cell on the PR #5295 engine. 30 ps equil + 5 snapshots 15 ps apart
-# (210k steps). Resubmit-idempotent: a walltime-killed run continues from its
-# checkpoint; a finished one just (re)stages snapshots.
-#
-#   sbatch sbatch_equil_conc.sh cubic_2m
-#   sbatch sbatch_equil_conc.sh cubic_4m
-#   sbatch sbatch_equil_conc.sh cubic_1M_transport 20260730
-# (2nd arg = optional RNG seed; REQUIRED for the 1 m redo so it is
-# statistically independent of the anchor equil on the same cell)
+# MP2 transport campaign: NVT (CSVR) equilibration of one concentration's cube3
+# cell on the PR #5295 engine; 30 ps equil + 5 snapshots 15 ps apart (210k steps).
+# Resubmit-idempotent (continues from checkpoint). Usage: sbatch <this> <conc_dir> [seed];
+# seed REQUIRED for the 1 m redo (independence from the anchor equil on the same cell).
 set -euo pipefail
 CONC=${1:?usage: sbatch sbatch_equil_conc.sh <conc_dir e.g. cubic_2m> [seed]}
 SEED=${2:-}
-# CELL env selects the box (default cube3). cube2 (24.84 A, 1500 atoms) is the
-# 1 m Yeh-Hummer partner for the finite-size analysis; Fist rank split per the
-# anchor split-sweep winners (cube2 -> 4, cube3 -> 8).
+# CELL selects the box (default cube3); cube2 (24.84 A, 1500 atoms) = 1 m Yeh-Hummer
+# partner. Fist rank split per anchor split-sweep winners (cube2 -> 4, cube3 -> 8).
 CELL="${CELL:-cube3}"
 case "$CELL" in cube2) FRANKS=4 ;; *) FRANKS=8 ;; esac
 ADIR=/home/crm98/cp2k-benchmarks/scripts/csd3_nacl_mp2_anchor

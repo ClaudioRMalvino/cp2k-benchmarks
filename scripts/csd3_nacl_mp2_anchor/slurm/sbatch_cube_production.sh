@@ -9,14 +9,12 @@
 #SBATCH --mail-type=NONE
 #SBATCH --output=/home/crm98/cp2k-benchmarks/logs/nacl_mp2_prod_%A_%a.out
 
-# NVE production: one array task per 100 ps segment (5 segments = replicas
-# for error bars), each started from its stage-1 snapshot. Cell as argument:
+# NVE production: one array task per 100 ps segment (5 segments = replicas for
+# error bars), each from its stage-1 snapshot.
 #     eq=$(sbatch --parsable sbatch_cube_equil.sh cube2)
 #     sbatch --dependency=afterok:$eq sbatch_cube_production.sh cube2
-# Checkpoint-safe: a task killed by the 12 h wall resumes from its 5 ps
-# checkpoint on resubmission (RESTART_COUNTERS fix -> stops at the right
-# total, no 2x overrun). Completed segments are skipped, so resubmitting
-# the whole array only reruns what is unfinished.
+# Checkpoint-safe: killed tasks resume from 5 ps checkpoints (RESTART_COUNTERS
+# fix, no 2x overrun); completed segments are skipped on resubmit.
 set -euo pipefail
 
 export MODEL=MP2

@@ -9,12 +9,10 @@
 #SBATCH --output=/home/crm98/cp2k-benchmarks/logs/rpa_master_ref_%j.out
 
 # Transport campaign, run 2: MASTER-BRANCH reference timing at 1 mol/kg.
-# Pristine upstream 2026.1 (commit 757bb76a80), same RPA cube3 deck, same
-# node type and rank split as production. 1000 MD steps for a stable s/step;
-# no physics needed from this run. This single number x the campaign step
-# count = the "what this campaign would have cost on master" extrapolation,
-# and its step-0 potential energy is the cross-binary consistency check
-# against the smoke test (PR #5295 engine, same coordinates).
+# Pristine upstream 2026.1 (commit 757bb76a80), same RPA cube3 deck, node type
+# and rank split as production; 1000 MD steps for a stable s/step (no physics).
+# s/step x campaign steps = master-cost extrapolation; step-0 E_pot is the
+# cross-binary check against the smoke (PR #5295 engine, same coordinates).
 set -euo pipefail
 ADIR=/home/crm98/cp2k-benchmarks/scripts/csd3_nacl_mp2_anchor
 TDIR=/home/crm98/cp2k-benchmarks/scripts/csd3_rpa_transport
@@ -31,8 +29,7 @@ RANKS=$SLURM_NTASKS
 FIST_RANKS=8
 proj="NaCl_${MODEL}_master_ref"
 
-# provenance without exec'ing the binary (direct exec aborts in MPI_Init -
-# the PMI gotcha; the binary must only ever be launched via srun)
+# provenance without exec'ing the binary (direct exec aborts in MPI_Init; launch only via srun)
 echo "node: $(hostname)  binary: $BIN  model: $MODEL"
 cat "$BIN_ROOT/$BIN_LABEL/PROVENANCE.txt" 2>/dev/null || true; echo
 mkdir -p "$RUNDIR"; rm -f "$RUNDIR"/ref.out "$RUNDIR/$proj"*

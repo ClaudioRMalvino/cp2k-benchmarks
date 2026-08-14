@@ -1,8 +1,6 @@
 #!/usr/bin/env bash
-# Single-core 100-step NNP run of master and feature/nnp-native-spline.
-# Goal: capture CP2K's hierarchical timing block (printed at the end of
-# cp2k.out) for a side-by-side comparison.  Runs on the login node, no
-# SLURM, no perf, no MAQAO — just the two binaries.
+# Single-core 100-step NNP run of master vs feature/nnp-native-spline on the
+# login node (no SLURM/perf/MAQAO); captures CP2K's end-of-run timing block.
 
 set +e
 source /home/crm98/cp2k-benchmarks/scripts/CSD3_benchmark_scripts/cp2k_CSD3_env.sh
@@ -23,8 +21,7 @@ for label in master feature-nnp-native-spline; do
    mkdir -p "$workdir"
    ln -sfn /home/crm98/cp2k_optimized/data/NNP "$workdir/NNP"
 
-   # Copy the H2O-64 deck and patch STEPS + silence trajectory/forces/energies/restart
-   # output so the timing report is dominated by the NNP cost, not file I/O.
+   # Patch STEPS and silence trajectory/forces/energies/restart so the timing is NNP-dominated, not I/O.
    sed -e "s/STEPS  *[0-9]*/STEPS $STEPS/" \
        -e 's/&TRAJECTORY/\&TRAJECTORY OFF/' \
        -e 's/&FORCES/\&FORCES OFF/'         \

@@ -1,10 +1,7 @@
 #!/usr/bin/env python3
-"""Render the compiler-flags appendix table as a PDF figure so it does not
-count toward thesis word count.  Styling matches plots/maqao_tables.py
-(DejaVu Serif, navy header, slate stripes).
-
-Output: plots/thesis_figures/compiler_flags_table.pdf
-"""
+"""Render the compiler-flags appendix table as a PDF figure (so it does not
+count toward thesis word count).  Styling matches plots/maqao_tables.py.
+Output: plots/thesis_figures/compiler_flags_table.pdf"""
 import os
 import textwrap
 
@@ -36,10 +33,8 @@ plt.rcParams.update({
 
 HEADERS = ("Flag", "Languages", "Purpose / notes")
 
-# Compiler flags passed by the build scripts (cp2k_CSD3_master_build.sh and
-# cp2k_CSD3_opt_build.sh).  Both scripts pass the same set; CMake's Release
-# preset and CP2K's CMakeLists.txt add further flags downstream, but those
-# are build-system plumbing rather than choices made for this work.
+# Flags passed by cp2k_CSD3_master_build.sh / cp2k_CSD3_opt_build.sh (same
+# set in both); CMake's Release preset adds further flags downstream.
 FLAGS = [
     ("-O2",
         "C, C++, Fortran",
@@ -68,16 +63,13 @@ FLAGS = [
         "level."),
 ]
 
-# Column widths (fractions; must sum to ~1).  Purpose gets most space.
+# Column width fractions (sum ~1)
 COL_WIDTHS = [0.22, 0.20, 0.58]
 WRAP_CHARS = (22, 16, 45)   # per-column character wrap width
 
 
 def _wrap_flag(text, width):
-    """Wrap a flag-style string at width, allowing breaks at `_`, `=`, `,`
-    and `/` in addition to spaces/hyphens that textwrap already understands.
-    Keeps the break characters at the end of the line that precedes the
-    break, so the printed flag still reads naturally."""
+    """Wrap a flag string at width, also breaking after `_`, `=`, `,`, `/`."""
     if len(text) <= width:
         return text
     breakables = "_=,/ "
@@ -169,7 +161,7 @@ def render():
         cell.set_linewidth(0.5)
         cell.PAD = 0.04
 
-    # Body styling: simple alternating stripes, no section dividers.
+    # Body style: alternating stripes
     for i in range(1, n_rows + 1):
         for col in range(n_cols):
             cell = table[(i, col)]

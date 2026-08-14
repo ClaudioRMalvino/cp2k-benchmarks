@@ -8,21 +8,15 @@
 #SBATCH --mail-type=ALL
 #SBATCH --output=/home/crm98/cp2k-benchmarks/logs/rpa_prod_%A_%a.out
 
-# Transport campaign: one 80 ps NVE production segment per array task,
-# started from the concentration's equil snapshots. 80 ps = 160k steps
-# x 0.2554 s/step ~ 11.4 h -> single 12 h window (5x80 ps design,
-# 2026-07-30: RPA decorrelates ~2x faster than MP2, so 5x80 matches the
-# kappa error bars validated on the MP2 anchor at 5x160; segments are
-# checkpoint-extendable if the pilot says otherwise). The resume sweep is
-# pure insurance (slow node): finished segments are skipped, killed ones
-# continue from their 5 ps checkpoints with the RESTART_COUNTERS fix:
-#
+# Transport campaign: one 80 ps NVE production segment per array task, from the
+# concentration's equil snapshots. 80 ps = 160k steps x 0.2554 s/step ~ 11.4 h ->
+# one 12 h window. 5x80 design (2026-07-30): RPA decorrelates ~2x faster than MP2,
+# so 5x80 matches the kappa bars validated on the MP2 anchor at 5x160.
+# Resume sweep = insurance: finished segments skipped, killed ones continue from
+# 5 ps checkpoints (RESTART_COUNTERS fix).
 #   p=$(sbatch --parsable --array=1-5 sbatch_production_conc.sh cubic_1M production_transport)
 #   sbatch --array=1-5 --dependency=afterany:$p sbatch_production_conc.sh cubic_1M production_transport
-#
-# args: <conc_dir> [prod_subdir]  - the 1 m pilot writes to
-# production_transport so the completed anchor segments stay untouched;
-# cubic_2m / cubic_4m use the default "production".
+# args: <conc_dir> [prod_subdir]; 1 m pilot -> production_transport (anchor segments untouched).
 set -euo pipefail
 CONC=${1:?usage: sbatch --array=1-5 sbatch_production_conc.sh <conc_dir> [prod_subdir]}
 PSUB=${2:-production}

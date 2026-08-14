@@ -1,11 +1,7 @@
 #!/usr/bin/env python3
-"""Green-Kubo shear viscosity from a CP2K MD .stress file (Morawietz et al.,
-PNAS 113 (2016) 8368, SI section B / Fig. S4 A,B,C).
-
-ACF is averaged over the five independent off-diagonal / traceless components
-(Pxy, Pxz, Pyz, (Pxx-Pyy)/2, (Pyy-Pzz)/2); GK integral truncated at
---int-limit ps.
-"""
+"""Green-Kubo shear viscosity from a CP2K .stress file (Morawietz et al.,
+PNAS 113 (2016) 8368, SI B / Fig. S4 A-C). ACF averaged over the five
+off-diagonal/traceless stress components; GK integral truncated at --int-limit ps."""
 import argparse
 import sys
 

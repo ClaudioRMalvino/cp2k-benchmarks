@@ -7,15 +7,13 @@
 #SBATCH -p icelake
 #SBATCH --nodes=1
 #SBATCH --ntasks=32
-# 3 h: equil measured 0.0161 s/step at 64 ranks; production is 200k steps
-# at 32 ranks + per-step stress I/O => ~2 h projected.  2 h was a coin flip.
+# 3 h: equil measured 0.0161 s/step @64 ranks; 200k steps @32 ranks + per-step stress I/O => ~2 h projected
 #SBATCH --time=03:00:00
 #SBATCH --array=30-34%5
 #SBATCH --mail-type=NONE
 #SBATCH --output=/home/crm98/cp2k-benchmarks/logs/figS4_prod_N128_%A_%a.out
 
-# Source toolchain env BEFORE strict mode: 'setup' references unbound
-# CP_DFLAGS that would trip `set -u`.
+# env before strict mode: 'setup' references unbound CP_DFLAGS (trips set -u)
 . /etc/profile.d/modules.sh
 module purge
 source /home/crm98/cp2k-benchmarks/scripts/CSD3_benchmark_scripts/cp2k_CSD3_env.sh
@@ -27,9 +25,7 @@ source "$BIN_ROOT/setup"
 
 set -euo pipefail
 
-# Bash expands here-docs/here-strings via temp files in TMPDIR; node-local
-# /tmp can be full (job 30395309 died on cpu-q-179 with ENOSPC at a
-# here-string).  Point TMPDIR at scratch so a full node disk cannot kill us.
+# TMPDIR on scratch: here-doc temp files on full node-local /tmp ENOSPC'd job 30395309 (cpu-q-179)
 export TMPDIR=/rds/user/$USER/hpc-work/tmp
 mkdir -p "$TMPDIR"
 
@@ -51,8 +47,7 @@ esac
 export LD_LIBRARY_PATH="$LIB:${LD_LIBRARY_PATH:-}"
 export OMP_NUM_THREADS=1
 
-# Same rank count for both branches at a given size keeps timing comparable.
-# Smaller sizes use fewer ranks to avoid over-decomposition.
+# same ranks for both branches per size (comparable timing); fewer ranks at small sizes avoids over-decomposition
 declare -A MULT RANKS
 MULT[64]="1 1 1";  MULT[128]="2 1 1"; MULT[256]="2 2 1"
 MULT[512]="2 2 2"; MULT[1024]="4 2 2"

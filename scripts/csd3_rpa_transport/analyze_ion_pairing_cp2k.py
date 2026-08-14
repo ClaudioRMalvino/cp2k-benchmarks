@@ -1,32 +1,12 @@
 #!/usr/bin/env python3
-"""Na-Cl association analysis (g(r) / PMF / n_CIP) for CP2K NaCl(aq) segments.
+"""Na-Cl association (g(r) / PMF / n_CIP / K_A / hydration) for CP2K NaCl(aq) segments.
 
-Port of lammps/pair_association.py + the RDF half of analyze_ions_rdf.py to
-the transport-campaign layout. Reads the reduced_traj_e{K}.npz caches written
-by analyze_onsager_cp2k.py (O/Na/Cl every K dumped frames), so it never
-re-streams the pos files; run the Onsager analysis first if a cache is
-missing.
-
-Per concentration (segments pooled for curves, per-segment for SEMs):
-
-  g_NaCl(r), w(r) = -kT ln g referenced to the 9 A..L/2 tail   (PMF)
-  r_peak / w_min (contact basin), r_b / w_b (CIP-SSIP barrier), dW = w_b - w_min
-  n_CIP = 4 pi rho_Cl int_0^rb g r^2 dr    per-segment -> mean +- SEM
-  K_A   = 4 pi N_A int_0^rb e^{-w/kT} r^2 dr  (L/mol, Bjerrum-style) and the
-          ideal paired fraction x/c from K_A = x/(c-x)^2
-  g_NaO(r), g_ClO(r) + first-shell hydration numbers n_hyd (same integral to
-          the first minimum of the pooled g)
-
-Outputs (results/mp2_transport/ for mp2* labels, results/rpa_transport/
-otherwise):
-  {label}_rdf_ions.csv   r_A, g_NaCl, w_NaCl_kcalmol, g_NaO, g_ClO
-  {label}_pairing.csv    one summary row (assemble rows into the PMF table)
-  {label}_pairing.npz    per-segment histograms + all scalars
-
-Usage:
-  analyze_ion_pairing_cp2k.py --segdirs runs_gpu/RPA/cubic_4m/production/cube3/seg* \
-      --box-a 37.26 --label rpa_gpu_cube3_4m [--temp 298.15] [--every 20]
-  analyze_ion_pairing_cp2k.py --selftest
+Port of lammps/pair_association.py to the transport-campaign layout. Reads the
+reduced_traj_e{K}.npz caches from analyze_onsager_cp2k.py (run Onsager first if
+missing); writes {label}_rdf_ions.csv / _pairing.csv / _pairing.npz to
+results/{mp2,rpa}_transport/. PMF tail-referenced to 9 A..L/2 as the MP2 anchor;
+K_A Bjerrum-style to the CIP/SSIP barrier r_b. Segments pooled for curves,
+per-segment for SEMs. Usage: --segdirs ... --box-a 37.26 --label X | --selftest
 """
 import argparse
 import os

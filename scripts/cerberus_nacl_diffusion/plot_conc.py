@@ -1,16 +1,10 @@
 #!/usr/bin/env python3
 """Diffusion vs NaCl concentration (O'Neill SI Fig S10 style).
 
-Takes molality=summary.csv pairs (one per concentration, all from the SAME
-cell size so residual finite-size effects cancel in the ratio) and plots:
-  left  - D for each species vs molality (YH-corrected D_0)
-  right - water D(c)/D(c=0) relative to the pure-water run, the quantity
-          compared against experiment in the O'Neill paper's SI.
-
-Example:
-  plot_conc.py --cell 211 \
-    0.0=np0/analysis/nacl_summary.csv 0.90=np1/analysis/nacl_summary.csv \
-    1.85=np2/analysis/nacl_summary.csv 2.87=np3/analysis/nacl_summary.csv
+Takes molality=summary.csv pairs (all the SAME cell size, so finite-size effects
+cancel in the ratio); plots per-species YH-corrected D_0 vs molality and water
+D(c)/D(c=0) (the quantity the O'Neill SI compares to experiment).
+Example: plot_conc.py --cell 211 0.0=np0/analysis/nacl_summary.csv 0.90=np1/analysis/nacl_summary.csv
 """
 import argparse
 import csv

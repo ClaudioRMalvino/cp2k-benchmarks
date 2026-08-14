@@ -1,20 +1,12 @@
 #!/usr/bin/env python3
 """Green-Kubo shear viscosity from CP2K per-step stress files.
 
-Daivis-Evans symmetric-traceless estimator: with P^os the symmetrized,
-traceless stress tensor,
-
-  eta = V / (10 kB T) * integral_0^inf sum_ab < P^os_ab(0) P^os_ab(t) > dt
-
-ACFs via FFT over the whole segment, all 9 components summed; the running
-integral eta(t) is reported and the plateau is estimated as the average over
-[plateau-lo, plateau-hi]. Each segment is one independent sample -> mean +-
-SEM. Stress rows are monotonic-sliced on the step column (walltime resumes
-duplicate up to one checkpoint interval).
-
-Usage:
-  analyze_viscosity_cp2k.py --segdirs runs/MP2/cubic_1M/production/cube3/seg* \
-      --box-a 37.26 --label mp2_anchor_cube3 [--plateau-lo 2 --plateau-hi 10]
+Daivis-Evans symmetric-traceless estimator: eta = V/(10 kB T) int sum_ab
+<P^os_ab(0) P^os_ab(t)> dt; ACFs via FFT, plateau = mean of the running integral
+over [plateau-lo, plateau-hi]; segments -> mean +- SEM. Stress rows monotonic-
+sliced on step (walltime resumes duplicate up to one checkpoint interval).
+Writes {label}_eta.npz to results/{mp2,rpa}_transport/.
+Usage: --segdirs ... --box-a 37.26 --label X [--plateau-lo 2 --plateau-hi 10]
 """
 import argparse
 import glob

@@ -1,12 +1,7 @@
 #!/usr/bin/env python3
-"""Multi-panel composite figures for the MPhil report.
-
-Uses the University of Cambridge brand palette + LaTeX-friendly serif font.
-
-Usage:
-  python3 thesis_figures.py                # produce all 5
-  python3 thesis_figures.py --only N       # produce only fig N (1..5)
-"""
+"""Multi-panel composite figures for the MPhil report (Cambridge palette, serif).
+Reads benchmark CSVs under RESULTS_ROOT; writes PDFs to plots/thesis_figures.
+Usage: thesis_figures.py [--only N]."""
 import argparse
 import glob
 import os
@@ -46,8 +41,7 @@ CAMBRIDGE = {
     "white":        "#FFFFFF",
 }
 
-# Master = neutral slate, native-spline = Cambridge Warm Blue, omp = Crest
-# orange (blue vs orange is the safest pair for common forms of colour-blindness).
+# blue vs orange is the safest pair for common forms of colour-blindness
 BRANCH_STYLE = {
     "upstream master":   dict(color=CAMBRIDGE["slate_3"],  marker="o", label="master"),
     "native-spline":     dict(color=CAMBRIDGE["blue_warm"], marker="^", label="feature/nnp-native-spline"),
@@ -153,11 +147,8 @@ def load_all_data():
         data[branch] = dict(size=size_df, size_path=size_csv, core=core_df, **BRANCH_STYLE[branch])
     omp_thread_csv = _latest(f"{RESULTS_ROOT}/cp2k_feature_native_spline_omp/NNP/"
                               f"NNP_omp_thread_scaling_*/results_omp_thread_scaling_*.csv")
-    # Merge ALL omp_size_scaling CSVs into one dataframe.  The 2D OMP x N
-    # grid was filled in across multiple submissions (OMP=1,2,4,8 originally;
-    # OMP=16 added later as a focused re-run), so a single _latest() picks
-    # only one batch and drops the others.  Concatenating + de-duplicating
-    # on (omp_threads, n_molecules) keeps the union.
+    # Merge ALL omp_size_scaling CSVs: the OMP x N grid was filled across
+    # multiple submissions (OMP=16 re-run later), so _latest() alone drops batches.
     omp_2d_paths = sorted(
         p for p in glob.glob(f"{RESULTS_ROOT}/cp2k_feature_native_spline_omp/NNP/"
                               f"NNP_omp_size_scaling_*/results_omp_size_scaling_*.csv")
@@ -185,17 +176,14 @@ def _atoms(n_mol):
 
 
 def _panel_letter(ax, letter, xoff=0.5, yoff=1.03, va="bottom"):
-    """Place a bold panel letter (a, b, c, ...).  Default position is above
-    the axes; pass yoff < 0 and va="top" to drop the letter below the x-axis
-    label instead."""
+    """Bold panel letter above the axes; yoff < 0 with va="top" drops it below."""
     ax.text(xoff, yoff, f"({letter})", transform=ax.transAxes,
             fontsize=12, fontweight="bold", va=va, ha="center",
             color=CAMBRIDGE["slate_4"])
 
 
 def _row_major(items, ncols):
-    """Reorder items so matplotlib's column-major legend renders them
-    in row-major (left-to-right, top-down) order at the given ncols."""
+    """Reorder items so matplotlib's column-major legend renders row-major."""
     n = len(items)
     nrows = (n + ncols - 1) // ncols
     out = []
@@ -216,9 +204,8 @@ def _save(fig, name):
 
 
 def _log_decade_ticks(ax, axis, atom_fmt=False, expand_to_decades=False):
-    """Force a major tick at every decade (works around LogLocator collapsing
-    to one tick when the visible range spans only ~1.5 decades).
-    expand_to_decades pushes limits out to enclosing decade boundaries."""
+    """Force a major tick per decade (LogLocator can collapse to one tick over
+    ~1.5 decades); expand_to_decades widens limits to decade boundaries."""
     target = ax.xaxis if axis == "x" else ax.yaxis
     lo_lim, hi_lim = ax.get_xlim() if axis == "x" else ax.get_ylim()
     lo = int(np.floor(np.log10(lo_lim)))
@@ -335,9 +322,7 @@ def fig1_algorithmic_complexity(data, omp):
         plt.Line2D([0], [0], color=CAMBRIDGE["blue_dark"], ls=":",  lw=1.0,
                    label=r"$\propto N^{2}$"),
     ]
-    # Two rows of three for legibility: 3 branches on top, 2 power-law
-    # references on the bottom.  _row_major restores left-to-right reading
-    # order against matplotlib's column-major legend layout.
+    # 3 branches top row, 2 power-law refs bottom; _row_major fixes reading order
     fig.legend(handles=_row_major(handles, 3), loc="upper center",
                bbox_to_anchor=(0.5, 1.00), ncol=3,
                frameon=False, fontsize=12, columnspacing=2.0,
@@ -356,10 +341,8 @@ def fig2_strong_scaling(data, omp):
     # physical cap (full Peta4-IceLake node).
     N_TICKS = [1, 2, 4, 8, 16, 32, 76]
 
-    # Common-baseline speedup: master's 1-core time divided by each branch's
-    # N-core time. Avoids the per-branch-baseline artefact where the better-
-    # optimised branch shows a lower speedup ratio just because its 1-core
-    # baseline is already faster.
+    # Common-baseline speedup (master 1-core / branch N-core) avoids the
+    # per-branch-baseline artefact where a faster branch shows a lower ratio.
     master_t1 = None
     master_t1_ci95 = 0.0
     if data["upstream master"]["core"] is not None and not data["upstream master"]["core"].empty:
@@ -376,10 +359,8 @@ def fig2_strong_scaling(data, omp):
                       marker=d["marker"], color=d["color"], capsize=2, lw=1.6, ms=5.5)
         # Index of the baseline (lowest core count) row; robust to row order.
         base_idx = int(np.asarray(c["total_cores"]).argmin())
-        # Speedup uses a common (master 1-core) baseline.  For N>1 the
-        # numerator and denominator are independent runs, so propagate CI95 of
-        # both in quadrature (delta method).  master's own 1-core point is a
-        # self-ratio (speedup == 1 exactly), so its interval is zero there.
+        # CI95 of the two independent runs propagates in quadrature; master's
+        # own 1-core point is a self-ratio (exact), interval zero.
         common_speedup = (master_t1 / c["tps_mean"]) if master_t1 is not None else c["speedup"]
         if master_t1 is not None and master_t1 > 0:
             rel_speedup = np.sqrt((master_t1_ci95/master_t1)**2 +
@@ -391,9 +372,7 @@ def fig2_strong_scaling(data, omp):
             speedup_ci = None
         ax_b.errorbar(c["total_cores"], common_speedup, yerr=speedup_ci,
                       marker=d["marker"], color=d["color"], capsize=2, lw=1.7, ms=6.5)
-        # Efficiency uses the per-branch 1-core baseline.  At the baseline core
-        # count efficiency is exactly 100% (self-ratio, zero variance); for
-        # N>1 the 1-core and N-core runs are independent.
+        # Efficiency uses the per-branch 1-core baseline; baseline point is exact.
         branch_t1 = c["tps_mean"].iloc[base_idx]
         branch_t1_ci95 = c["tps_ci95"].iloc[base_idx]
         rel_eff = np.sqrt((branch_t1_ci95/branch_t1)**2 +
@@ -402,13 +381,9 @@ def fig2_strong_scaling(data, omp):
         eff_ci[base_idx] = 0.0           # baseline efficiency == 100% exactly
         ax_c.errorbar(c["total_cores"], c["efficiency"], yerr=eff_ci,
                       marker=d["marker"], color=d["color"], capsize=2, lw=1.7, ms=6.5)
-        # Estimated overhead per step = t(N) - t(1)/N: absolute residual above
-        # ideal strong-scaling (communication + serial + NUMA noise). Not
-        # strictly t_comm but the dominant term at high N is collective MPI.
-        # Skip the baseline point (trivially overhead=0 by construction); on
-        # a log-y axis it would render as a spurious vertical drop.  This is a
-        # difference of two independent runs, so the interval propagates as
-        # sqrt(CI_tN^2 + (CI_t1/N)^2) (absolute, not relative).
+        # Overhead per step = t(N) - t(1)/N: residual above ideal scaling
+        # (mostly collective MPI at high N).  Baseline skipped (overhead=0 by
+        # construction); CI propagates absolutely: sqrt(CI_tN^2 + (CI_t1/N)^2).
         t1 = c["tps_mean"].iloc[base_idx]
         t1_ci95 = c["tps_ci95"].iloc[base_idx]
         c_tail = c.drop(index=c.index[base_idx])
@@ -418,8 +393,7 @@ def fig2_strong_scaling(data, omp):
         ax_d.errorbar(c_tail["total_cores"], overhead.clip(lower=1e-4),
                       yerr=np.array(overhead_ci, dtype=float),
                       marker=d["marker"], color=d["color"], capsize=2, lw=1.7, ms=6.5)
-    # Dense sampling: on log-x linear-y axes y=x is a curve; 7 points would
-    # render as visible chord segments.
+    # dense sampling: y=x is a curve on log-x/linear-y axes
     x_ideal = np.linspace(1, max(N_TICKS), 200)
     ideal_lin, = ax_b.plot(x_ideal, x_ideal, "--", color=CAMBRIDGE["slate_3"], lw=1.0)
     ideal_eff  = ax_c.axhline(100, ls="--", color=CAMBRIDGE["slate_3"], lw=1.0)
@@ -493,10 +467,8 @@ def fig3_openmp_threading(data, omp):
     td = omp["two_d"]
     if td is not None and not td.empty:
         omps = sorted(td["omp_threads"].unique())
-        # Cool-color gradient for OMP=1..8 (progressively darker, fits the
-        # "more threads → darker" visual story).  OMP=16 breaks to crest_dark
-        # since it sits in the diminishing-returns regime (≤10% gain over OMP=8)
-        # -- the hue change deliberately flags this as a different operating point.
+        # cool ramp darkens with threads; OMP=16 breaks to crest_dark to flag
+        # the diminishing-returns regime (<=10% gain over OMP=8)
         ramp_colors = [CAMBRIDGE["blue"],       CAMBRIDGE["blue_warm"],
                        CAMBRIDGE["indigo"],     CAMBRIDGE["blue_dark"],
                        CAMBRIDGE["crest_dark"]]
@@ -505,8 +477,7 @@ def fig3_openmp_threading(data, omp):
             sub = td[td["omp_threads"] == ompv].sort_values("n_molecules")
             x = _atoms(sub["n_molecules"])
             y = sub["tps_mean"]; ci = sub["tps_ci95"]
-            # Shaded mean ± CI95 band (Student's-t, n=5) — variance now visible
-            # at a glance instead of via thin error-bar caps.
+            # mean ± CI95 band (Student's-t, n=5)
             ax_b.fill_between(x, y - ci, y + ci, color=col, alpha=0.18, lw=0)
             ax_b.plot(x, y, marker="o", color=col, lw=1.5, ms=5)
             panel_b_handles.append(plt.Line2D([0], [0], color=col, marker="o",
@@ -525,8 +496,7 @@ def fig3_openmp_threading(data, omp):
                     ncol=3, frameon=False, fontsize=11,
                     columnspacing=1.2, handlelength=2.0, handletextpad=0.5)
     if panel_b_handles:
-        # Reorder so matplotlib's column-major legend renders row-major:
-        # top row OMP=1,2,4; bottom row OMP=8,16.
+        # row-major legend: top row OMP=1,2,4; bottom OMP=8,16
         ncol_b = 3
         ax_b.legend(_row_major(panel_b_handles, ncol_b),
                     _row_major(panel_b_labels,  ncol_b),
@@ -561,8 +531,7 @@ def fig4_statistical_significance(data, omp):
     pos    = np.arange(len(labels)) + 1
     colors = [data[k]["color"] for k in labels]
 
-    # Violin/KDE dropped: at n=5 the KDE bandwidth dominates the curve shape
-    # and isn't statistically meaningful; raw dots + box carry the information.
+    # violin/KDE dropped: at n=5 KDE bandwidth dominates; dots + box suffice
     bp = ax.boxplot([samples[k] for k in labels], positions=pos, widths=0.35,
                     patch_artist=True, showfliers=True,
                     boxprops=dict(linewidth=1.0),
@@ -629,13 +598,9 @@ MAQAO_HOTSPOTS = {
 MAQAO_AAEFF = {"master": 52.92, "native-spline-omp": 78.17}
 
 
-# ============================================================================
-# Fresh CQA per-loop data (May-26, post-port aware).  Static disassembly only;
-# numbers are deterministic per binary.  Used by figs 7-9.
-# Produced via:
-#   maqao cqa <binary> --fct-loops="nnp_" --output-format=csv \
-#                      --output-path=<csv>
-# ============================================================================
+# Fresh CQA per-loop data (May-26, post-port; static disassembly, deterministic
+# per binary; figs 7-9).  Produced via:
+#   maqao cqa <binary> --fct-loops="nnp_" --output-format=csv --output-path=<csv>
 FRESH_CQA_DIR = "/home/crm98/cp2k-benchmarks/maqao_login_cqa"
 FRESH_CQA_PATHS = {
     "master":            f"{FRESH_CQA_DIR}/master_nnp.csv",
@@ -645,8 +610,7 @@ FRESH_CQA_PATHS = {
 NNP_SRC_BASENAMES = {"nnp_acsf.F", "nnp_force.F", "nnp_model.F", "nnp_environment.F"}
 
 def _load_fresh_cqa():
-    """Read the three CQA CSVs, tag each row with branch, restrict to NNP
-       Fortran sources.  Returns combined DataFrame or None if any CSV missing."""
+    """Combined CQA DataFrame restricted to NNP sources; None if a CSV is missing."""
     parts = []
     for branch, p in FRESH_CQA_PATHS.items():
         if not os.path.exists(p):
@@ -668,10 +632,8 @@ def _branch_style_for(short):
                          "native-spline-omp": "native-spline-omp"}[short]]
 
 
-# ============================================================================
-# ONE View HTML report parsers (May-14 measurement, pre-port).  Source pages
-# come from `maqao oneview --create-report=one` runs.  Used by figs 7-10.
-# ============================================================================
+# ONE View HTML report parsers (May-14 measurement, pre-port); pages from
+# `maqao oneview --create-report=one` runs.  Used by figs 7-10.
 import re as _re
 import html as _html
 from pathlib import Path as _Path
@@ -711,11 +673,8 @@ def _ov_cells(row_html):
 
 
 def parse_application_categorization(branch):
-    """Read `application.html` for `branch` and return a dict with two keys:
-        aggregate : {category -> value} for the whole run_0 row
-        processes : list[(pid:str, dict{category -> value})] for each MPI rank
-       Categories follow APP_CATEGORIES ordering.  Time(s) is absolute, all
-       others are percentages of the per-row total."""
+    """Parse application.html -> {'aggregate': {cat: val}, 'processes': [(pid, {cat: val})]}.
+       Time(s) is absolute; other APP_CATEGORIES are % of the per-row total."""
     path = _Path(ONE_VIEW_HTML_DIRS[branch]) / "application.html"
     if not path.exists(): return None
     rows = _re.findall(r"<tr[^>]*>([\s\S]*?)</tr>", path.read_text())
@@ -739,9 +698,7 @@ def parse_application_categorization(branch):
 
 
 def parse_expert_summary(branch):
-    """Read `expert_summary.html` for `branch`.  Returns list of dicts, one
-       per hot loop, with the EXPERT_HDR_INDEX-named keys parsed to float
-       where possible (string passed through for the function-name column)."""
+    """Parse expert_summary.html into per-hot-loop dicts keyed by EXPERT_HDR_INDEX."""
     path = _Path(ONE_VIEW_HTML_DIRS[branch]) / "expert_summary.html"
     if not path.exists(): return []
     rows = _re.findall(r"<tr[^>]*>([\s\S]*?)</tr>", path.read_text())
@@ -767,10 +724,8 @@ def parse_expert_summary(branch):
 
 
 def _amdahl_speedup(coverage_pct, speedup):
-    """Application-wide speedup factor if a set of hot loops with the given
-       per-loop coverages (as % of app time) each speed up by speedup_i:
-           S_app = 1 / [ (1 - sum c_i) + sum c_i / s_i ]
-       coverage_pct / speedup may be array-like; NaNs are dropped."""
+    """App-wide speedup if hot loops with coverages c_i (% app time) each speed
+       up by s_i: S = 1 / [(1 - sum c_i) + sum c_i/s_i].  NaNs dropped."""
     c = np.asarray(coverage_pct, dtype=float) / 100.0
     s = np.asarray(speedup,      dtype=float)
     mask = np.isfinite(c) & np.isfinite(s) & (s > 0)
@@ -783,17 +738,15 @@ def _amdahl_speedup(coverage_pct, speedup):
 
 
 def fig7_per_process_load_balance(data, omp):
-    """Three-panel figure: one panel per branch.  Each panel shows a stacked
-       bar per MPI rank with the Binary/MPI/OMP/Math/Other share of the
-       rank's wall-clock time.  Exposes load imbalance that the aggregate
-       hotspot bar (fig 5) averages out."""
+    """Stacked per-MPI-rank time-category bars, one panel per branch; exposes
+       load imbalance the aggregate hotspot bar (fig 5) averages out."""
     print("\n[fig 7] Per-process load balance (ONE View 'application' page)")
     branches = ["master", "native-spline", "native-spline-omp"]
     parsed = {b: parse_application_categorization(b) for b in branches}
     if any(v is None for v in parsed.values()):
         print("  one or more application.html pages missing -- skipping"); return
 
-    # Five visible categories; rest collapsed into "Other".
+    # visible categories; rest collapsed into "Other"
     SHOW = ["Binary", "MPI", "OMP", "Math"]
     fig, axes = plt.subplots(1, 3, figsize=(W_TEXT * 1.5, 4.4), sharey=True)
     colors = [CAMBRIDGE["slate_3"], CAMBRIDGE["crest"],
@@ -821,7 +774,6 @@ def fig7_per_process_load_balance(data, omp):
         ax.set_ylim(0, 102)
         ax.set_title(branch, fontsize=10)
         ax.grid(axis="y", ls="--", alpha=0.35)
-        # MPI-share spread annotation
         mpi_vals = [d["MPI"] for _, d in procs]
         ax.text(0.02, 0.97,
                 f"MPI share: {min(mpi_vals):.0f}--{max(mpi_vals):.0f}% "
@@ -832,7 +784,6 @@ def fig7_per_process_load_balance(data, omp):
                           edgecolor=CAMBRIDGE["slate_2"],
                           alpha=0.85, pad=2))
     axes[0].set_ylabel("Share of rank's wall-clock time (%)")
-    # Single legend on the right
     handles, labs = axes[0].get_legend_handles_labels()
     fig.legend(handles, labs, loc="center right", fontsize=9,
                bbox_to_anchor=(0.995, 0.5), frameon=True,
@@ -844,13 +795,8 @@ def fig7_per_process_load_balance(data, omp):
 
 
 def fig8_headroom_speedup(data, omp):
-    """Coverage-weighted application-wide speedup if every hot loop achieved
-       its CQA upper bound for each optimisation class.  Four classes:
-         - no scalar integer
-         - FP arithmetic vectorized
-         - fully vectorized
-         - FP-only (CQA-projected scenario)
-       Shown as grouped bars: one cluster per branch, four bars per cluster."""
+    """Coverage-weighted (Amdahl) app-wide speedup if every hot loop hit its CQA
+       upper bound, per optimisation class; grouped bars per branch."""
     print("\n[fig 8] Coverage-weighted Amdahl headroom (ONE View 'expert_summary')")
     branches = ["master", "native-spline", "native-spline-omp"]
     loops_by_branch = {b: parse_expert_summary(b) for b in branches}
@@ -904,9 +850,8 @@ def fig8_headroom_speedup(data, omp):
 
 
 def fig9_library_category_share(data, omp):
-    """Aggregate library-category time share per branch -- MAQAO's official
-       categorisation rather than the hand-curated HOTSPOTS dict.  Stacked
-       horizontal bar so the long category names sit cleanly outside."""
+    """Aggregate library-category time share per branch (MAQAO's own
+       categorisation, not the hand-curated HOTSPOTS dict); stacked hbars."""
     print("\n[fig 9] Aggregate library-category time share (ONE View 'application')")
     branches = ["master", "native-spline", "native-spline-omp"]
     parsed = {b: parse_application_categorization(b) for b in branches}
@@ -950,11 +895,8 @@ def fig9_library_category_share(data, omp):
 
 
 def fig10_top_loops_by_gain(data, omp):
-    """Per-loop *opportunity* ranking: for each hot loop, the application-wide
-       gain you'd unlock by fully vectorising IT ALONE.  Computed via Amdahl
-       on each single loop, so it weights both 'how much time does this loop
-       cost?' and 'how much faster could it be?'.  Top 10 per branch in
-       three panels."""
+    """Per-loop opportunity ranking: app-wide gain from fully vectorising each
+       loop alone (single-loop Amdahl); top 10 per branch, three panels."""
     print("\n[fig 10] Top NNP loops ranked by potential vectorisation gain")
     branches = ["master", "native-spline", "native-spline-omp"]
     loops_by_branch = {b: parse_expert_summary(b) for b in branches}
@@ -969,8 +911,7 @@ def fig10_top_loops_by_gain(data, omp):
             c = L["Coverage (% app. time)"]; s = L["Speedup if fully vectorized"]
             if not (np.isfinite(c) and np.isfinite(s) and s > 1.0 and c > 0):
                 continue
-            # single-loop Amdahl: 1 / [(1-c/100) + (c/100)/s] -- the speedup
-            # you'd get if ONLY this loop were optimised to its CQA bound
+            # single-loop Amdahl: 1 / [(1-c/100) + (c/100)/s]
             s_app = 1.0 / ((1.0 - c/100) + (c/100)/s)
             gain_pct = (s_app - 1.0) * 100.0
             fn = L["Source Function"][:24]
@@ -1026,20 +967,17 @@ def _unused_fig_old_stub(data, omp):
                    facecolor=style["color"],
                    edgecolor=CAMBRIDGE["slate_4"], linewidth=0.7, zorder=5)
 
-        # legend entry includes the per-threshold rank counts
         n_total = len(cyc)
         legend_lines.append(
             (style["label"], style["color"], style["marker"],
              k[0], k[1], k[2], n_total))
 
-    # Reference dotted lines at the threshold percentages
     for t in THRESH:
         ax.axhline(t, color=CAMBRIDGE["slate_2"], ls=":", lw=0.7, zorder=1)
         ax.text(max_rank * 0.995, t + 0.6, f"{int(t)}%",
                 fontsize=7.5, ha="right", va="bottom",
                 color=CAMBRIDGE["slate_3"], style="italic")
 
-    # Custom legend with the threshold-rank info baked in
     from matplotlib.lines import Line2D
     handles = []
     labels = []
@@ -1122,10 +1060,8 @@ def fig5_maqao_microarchitectural(data, omp):
     _save(fig, "fig5_maqao_microarchitectural")
 
 
-# A true MPI x OMP hybrid sweep at fixed N was not run; this renders the
-# omp_size_scaling grid (native-spline-omp, MPI=1, OMP in {1,2,4,8,16,32,76},
-# N in {64,256,512,1024,2048}) as a heatmap for picking the best OMP setting
-# per workload.
+# No true MPI x OMP hybrid sweep at fixed N was run; renders the omp_size_scaling
+# grid (native-spline-omp, MPI=1) as a heatmap for picking best OMP per workload.
 def fig6_omp_size_heatmap(data, omp):
     print("\n[fig 6] OMP x N hybrid sweep heatmap (preview)")
     td = omp["two_d"]
@@ -1141,8 +1077,7 @@ def fig6_omp_size_heatmap(data, omp):
 
     fig, ax = plt.subplots(figsize=(W_TEXT * 1.05, W_TEXT * 0.85))
 
-    # Cambridge-palette sequential cmap: blue_light (fast) -> blue_warm ->
-    # blue_dark (slow), so good values appear pale and bad values saturated.
+    # sequential cmap: pale = fast, saturated = slow
     from matplotlib.colors import LinearSegmentedColormap
     cmap = LinearSegmentedColormap.from_list(
         "cambridge_seq",
@@ -1189,11 +1124,9 @@ def fig6_omp_size_heatmap(data, omp):
     _save(fig, "fig6_omp_size_heatmap")
 
 
-# ============================================================================
-# Perf-stat throughput + DRAM summary (login-node perf run, no SLURM burn)
-# Reads results/perf_cache/<TIMESTAMP>/{master,feature-nnp-native-spline}/
-# perf_loads.txt — see scripts/CSD3_benchmark_scripts/perf_cache/.
-# ============================================================================
+# Perf-stat throughput + DRAM summary (login-node perf run, no SLURM burn).
+# Reads results/perf_cache/<TS>/{master,feature-nnp-native-spline}/perf_loads.txt;
+# see scripts/CSD3_benchmark_scripts/perf_cache/.
 PERF_RESULTS_ROOT = "/home/crm98/cp2k-benchmarks/results/perf_cache"
 PERF_BRANCHES = [
     ("master",                    "master",                    CAMBRIDGE["slate_3"]),
@@ -1221,9 +1154,7 @@ def _parse_perf_stat(path):
 
 
 def _load_perf_cache():
-    """Locate the most recent results/perf_cache/<TIMESTAMP>/ and merge each
-    branch's loads + backing perf-stat passes.  Returns (ts, {branch: dict})
-    or None if no results are present."""
+    """Most recent results/perf_cache/<TS>/: (ts, {branch: merged events}) or None."""
     if not os.path.isdir(PERF_RESULTS_ROOT):
         return None
     ts_dirs = sorted(d for d in os.listdir(PERF_RESULTS_ROOT)
@@ -1244,18 +1175,9 @@ def _load_perf_cache():
 
 
 def fig7_perf_summary(data, omp):
-    """Throughput + memory-pressure summary from perf-stat hardware counters.
-
-    Four panels in a single row:
-      (a) wall time          — lower better
-      (b) retired instructions — lower better
-      (c) IPC                — higher better
-      (d) DRAM-resident load traffic (load-retired L3 misses) — lower better
-
-    All four favour the native-spline branch, framed as the compute-for-memory
-    trade described in §4: the L1/L2 spike from spline-table lookups is fully
-    absorbed inside the 1.25 MiB L2, and DRAM traffic itself drops.
-    """
+    """Perf-stat counters: wall time, retired instructions, IPC, L3 load misses.
+    All four favour native-spline (the §4 compute-for-memory trade: spline-lookup
+    L1/L2 spike is absorbed within the 1.25 MiB L2; DRAM traffic drops)."""
     print("\n[fig 7] perf-stat throughput + DRAM summary")
     loaded = _load_perf_cache()
     if loaded is None:
@@ -1308,13 +1230,8 @@ def fig7_perf_summary(data, omp):
     _save(fig, "fig7_perf_summary")
 
 
-# ============================================================================
-# Compiler-flags appendix table
-# ============================================================================
-# Compiler flags passed by the build scripts (cp2k_CSD3_master_build.sh and
-# cp2k_CSD3_opt_build.sh).  Both scripts pass the same set; CMake's Release
-# preset and CP2K's CMakeLists.txt add further flags downstream, but those
-# are build-system plumbing rather than choices made for this work.
+# Compiler-flags appendix table: same flag set passed by
+# cp2k_CSD3_master_build.sh / cp2k_CSD3_opt_build.sh.
 COMPILER_FLAGS = [
     ("-O2",
         "C, C++, Fortran",
@@ -1345,8 +1262,7 @@ COMPILER_FLAGS = [
 
 
 def _wrap_flag_token(text, width):
-    """Wrap a flag-style string at width, breaking at `_`, `=`, `,`, `/`
-    in addition to spaces/hyphens that textwrap already understands."""
+    """Wrap a flag string at width, also breaking after `_`, `=`, `,`, `/`."""
     if len(text) <= width:
         return text
     breakables = "_=,/ "
@@ -1371,9 +1287,7 @@ def _wrap_flag_token(text, width):
 
 
 def fig8_compiler_flags(data, omp):
-    """Compiler-flags appendix table rendered with the same palette as the
-    rest of the thesis figures.  Reads its data from COMPILER_FLAGS above
-    (no external inputs)."""
+    """Compiler-flags appendix table; data from COMPILER_FLAGS, no external inputs."""
     print("\n[fig 8] compiler-flags appendix table")
 
     HEADERS    = ("Flag", "Languages", "Purpose / notes")
@@ -1416,7 +1330,6 @@ def fig8_compiler_flags(data, omp):
         for col in range(n_cols):
             table[(i, col)].set_height(h)
 
-    # Header row: navy fill, white bold text.
     for col in range(n_cols):
         cell = table[(0, col)]
         cell.set_facecolor(CAMBRIDGE["blue_dark"])
@@ -1426,7 +1339,6 @@ def fig8_compiler_flags(data, omp):
         cell.set_linewidth(0.5)
         cell.PAD = 0.04
 
-    # Body rows: alternating slate/white stripes.
     body_stripe = [CAMBRIDGE["slate_1"], CAMBRIDGE["white"]]
     for i in range(1, n_rows + 1):
         for col in range(n_cols):

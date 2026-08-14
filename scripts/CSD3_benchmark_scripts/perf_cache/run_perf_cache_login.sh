@@ -1,9 +1,6 @@
 #!/usr/bin/env bash
-# Login-node perf-stat cache-miss benchmark.  Same two-pass design as the
-# SLURM version, but runs cp2k directly without srun.  Total wall time is
-# a few minutes for STEPS=20 across both branches — well inside what CSD3
-# permits for short login-node work, and costs nothing against the SL3
-# budget.
+# Login-node perf-stat cache-miss benchmark: same two-pass design as the SLURM
+# version but runs cp2k directly (no srun). ~minutes at STEPS=20; no SL3 cost.
 
 set +e
 
@@ -15,10 +12,8 @@ which perf
 perf --version
 echo "perf_event_paranoid = $(cat /proc/sys/kernel/perf_event_paranoid)"
 
-# cp2k.psmp links MPI and OpenMP.  On the login node there is no SLURM PMI,
-# so we use Intel MPI's Hydra launcher (mpirun -n 1) and force fabrics to
-# shared memory to avoid touching any IB/UCX startup.  OMP_NUM_THREADS=1 keeps
-# the cache counters clean (no thread-private working sets overlapping).
+# No SLURM PMI on the login node: use Hydra (mpirun -n 1) with shm fabrics to
+# avoid IB/UCX startup; OMP_NUM_THREADS=1 keeps the cache counters clean.
 export I_MPI_FABRICS=shm
 export OMP_NUM_THREADS=1
 

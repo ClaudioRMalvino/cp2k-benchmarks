@@ -1,8 +1,6 @@
 #!/usr/bin/env bash
-# Probe: is MAQAO LProf usable on icelake compute nodes again after the
-# zero-day mitigation?  Runs a 20-step N=64 NNP MD under maqao lprof and
-# reports whether sampling worked.  Cost: 16 cores x ~5 min.
-#
+# Probe: is MAQAO LProf usable on icelake compute nodes after the zero-day mitigation?
+# Runs a 20-step N=64 NNP MD under maqao lprof (16 cores x ~5 min).
 # Submit with:  sbatch probe_maqao_available.sh
 
 #SBATCH -J maqao_probe
@@ -29,13 +27,10 @@ echo "=== compute-node security knobs ==="
 echo "  perf_event_paranoid : $(cat /proc/sys/kernel/perf_event_paranoid 2>/dev/null)"
 echo "  ptrace_scope        : $(cat /proc/sys/kernel/yama/ptrace_scope 2>/dev/null)"
 
-# Tiny dataset: 20-step N=64 from the standard benchmark input.
 sed -e 's/STEPS 100/STEPS 20/' "$BENCH/H2O-64_NNP_MD.inp" > probe.inp
 ln -sfn /home/crm98/cp2k_optimized/data/NNP NNP
 
-# MAQAO must run ONCE and own the MPI launch (one srun inside maqao), not
-# the other way round: srun-ning N maqao instances races on the experiment
-# directory and hangs the MPI world.
+# MAQAO must own the MPI launch (one srun inside maqao): srun-ning N maqao instances races on the experiment dir and hangs the MPI world.
 try_lprof () {
     local label=$1 xp=$2; shift 2
     echo "=== maqao lprof ($label) ==="

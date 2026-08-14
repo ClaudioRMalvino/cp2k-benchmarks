@@ -1,15 +1,10 @@
 #!/usr/bin/env python3
-"""NaCl(aq) MP2 C-NNP anchor: water-oxygen MSD and Yeh-Hummer finite-size
+"""NaCl(aq) MP2 C-NNP anchor: water-oxygen MSD + Yeh-Hummer finite-size
 extrapolation, D(L) = D_0 - kB T xi / (6 pi eta L), xi = 2.837297 (cubic).
-
-Reads results/nacl_mp2_anchor/{msd_cube2.csv, msd_cube3.csv,
-diffusion_summary.csv} written by scripts/csd3_nacl_mp2_anchor/
-analyze_diffusion.py. Two cells (cube2 24.84 A / 1500 atoms, cube3 37.26 A /
-5064 atoms) x 5 NVE segments each -> D vs 1/L with SEM error bars, linear
-extrapolation to 1/L = 0 gives the infinite-box D_0 and, from the slope, the
-implied shear viscosity eta.
-
-Styled to match scripts/benchmark_figures/thesis_figures.py.
+Reads results/nacl_mp2_anchor/{msd_cube2,msd_cube3,diffusion_summary}.csv from
+analyze_diffusion.py (2 cells x 5 NVE segments -> D vs 1/L, D_0 and implied eta);
+writes plots/nacl_mp2_anchor/nacl_diffusion_yh.png/pdf. Styled to match
+scripts/benchmark_figures/thesis_figures.py.
 """
 import os
 import numpy as np
@@ -53,8 +48,7 @@ summ = np.genfromtxt(os.path.join(R, "diffusion_summary.csv"),
 fig, ax = plt.subplots(1, 2, figsize=(11, 4.7))
 
 # ---- (a) MSD curves --------------------------------------------------------
-# The CSVs span half of each cell's trajectory (cube2 50 ps, cube3 80 ps);
-# show both over the common lag range.
+# CSVs span half of each trajectory (cube2 50 ps, cube3 80 ps); common lag range
 tabs = {cell: np.loadtxt(os.path.join(R, f"msd_{cell}.csv"), delimiter=",",
                          skiprows=1) for cell in CELLS}
 lag_max = min(tab[-1, 0] for tab in tabs.values())

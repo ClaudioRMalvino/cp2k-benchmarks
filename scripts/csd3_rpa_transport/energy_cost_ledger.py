@@ -1,59 +1,21 @@
 #!/usr/bin/env python3
-"""Campaign cost and energy ledger for the RPA NaCl(aq) transport campaign.
+"""Campaign cost (GBP) and energy (kWh) ledger for the RPA transport campaign.
 
-Answers two questions the report needs:
-
-  1. What did this campaign actually cost, in GBP?
-  2. What did it actually consume, in kWh?
-
-WHY THIS READS sacct AND NOT timings.csv. The ledger written by
-log_timing.sh is incomplete by construction: it appends a row at the END of
-a job, so a job killed by its wall limit never logs one, and the 5-element
-extend arrays logged a single row between them. sacct is the accounting
-database SLURM bills from, so it counts every second actually consumed
-including timeouts, cancellations and re-runs. Aggregating timings.csv
-undercounts the CPU campaign by roughly 10%.
-
-ENERGY: MEASURED IS NOT AVAILABLE ON CSD3. SLURM can record per-job energy
-via its acct_gather_energy plugin, but on CSD3 that plugin is not
-configured - `scontrol show config` reports
-
-    AcctGatherEnergyType = (null)
-
-and ConsumedEnergyRaw is 0 for every job, not just ours: a sweep of all
-cluster jobs over two days found zero with a nonzero value. So the kWh
-figures below are a TDP-based ESTIMATE and must be labelled as such in the
-report. They are a defensible upper-ish bound on the IT load, not a
-measurement. To upgrade them, ask support@hpc.cam.ac.uk for the standard
-per-node power draw and the data-centre PUE - RCS hold both for
-sustainability reporting.
-
-GBP: the CSD3 rate card is behind Raven, so the rates are inputs here
-rather than constants. Fill them in from the internal service-charges page
-on hpc.cam.ac.uk and record the access date for the citation.
-
-Usage:
-  ./energy_cost_ledger.py                                   # hours + kWh estimate
-  ./energy_cost_ledger.py --gbp-core-hour 0.01 \
-                          --gbp-gpu-hour 0.40 \
-                          --accessed 2026-08-11              # adds the GBP column
-  ./energy_cost_ledger.py --pue 1.15                         # scale kWh by PUE
+Reads sacct, not timings.csv: log_timing.sh appends at job END, so wall-killed
+jobs never log a row and timings.csv undercounts the CPU campaign by ~10%.
+kWh is a TDP-based ESTIMATE: CSD3 has AcctGatherEnergyType=(null) and
+ConsumedEnergyRaw is 0 for every cluster job. GBP rates are CLI inputs (rate
+card is behind Raven; record --accessed date for the citation).
+Usage: ./energy_cost_ledger.py [--gbp-core-hour X --gbp-gpu-hour Y --accessed DATE] [--pue P]
 """
 import argparse
 import re
 import subprocess
 import sys
 
-# --- hardware, pinned from the machine itself (scontrol/lscpu, 2026-08-10) ---
-# icelake: 2 x Intel Xeon Platinum 8368Q @ 2.60 GHz, 38 cores/socket = 76.
-# 8368Q TDP is 270 W/socket, so 540 W of CPU; the rest is DRAM, board, NIC
-# and fans. 700 W is the midpoint of the 650-750 W band such a node is
-# normally quoted at under load.
-W_ICELAKE_NODE = 700.0
-# ampere: jobs took gres/gpu=1 with 32 of the node's 128 cores. An
-# A100-SXM4-80GB is 400 W; adding a quarter-node host share puts the
-# per-GPU figure near 550 W.
-W_AMPERE_PER_GPU = 550.0
+# hardware pinned from scontrol/lscpu, 2026-08-10
+W_ICELAKE_NODE = 700.0    # 2 x Xeon 8368Q (270 W TDP each) + DRAM/board; mid of 650-750 W band
+W_AMPERE_PER_GPU = 550.0  # A100-SXM4-80GB 400 W + quarter-node host share
 
 CAMPAIGN_STEPS = 2_400_000        # 3 molalities x 5 segments x 320,000
 S_PER_STEP = {"optimised CPU (PR #5295)": 0.2554,
@@ -91,8 +53,7 @@ def collect(since):
             el = elapsed_s(el)
         except ValueError:
             continue
-        # sub-10 s rows are requeue bookkeeping: an insurance twin that found
-        # nothing left to do. They consumed a slot, not a calculation.
+        # sub-10 s rows = insurance twins that found nothing to do
         if el <= 10:
             continue
         grp = next((g for g, pat in GROUPS if re.search(pat, name)), None)
@@ -129,8 +90,7 @@ def main():
     for g, _ in GROUPS:
         d = acc[g]
         nh, ch, gh = d["node_s"] / 3600, d["core_s"] / 3600, d["gpu_s"] / 3600
-        # An ampere job holds one GPU, not the node, so its energy is charged
-        # per GPU; an icelake job takes the whole node.
+        # ampere jobs hold one GPU (charged per GPU); icelake jobs take the whole node
         kwh = ((gh * W_AMPERE_PER_GPU if gh else nh * W_ICELAKE_NODE) / 1000.0) * a.pue
         row = f"{g:<18}{d['jobs']:>6}{nh:>10.1f}{ch:>12.1f}{gh:>9.1f}{kwh:>10.1f}"
         if money:

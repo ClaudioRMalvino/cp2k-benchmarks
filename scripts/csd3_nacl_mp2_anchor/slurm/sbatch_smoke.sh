@@ -8,13 +8,10 @@
 #SBATCH --mail-type=NONE
 #SBATCH --output=/home/crm98/cp2k-benchmarks/logs/nacl_mp2_smoke_%j.out
 
-# Run this FIRST, once, before any production submission (SL2 = fast queue,
-# tiny cost). Verifies on a real icelake compute node that:
-#   1. the dhruv-cell-list (PR #5295) binary runs the MIXED force eval
-#      (C-NNP committee of 8 + Fist SPME Coulomb baseline) on cube_n2,
-#   2. the per-step stress file is NONZERO (Green-Kubo viscosity needs it),
-#   3. the committee-energies file is written (check_run.py needs it),
-#   4. prints t/step -> walltime projections for equil/production.
+# Run FIRST, once, before any production submission (SL2 fast queue). Verifies on
+# a real icelake node: the dhruv-cell-list (PR #5295) binary runs the MIXED force
+# eval (C-NNP committee of 8 + Fist SPME) on cube_n2; per-step stress is NONZERO
+# (GK viscosity); committee energies exist (check_run.py); prints t/step projections.
 set -euo pipefail
 SDIR=/home/crm98/cp2k-benchmarks/scripts/csd3_nacl_mp2_anchor
 source "$SDIR/env_csd3.sh"

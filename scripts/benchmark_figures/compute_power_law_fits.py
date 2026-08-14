@@ -1,31 +1,8 @@
 #!/usr/bin/env python3
-"""Fit the empirical size-scaling power law  t(N) = a * N^b  per branch.
-
-This is the *single committed source of truth* for the size-scaling
-exponents quoted in the thesis text, the presentation, and the
-`power_law_fits.pdf` table.  It loads the same size-scaling CSVs that
-`thesis_figures.py` plots, fits a power law in log-log space over one
-declared N-range (the SAME range for every branch), and overwrites
-`scaling_csd3/power_law_fits.csv`.
-
-Why a fixed range for every branch:
-    A single power law does not describe the whole sweep, because at
-    small N the 76-core node is underutilised and the step time is
-    dominated by fixed overhead (flat region).  The exponent is only
-    meaningful in the larger-N regime where the cost actually scales.
-    Fitting *every* branch over the same N >= MIN_MOLECULES window keeps
-    the comparison honest -- the master and optimised exponents are then
-    directly comparable instead of being read off different ranges.
-
-    The resulting exponents are EMPIRICAL over the tested range, not
-    asymptotic complexities; the optimised branch is sub-O(N) because
-    communication / fixed overhead grows more slowly than N across the
-    boxes measured here, not forever.
-
-Run:
-    source ~/.fortran_env/bin/activate
-    python3 scripts/benchmark_figures/compute_power_law_fits.py
-"""
+"""Fit the size-scaling power law t(N) = a * N^b per branch; committed source of
+truth for the exponents quoted in the thesis.  Reads the same size-scaling CSVs
+as thesis_figures.py, fits OLS in log-log over one shared N-window (exponents
+are empirical over that range), writes scaling_csd3/power_law_fits.csv."""
 import glob
 import os
 
@@ -42,10 +19,8 @@ OUT_CSV = "/home/crm98/cp2k-benchmarks/results/scaling_csd3/power_law_fits.csv"
 # Atoms per water molecule (N in the fit is the atom count).
 ATOMS_PER_MOLECULE = 3
 
-# Fit window: only boxes at or above this many H2O molecules are used, so
-# the flat overhead-dominated small-N points do not bias the slope.  The
-# SAME window is applied to every branch.  512 mol = 1536 atoms = >=20
-# atoms/core on the 76-core node, i.e. the compute-dominated regime.
+# Fit window, same for every branch: 512 mol = 1536 atoms = >=20 atoms/core on
+# the 76-core node, excluding the flat overhead-dominated small-N points.
 MIN_MOLECULES = 512
 
 SIZE_COLS = ["n_molecules", "n_reps",
@@ -80,12 +55,8 @@ def _load_size(branch_glob):
 
 
 def _fit_power_law(n_atoms, t):
-    """Weighted-free OLS of log t on log N.  Returns a, a_err, b, b_err.
-
-    b is the power-law exponent (slope in log-log space); a is the
-    prefactor t = a * N^b.  Errors are the 1-sigma standard errors from
-    the regression covariance (a_err via the delta method on a=exp(c)).
-    """
+    """OLS of log t on log N; returns a, a_err, b, b_err (1-sigma, a_err via
+    delta method on a = exp(c))."""
     x = np.log(n_atoms.astype(float))
     y = np.log(t.astype(float))
     # degree-1 fit with covariance; needs n >= 3 for a meaningful cov.

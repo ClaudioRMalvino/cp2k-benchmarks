@@ -10,8 +10,7 @@ CORES_PER_NODE=76
 BIN_ROOT=/rds/user/$USER/hpc-work/cp2k_binaries/csd3
 BENCHMARK_ROOT=/home/crm98/cp2k-benchmarks
 
-# Strict mode relaxed across the sourcing: cp2k_CSD3_env.sh pulls in the
-# toolchain 'setup' which references unbound CP_DFLAGS - trips `set -u`.
+# set -u relaxed across sourcing: the toolchain 'setup' references unbound CP_DFLAGS.
 . /etc/profile.d/modules.sh
 set +u
 source /home/crm98/cp2k-benchmarks/scripts/CSD3_benchmark_scripts/cp2k_CSD3_env.sh
@@ -21,9 +20,8 @@ set -u
 LABEL="${TARGET_LABEL:-feature-nnp-chebyshev}"
 CP2K_EXE="$BIN_ROOT/$LABEL/cp2k.psmp"
 INSTALL_LIB="$BIN_ROOT/$LABEL/lib"
-# PROJECT_ROOT only supplies data/NNP (identical water potential across trees);
-# OUTDIR_PARENT names the results dir. Both overridable so a non-chebyshev
-# branch (e.g. dhruv-cell-list) writes to a correctly-named location.
+# PROJECT_ROOT only supplies data/NNP (identical across trees); OUTDIR_PARENT
+# names the results dir. Both overridable for non-chebyshev branches.
 PROJECT_ROOT="${PROJECT_ROOT_OVERRIDE:-/home/crm98/cp2k_optimized}"
 OUTDIR_PARENT="${OUTDIR_PARENT_OVERRIDE:-cp2k_feature_chebyshev}"
 

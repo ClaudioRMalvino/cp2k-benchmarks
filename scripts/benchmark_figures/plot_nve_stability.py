@@ -1,21 +1,8 @@
 #!/usr/bin/env python3
 """Fig. S4 validation: NVE energy-conservation stability of feature/nnp-chebyshev
 across system sizes, plus the master==chebyshev equivalence table.
-
-The optimisation-vs-physics story for Report 2 is:
-  1. chebyshev runs STABLE production NVE MD at every system size (this figure):
-     the conserved quantity is flat to ~uHa/atom over 100 ps for N=64..512.
-  2. chebyshev reproduces master's energies/forces to ~1e-11 (the table): the
-     polynomial-kernel optimisation did not perturb the physics.
-
-NOTE: master's N>=128 production .ener on disk is STALE (May, generated from the
-pre-fix equilibration snapshots) and is deliberately NOT plotted -- equivalence
-is established by the single-point/force agreement instead (see equivalence CSV).
-
-Usage:
-  python3 plot_nve_stability.py
-  python3 plot_nve_stability.py --prod-root <...>/results/figS4/production
-"""
+Master's N>=128 production .ener on disk is stale (pre-fix equilibration) and is
+not plotted; equivalence comes from the single-point/force agreement CSV."""
 import argparse
 import glob
 import os
@@ -47,7 +34,7 @@ plt.rcParams.update({
 
 ATOMS_PER_MOL = 3
 HA_TO_UHA = 1.0e6
-# size -> colour (cool->warm with N), matches a perceptual size ordering
+# size -> colour (cool->warm with N)
 SIZE_STYLE = {
     64:  dict(color=CAMBRIDGE["blue_warm"], label="N=64"),
     128: dict(color=CAMBRIDGE["green"],     label="N=128"),
@@ -56,9 +43,7 @@ SIZE_STYLE = {
     1024: dict(color=CAMBRIDGE["crest_dark"], label="N=1024"),
 }
 
-# Single-point master vs chebyshev agreement (this session's diagnostic,
-# diag/n128_pbc) + the N64 physics_check.  These are constants, not regenerated
-# here, so the table is self-documenting in the report.
+# Constants from diag/n128_pbc single-point + N64 physics_check; not regenerated here.
 EQUIV_ROWS = [
     # system, n_atoms, E_master_Ha, E_cheby_Ha, maxdF_Ha_bohr, source
     ("N64 (cubic)",        192, None, None, 2.56e-13, "physics_check (job 30451382)"),

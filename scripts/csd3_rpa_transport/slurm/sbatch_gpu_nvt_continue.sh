@@ -9,15 +9,10 @@
 #SBATCH --mail-type=ALL
 #SBATCH --output=/home/crm98/cp2k-benchmarks/logs/rpa_gpu_nvt_ext_%j.out
 
-# ROUND 2 P2 stage 1: continue a finished NVT equilibration 95 ps further
-# (step 210000 -> 400000) with RESTART_HISTORY retargeted from 30000 to
-# 40000 steps, yielding 5 NEW independent NVE starting points spaced 20 ps
-# (staged as snapshot_6..10 at steps 240000..400000; snapshot_5 = step
-# 210000 already seeded round-1 seg5, so the first new one sits 30 ps
-# beyond it). The &RESTART checkpoint cadence stays at 30000 for walltime
-# survival. Idempotent: a resume recomputes the remaining budget from
-# STEP_START_VAL and the history retarget is a no-op the second time.
-#
+# ROUND 2 P2 stage 1: continue a finished NVT equil 95 ps (step 210000 -> 400000),
+# RESTART_HISTORY retargeted 30000 -> 40000 to give 5 new NVE starts 20 ps apart
+# (snapshot_6..10 at steps 240000..400000; snapshot_5 = 210000 seeded round-1 seg5).
+# &RESTART checkpoint cadence stays 30000. Idempotent on resume.
 #   sbatch -A mphil-nikiforakis-crm98-sl2-gpu sbatch_gpu_nvt_continue.sh cubic_4m
 set -euo pipefail
 CONC=${1:?usage: sbatch sbatch_gpu_nvt_continue.sh <conc_dir>}

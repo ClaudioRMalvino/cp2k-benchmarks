@@ -23,10 +23,8 @@ if [ -z "$_ch" ] && command -v nvcc >/dev/null 2>&1; then
 fi
 [ -n "$_ch" ] && [ -d "$_ch/lib64" ] && export LD_LIBRARY_PATH="$_ch/lib64:${LD_LIBRARY_PATH:-}"
 
-# The binary links MKL 2020.4 through its GNU (gf/gnu_thread) bindings plus
-# scalapack/blacs_openmpi (paths from the build log, job 32427234); the amp
-# module stack does not export these, so add them explicitly. libgomp comes
-# from the spack gcc-9.4 runtime the build linked.
+# MKL 2020.4 GNU bindings + scalapack/blacs_openmpi (paths from build log, job
+# 32427234); amp module stack does not export these. libgomp from spack gcc-9.4.
 _mkl=/usr/local/Cluster-Apps/intel/2020.4/compilers_and_libraries_2020.4.304/linux/mkl
 for _d in "$_mkl/lib/intel64" "$_mkl/lib/intel64_lin" \
   /usr/local/software/spack/spack-rhel8-20210927/opt/spack/linux-centos8-zen3/gcc-11.2.0/gcc-9.4.0-72sgv5z3s2sluudvrz5eefoxh6oalq6v/lib64; do

@@ -38,10 +38,9 @@ plt.rcParams.update({
     "pdf.fonttype": 42, "ps.fonttype": 42,
 })
 W_TEXT = 6.3
-# master = neutral slate, native-spline = Cambridge warm blue, chebyshev = Cambridge purple
 C = {"master": CAM["slate_3"], "native-spline": CAM["blue_warm"], "chebyshev": CAM["purple"]}
 M = {"master": "o", "native-spline": "^", "chebyshev": "D"}
-# Full branch names in legends, as in thesis_figures.py BRANCH_STYLE.
+# full branch names per thesis_figures.py BRANCH_STYLE
 LBL = {"master": "master", "native-spline": "feature/nnp-native-spline",
        "chebyshev": "feature/nnp-chebyshev"}
 
@@ -82,7 +81,7 @@ ns_cores    = np.array([1, 2, 4, 8, 16, 32, 64, 76])
 ns_speedup  = np.array([1.000, 1.754, 3.175, 6.191, 11.983, 20.922, 31.886, 18.832])
 ns_eff      = np.array([100.0, 87.7, 79.4, 77.4, 74.9, 65.4, 49.8, 24.8])
 
-# ===== FIG 1: hybrid decomposition sweep, t/step, N=1024 (headline) =====
+# ===== FIG 1: hybrid sweep, N=1024 =====
 fig, ax = plt.subplots(figsize=(W_TEXT, 4.4))
 for b in ("master", "native-spline", "chebyshev"):
     ax.plot(x, tps_1024[b], M[b] + "-", color=C[b], label=LBL[b])
@@ -107,7 +106,6 @@ ax.set_xlabel(r"Time per MD step (s) $\longleftarrow$ faster")
 ax.set_ylabel(r"Aggregate node memory (MiB) $\longleftarrow$ lower")
 ax.set_title("Speed vs node memory, 1024 H$_2$O, 1 node")
 ax.grid(True, which="both")
-# Thesis-style series legend: figure-level, top-centre, frameless.
 fig.legend(loc="upper center", bbox_to_anchor=(0.5, 1.00), ncol=3,
            frameon=False, fontsize=10.5, columnspacing=1.2,
            handlelength=2.0, handletextpad=0.5)
@@ -124,14 +122,13 @@ ax.set_xlabel("OpenMP threads (1 MPI rank)")
 ax.set_ylabel(r"Speedup vs 1 thread")
 ax.set_title("Chebyshev centre-level OpenMP scaling, 1024 H$_2$O")
 ax.grid(True)
-# Thesis-style series legend: figure-level, top-centre, frameless.
 fig.legend(loc="upper center", bbox_to_anchor=(0.5, 1.00), ncol=2,
            frameon=False, fontsize=11, columnspacing=1.6,
            handlelength=2.2, handletextpad=0.5)
 fig.tight_layout(rect=[0, 0, 1, 0.91])
 save(fig, "fig3_cheby_omp_scaling")
 
-# ===== FIG 4: speedup vs master bar chart (pure MPI 76x1, both sizes) =====
+# ===== FIG 4: speedup vs master bars (pure MPI 76x1) =====
 fig, ax = plt.subplots(figsize=(W_TEXT, 4.4))
 sizes = [r"$N=1024$" "\n" r"(76$\times$1)", r"$N=4096$" "\n" r"(76$\times$1)"]
 xb = np.arange(len(sizes)); w = 0.36

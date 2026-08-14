@@ -1,34 +1,23 @@
 #!/usr/bin/env bash
-# CSD3 / Peta4-IceLake NNP benchmark driver (Report 2 scope):
-# upstream master vs feature/nnp-chebyshev.
-#
-# Runs, on one exclusive node:
-#   1. size scaling   (full node, N = 64..4096)        both binaries
-#   2. strong scaling (N = 1024, cores 1..76)          both binaries
-#   3. OMP thread scaling (1 rank, threads 1..16)      chebyshev only
-#      (master's NNP path is pure-MPI; threads would idle)
-#
-# Binaries are NOT built here: they come from the provenance-stamped
-# snapshot cache (see PROVENANCE.txt next to each cp2k.psmp).  Rebuild +
-# re-snapshot deliberately stays a manual, user-driven step so a queued
-# benchmark can never silently measure a different binary.
+# CSD3 Peta4-IceLake NNP driver (Report 2): master vs feature/nnp-chebyshev.
+# One node: size scaling (N=64..4096), strong scaling (N=1024, 1..76 cores),
+# OMP thread scaling (chebyshev only; master's NNP path is pure-MPI).
+# Binaries come from the provenance-stamped snapshot cache (PROVENANCE.txt); rebuild/re-snapshot is deliberately manual.
 
 #SBATCH -J NNP_scaling
 #SBATCH -A NIKIFORAKIS-CSC-FUNDS-SL3-CPU
 #SBATCH -p icelake
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=76
-# 8 h: size scaling ~1.5 h + core scaling ~3.5 h (the N=1024 1-core points
-# alone are ~80 min) + OMP scaling ~1 h.  3 h was not enough (job 30352037).
+# 8 h: size ~1.5 h + core ~3.5 h (N=1024 1-core points ~80 min) + OMP ~1 h; 3 h was not enough (job 30352037).
 #SBATCH --time=08:00:00
 #SBATCH --mail-type=NONE
 #SBATCH --output=/home/crm98/cp2k-benchmarks/logs/NNP_scaling_%j.out
 
 mkdir -p /home/crm98/cp2k-benchmarks/logs/
 
-# rhel8/default-icl alone gives compilers + MPI but NOT Intel MKL; cp2k.psmp
-# loads libmkl_intel_thread.so.2 dynamically at startup, so the MKL module
-# is mandatory or every srun exits 127.
+# default-icl lacks MKL; cp2k.psmp loads libmkl_intel_thread.so.2 at startup,
+# so the MKL module is mandatory (else every srun exits 127).
 . /etc/profile.d/modules.sh
 module purge
 module load rhel8/default-icl

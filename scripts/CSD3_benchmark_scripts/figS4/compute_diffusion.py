@@ -1,12 +1,8 @@
 #!/usr/bin/env python3
-"""Self-diffusion coefficient from a CP2K MD position trajectory with
-Yeh-Hummer finite-size correction (Fig. S4 D of Morawietz et al., PNAS 113
-(2016) 8368).
-
-For non-cubic tiled cells (128/256/1024) the Yeh-Hummer L is taken as V^(1/3);
-xi=2.837297 is strictly the cubic value, so D_0 at those sizes carries a small
-box-shape approximation.
-"""
+"""Self-diffusion from a CP2K position trajectory with Yeh-Hummer finite-size
+correction (Morawietz et al., PNAS 113 (2016) 8368, Fig. S4 D).
+Non-cubic tiled cells (128/256/1024): L = V^(1/3); xi=2.837297 is the cubic
+value, so D_0 at those sizes carries a small box-shape approximation."""
 import argparse
 import re
 import sys

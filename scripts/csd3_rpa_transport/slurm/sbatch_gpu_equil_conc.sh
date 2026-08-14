@@ -9,12 +9,10 @@
 #SBATCH --mail-type=ALL
 #SBATCH --output=/home/crm98/cp2k-benchmarks/logs/rpa_gpu_equil_%j.out
 
-# GPU-track equilibration of one concentration's cube3 cell: same protocol
-# (30 ps CSVR + 5 snapshots @15 ps = 210k steps) via the same run_equil.sh,
-# but on one A100 (USE_GPU ON, 1 NNP rank on the device + 3 CPU SPME ranks)
-# and into the separate runs_gpu/ tree so CPU and GPU runs never collide.
-# Account at submit: sbatch -A <SL3-GPU acct> sbatch_gpu_equil_conc.sh cubic_1M
-# Adjust --time at submit once the smoke's measured s/step is known.
+# GPU-track equilibration of one concentration's cube3 cell via run_equil.sh
+# (30 ps CSVR + 5 snapshots @15 ps = 210k steps) on one A100 (1 NNP rank on
+# device + 3 CPU SPME ranks), into runs_gpu/ so CPU and GPU runs never collide.
+# Submit: sbatch -A <SL3-GPU acct> <this> cubic_1M; adjust --time from smoke s/step.
 set -euo pipefail
 CONC=${1:?usage: sbatch sbatch_gpu_equil_conc.sh <conc_dir e.g. cubic_1M>}
 ADIR=/home/crm98/cp2k-benchmarks/scripts/csd3_nacl_mp2_anchor

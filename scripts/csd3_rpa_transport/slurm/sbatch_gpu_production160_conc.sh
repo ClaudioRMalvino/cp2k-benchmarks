@@ -9,12 +9,9 @@
 #SBATCH --mail-type=ALL
 #SBATCH --output=/home/crm98/cp2k-benchmarks/logs/rpa_gpu_p160_%A_%a.out
 
-# ROUND 2 P2 stage 2: one FRESH 160 ps NVE segment per array task on one
-# A100, from the round-2 NVT snapshots (snapshot_6..10). ~15.5 h at healthy
-# pace vs the 12 h wall, so the resume twin is expected to finish the last
-# ~40 ps via the capped-STEPS checkpoint logic (that is the plan, not an
-# accident - 12 h primaries backfill far better than 17 h one-shots).
-#
+# ROUND 2 P2 stage 2: one FRESH 160 ps NVE segment per array task on one A100,
+# from round-2 NVT snapshots (snapshot_6..10). ~15.5 h at healthy pace vs 12 h wall:
+# resume twin finishes the last ~40 ps via capped-STEPS (12 h jobs backfill better).
 #   p=$(sbatch --parsable -A nikiforakis-csc-funds-sl3-gpu --array=6-10 \
 #         --dependency=afterok:<nvt_job> sbatch_gpu_production160_conc.sh cubic_4m)
 #   sbatch -A nikiforakis-csc-funds-sl3-gpu --array=6-10 --dependency=afterany:$p \

@@ -1,19 +1,8 @@
 #!/usr/bin/env bash
-# Head-to-head AXIS 3: OpenMP THREAD scaling — Dhruv's linked-cell NNP
-# (pr/nnp-cpu-cell-list) vs my feature/nnp-mace. Single MPI rank, thread count
-# swept 1 -> 76, fixed system size. This isolates the OpenMP implementations
-# (his centre-level threading vs mine) with NO MPI in the mix, so it directly
-# answers "is his OMP slower than ours?".
-#
-#   * MPI ranks  : 1 (fixed)
-#   * OMP threads: {1,2,4,8,16,19,32,38,76}  (38 = one socket, 76 = both -> the
-#                  >38 points expose cross-NUMA OMP degradation)
-#   * size       : N = 1024 H2O (matches the pure-MPI axis for comparability)
-#   * 100 MD steps, 5 timed reps + 1 discarded warm-up, t/step from qs_mol_dyn_low
-#
-# Both binaries built at the SAME AVX-2 profile + sequential MKL, so the only
-# difference is the NNP source.
-#
+# Head-to-head AXIS 3: OMP thread scaling, Dhruv's linked-cell NNP vs
+# feature/nnp-mace — isolates the two OMP schemes with no MPI. 1 rank, threads
+# {1..76} (38 = one socket; >38 exposes cross-NUMA degradation), N=1024, 100 steps,
+# 5 reps + 1 warm-up. Same AVX-2 + sequential-MKL build for both, so only the NNP source differs.
 #SBATCH -J NNP_dhruv_vs_mace_omp
 #SBATCH -A NIKIFORAKIS-CSC-FUNDS-SL3-CPU
 #SBATCH -p icelake

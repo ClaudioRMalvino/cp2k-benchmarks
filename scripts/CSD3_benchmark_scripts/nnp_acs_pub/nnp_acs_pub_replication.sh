@@ -19,9 +19,7 @@ mkdir -p /home/crm98/cp2k-benchmarks/logs/
 module purge
 source /home/crm98/cp2k-benchmarks/scripts/CSD3_benchmark_scripts/cp2k_CSD3_env.sh
 
-# Per-branch binary cache: each branch has its own cp2k.psmp + lib/ so
-# LD_LIBRARY_PATH cannot pick up another branch's libcp2k.so. Set REBUILD=1 to
-# force rebuilds from the home-clones; otherwise the cache is reused.
+# per-branch binary cache (own cp2k.psmp + lib/) so LD_LIBRARY_PATH cannot cross branches; REBUILD=1 forces rebuild
 BIN_ROOT=/rds/user/$USER/hpc-work/cp2k_binaries/csd3
 mkdir -p "$BIN_ROOT/master/lib"
 mkdir -p "$BIN_ROOT/feature-nnp-native-spline/lib"
@@ -67,8 +65,7 @@ build_branch "feature-nnp-native-spline-omp"   "$CP2K_OPT_REPO"    "feature/nnp-
 
 cp /home/crm98/cp2k_master/tools/toolchain/install/setup "$BIN_ROOT/setup"
 
-# Matching md5sums would mean a build was silently skipped or LD_LIBRARY_PATH
-# crossed branches.
+# matching md5sums => a build was silently skipped or LD_LIBRARY_PATH crossed branches
 echo "=== BINARY VERIFICATION ==="
 md5sum "$BIN_ROOT/master/cp2k.psmp" \
        "$BIN_ROOT/feature-nnp-native-spline/cp2k.psmp" \

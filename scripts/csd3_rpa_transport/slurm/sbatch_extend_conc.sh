@@ -8,30 +8,14 @@
 #SBATCH --mail-type=FAIL
 #SBATCH --output=/home/crm98/cp2k-benchmarks/logs/rpa_ext_%A_%a.out
 
-# ROUND 2, CPU TRACK: extend a completed 80 ps NVE segment to 160 ps on one
-# icelake node. The CPU twin of sbatch_gpu_extend_conc.sh - same EXTEND=1
-# checkpoint logic, same 320k-step target, only the partition, the binary and
-# RUN_ROOT differ (runs/ rather than runs_gpu/).
-#
-# WHY: the 5x80 ps design was sized against the MP2 anchor's kappa error bars,
-# and the diffusion/conductivity-NE/viscosity numbers it produced are solid.
-# kappa_Onsager is not: it scatters 3.0-33.7 S/m across the 4 m CPU segments,
-# which is the signature of a correlation function that has not converged in
-# 80 ps. The 4 m Delta_NE > 0 pairing signal has the same problem - it rests on
-# the GPU track's tighter bars with the CPU track merely consistent. Both need
-# 160 ps.
-#
-# This does NOT replace the queued ampere round-2 jobs (32644668/70/72,
-# 32648051) - it runs alongside them. Extending the CPU segments on CPU keeps
-# each hardware track's trajectory generated end-to-end on one architecture,
-# so the 80 ps hardware cross-check stays clean and upgrades to 160 ps if both
-# tracks land. Continuing a GPU trajectory on CPU would have forfeited that.
-#
-# Every CPU segment is checkpointed at exactly step 160000, so all 15 need the
-# full 160000 additional steps: ~10.9 h at the measured 0.214-0.259 s/step,
-# inside the 12 h QOS wall with ~1 h of margin. The resume twin covers a slow
-# node via the capped-STEPS checkpoint logic in run_production.sh.
-#
+# ROUND 2, CPU TRACK: extend a completed 80 ps NVE segment to 160 ps (320k steps)
+# on one icelake node. CPU twin of sbatch_gpu_extend_conc.sh (same EXTEND=1
+# checkpoint logic; RUN_ROOT runs/ not runs_gpu/).
+# Why: at 80 ps kappa_Onsager scatters 3.0-33.7 S/m across the 4 m CPU segments
+# (unconverged ACF); the 4 m Delta_NE pairing signal has the same problem.
+# Runs alongside the queued ampere round-2 jobs (32644668/70/72, 32648051) so each
+# hardware track stays end-to-end on one architecture (keeps the 80 ps cross-check).
+# +160k steps ~10.9 h at measured 0.214-0.259 s/step; resume twin covers slow nodes.
 #   p=$(sbatch --parsable --array=1-5 sbatch_extend_conc.sh cubic_4m)
 #   sbatch --array=1-5 --dependency=afterany:$p sbatch_extend_conc.sh cubic_4m
 set -euo pipefail

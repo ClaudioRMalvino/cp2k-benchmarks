@@ -1,21 +1,8 @@
 #!/usr/bin/env python3
-"""Fig. S4 (Morawietz et al., PNAS 2016) replication plots for the CP2K NNP
-chebyshev branch.
-
-Consumes the analysis CSVs written by aggregate_figS4.py:
-  figS4_summary.csv                      (eta, D_PBC, D_0, t/step per size)
-  msd_<branch>_N<size>.csv               (lag_ps, msd_mean, msd_sem)
-  running_eta_<branch>_N<size>.csv       (lag_fs, running_eta_mean, sem)
-  acf_<branch>_N<size>.csv               (lag_fs, acf_norm_mean, sem)
-
-Produces three figures the STAGE-3 wrapper expects:
-  figS4_replication.png   D_PBC vs 1/L finite-size scaling -> D_0; eta vs size
-  figS4_accuracy.png      MSD(t) diffusive regime + running eta(t) convergence
-  figS4_performance.png   chebyshev production t/step vs system size
-
-Yeh-Hummer convention matches compute_diffusion.py: L = V^(1/3),
-xi = 2.837297, D_0 = D_PBC + k_B T xi / (6 pi eta L).
-"""
+"""Fig. S4 (Morawietz et al., PNAS 2016) replication plots for the chebyshev branch.
+Reads aggregate_figS4.py CSVs (figS4_summary, msd_*, running_eta_*, acf_*); writes
+figS4_replication / figS4_accuracy / figS4_performance (.png/.pdf).  Yeh-Hummer per
+compute_diffusion.py: L = V^(1/3), xi = 2.837297, D_0 = D_PBC + k_B T xi/(6 pi eta L)."""
 import argparse
 import os
 
@@ -230,12 +217,10 @@ def main():
     ap.add_argument("--analysis-dir", required=True)
     ap.add_argument("--plot-dir", required=True)
     ap.add_argument("--branch", default="feature-nnp-chebyshev")
-    # Defaults are liquid-water EXPERIMENT (298 K): D ~ 0.23 Ang^2/ps,
-    # eta ~ 0.896 mPa.s.  Override with the Morawietz RPBE-vdW model values.
+    # defaults: liquid-water experiment, 298 K
     ap.add_argument("--ref-d0", type=float, default=0.23)
     ap.add_argument("--ref-eta", type=float, default=0.896)
-    # Morawietz et al. 2016 RPBE-vdW NNP reference (Fig S4): D_0 ~ 0.31 Ang^2/ps,
-    # eta ~ 0.66 mPa.s.  This is the value we actually validate against.
+    # Morawietz 2016 RPBE-vdW NNP Fig S4 values -- the validation target
     ap.add_argument("--ref-d0-nnp", type=float, default=0.31)
     ap.add_argument("--ref-eta-nnp", type=float, default=0.66)
     args = ap.parse_args()

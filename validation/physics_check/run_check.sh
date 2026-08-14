@@ -1,15 +1,7 @@
 #!/usr/bin/env bash
-# Cheap physics sanity check for feature/nnp-chebyshev vs master.
-#
-#   Test 1 (seconds):  single-point energy + forces, master vs branch.
-#                      Differences should be ~1e-7 a.u. or below (the spline
-#                      truncation error of MASTER). Anything >1e-5 = bug.
-#   Test 2 (minutes):  2 ps NVE on 64 waters with EACH binary.
-#                      Conserved-quantity drift is the sharpest probe of
-#                      energy/force consistency (the clenshaw_d derivatives).
-#                      A kinetic explosion like the Morawietz run shows up
-#                      here within a few hundred steps.
-#
+# Physics sanity check, feature/nnp-chebyshev vs master.
+# Test 1: single-point energy+forces; diff ~1e-7 a.u. (master's spline truncation error), >1e-5 = bug.
+# Test 2: 2 ps NVE on 64 waters per binary; conserved-quantity drift probes the clenshaw_d derivatives.
 # Submit with:  sbatch run_check.sh
 
 #SBATCH -J nnp_physics_check
@@ -38,8 +30,7 @@ export OMP_NUM_THREADS=1
 run_side () {
     local side=$1 exe=$2
     mkdir -p out_$side
-    # CP2K appends to existing .out files; start clean so the parser
-    # never mixes runs.
+    # CP2K appends to existing .out files; start clean so the parser never mixes runs.
     rm -f out_$side/sp_check.out out_$side/nve_drift.out out_$side/nve_drift-1.ener
     cp coord_H2O-64.inc out_$side/
     echo ">>> [$side] single-point energy+forces"

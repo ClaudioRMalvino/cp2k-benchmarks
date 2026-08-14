@@ -13,20 +13,14 @@
 
 mkdir -p /home/crm98/cp2k-benchmarks/logs/
 
-# cp2k_CSD3_env.sh loads the Intel MKL / MPI modules + toolchain 'setup' that
-# the cp2k.psmp binaries link against (missing these caused earlier runs to
-# fail with 'libmkl_intel_thread.so.2: cannot open ...').
+# cp2k_CSD3_env.sh loads the MKL/MPI modules + toolchain setup the binaries link against (without it: libmkl_intel_thread.so.2 load failure).
 . /etc/profile.d/modules.sh
 set +u
 source /home/crm98/cp2k-benchmarks/scripts/CSD3_benchmark_scripts/cp2k_CSD3_env.sh
 set +e   # cp2k_CSD3_env.sh enables `set -e`; MAQAO exit codes handled inline
 
-# LProf attaches to the srun-spawned ranks with ptrace.  The zero-day
-# hardening is being rolled back node-by-node: the June 10 probe worked on
-# cpu-q-206 (ptrace_scope 0) but job 30352216 died on cpu-q-547 with
-# "ptrace cannot attach: Operation not permitted".  Gate on a ptrace
-# self-test so a blocked node costs seconds, not the whole walltime;
-# on failure just resubmit to land on a different node.
+# LProf needs ptrace; the hardening is rolled back node-by-node (probe OK on cpu-q-206,
+# job 30352216 died on cpu-q-547). Self-test first so a blocked node costs seconds; resubmit on failure.
 echo "node: $(hostname)   ptrace_scope: $(cat /proc/sys/kernel/yama/ptrace_scope 2>/dev/null)   perf_event_paranoid: $(cat /proc/sys/kernel/perf_event_paranoid 2>/dev/null)"
 if ! srun --ntasks=1 python3 - <<'PYEOF'
 import ctypes, os, sys, time
@@ -63,8 +57,7 @@ mkdir -p "$XP_ROOT" "$HOME_REPORTS"
 ORIG_LD=${LD_LIBRARY_PATH:-}
 STEPS=${STEPS:-2000}
 
-# Shared dataset across binaries. Per-step trajectory/energy/force I/O is
-# switched OFF so the profile reflects compute (the ACSF kernels), not disk.
+# Shared dataset; per-step trajectory/energy/force I/O OFF so the profile reflects compute (ACSF kernels), not disk.
 echo "==> Building profiling dataset ($STEPS MD steps) in $DATASET"
 mkdir -p "$DATASET"
 export base_inp="$BENCHMARK_ROOT/H2O-64_NNP_MD.inp" \
@@ -103,14 +96,8 @@ run_oneview () {
    fi
 }
 
-# Report 2 scope: three profiles, mirroring Report 1's three-branch layout
-# but for ONE branch under different parallelisation:
-#   1. master            16x1  (pure-MPI baseline)
-#   2. chebyshev         16x1  (pure MPI)
-#   3. chebyshev (omp)    8x2  (OMP threads = 2, same 16 cores)
-# The OMP chebyshev run is intentionally NEVER diffed against master:
-# different parallelisation makes the per-function delta meaningless.  The
-# two comparisons below are each like-for-like (see compare section).
+# Three profiles: master 16x1, chebyshev 16x1 (both pure MPI), chebyshev 8x2 (OMP=2, same 16 cores).
+# The OMP run is never diffed against master: different parallelisation makes per-function deltas meaningless.
 run_oneview master                 cp2k_master-config.json
 run_oneview feature-nnp-chebyshev  cp2k_chebyshev-config.json
 XP_CHEBY_OMP="$XP_ROOT/xp_feature-nnp-chebyshev-omp"
@@ -127,14 +114,9 @@ else
 fi
 export LD_LIBRARY_PATH="$ORIG_LD"
 
-# Two like-for-like comparisons.  NEITHER diffs the OMP run against master.
-#   1. BRANCH    : master 16x1 vs chebyshev 16x1 -- both pure MPI (OMP=1),
-#                  identical NNP symbol names, so MAQAO lines the kernels up
-#                  directly.  This is the "is chebyshev faster than master"
-#                  story (the one that showed 1.42x slower pre-rework).
-#   2. THREADING : chebyshev 16x1 (pure MPI) vs chebyshev 8x2 (OMP=2) -- ONE
-#                  branch, same 16 cores, two parallelisation strategies.
-#                  Shows what the OMP layer costs/saves vs pure MPI.
+# Two like-for-like comparisons (neither diffs OMP against master):
+#   1. BRANCH: master vs chebyshev, both 16x1 pure MPI - identical symbols (showed 1.42x slower pre-rework)
+#   2. THREADING: chebyshev 16x1 vs 8x2 - one branch, same 16 cores
 echo
 echo "=== MAQAO compare 1/2 (BRANCH): master 16x1  vs  chebyshev 16x1 (both pure MPI) ==="
 if "$MAQAO" oneview --compare-reports \

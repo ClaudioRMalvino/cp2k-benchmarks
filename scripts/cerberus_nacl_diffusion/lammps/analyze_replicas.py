@@ -1,17 +1,12 @@
 #!/usr/bin/env python3
 """Seed-replica analysis of the Madrid-2019 NaCl(aq) finite-size study.
 
-Reads the multi-time-origin MSDs (.msdmo) from the 4-box x 5-seed replica
-array, fits D per species per replica, and does two Yeh-Hummer treatments:
-
-  free fit    : slope and intercept fitted per species (water should be clean;
-                ions historically too noisy for a meaningful slope)
-  shared slope: the YH correction k_B T xi/(6 pi eta L) contains no property
-                of the diffusing species, so all species share the water slope;
-                only the ion intercepts D_0 are fitted.
-
-Error bars are standard errors over the 5 independent seeds -- real,
-independent-sample errors, unlike the single-origin window scatter.
+Reads the multi-origin MSDs (.msdmo) of the 4-box x 5-seed replica array, fits
+D per species per replica, then two Yeh-Hummer treatments: free fit (slope +
+intercept per species; ions too noisy for a meaningful slope) and shared slope
+(the YH correction kB T xi/(6 pi eta L) is species-independent, so ions share
+the water slope and only their intercepts D_0 are fitted).
+Error bars = SEM over the 5 independent seeds.
 """
 import glob
 import os

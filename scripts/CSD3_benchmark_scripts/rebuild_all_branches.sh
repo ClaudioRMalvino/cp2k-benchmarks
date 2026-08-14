@@ -1,8 +1,6 @@
 #!/bin/bash
-#! Rebuild all three CP2K branches with -g -xCORE-AVX512.
-#! Caches each binary into $BIN_ROOT immediately after the build so the master
-#! and optimized builds don't trample each other's $INSTALL_DIR (both scripts
-#! write to /home/crm98/cp2k_optimized/install).
+#! Rebuild all three CP2K branches with -g -xCORE-AVX512 and cache each binary
+#! into $BIN_ROOT (master and optimized builds both write to /home/crm98/cp2k_optimized/install).
 
 set -e
 exec 2>&1

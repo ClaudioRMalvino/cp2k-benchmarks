@@ -1,14 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# STAGE 1 - NVT equilibration of the NaCl(aq) cells on cerberus.
-# Mirrors scripts/CSD3_benchmark_scripts/figS4/run_nnp_figS4_equil.sh
-# (30 ps equilibration + 5 restart snapshots 15 ps apart, shared NVE
-# starting points) but runs directly with mpirun on the cerberus node.
-#
-# Usage:   ./run_equil.sh
-# Env:     MODEL=revPBE-D3   CELLS="111 211 221 222"   TOTAL_RANKS=48
-#          SKIP_DONE=1 (skip cells whose snapshots already exist)
+# STAGE 1 - NVT equilibration of the NaCl(aq) cells on cerberus (mirrors
+# figS4/run_nnp_figS4_equil.sh): 30 ps equil + 5 restart snapshots 15 ps apart
+# (shared NVE starting points), run directly with mpirun.
+# Usage: ./run_equil.sh   Env: MODEL CELLS TOTAL_RANKS SKIP_DONE
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 TEMPLATE="$SCRIPT_DIR/nacl_diffusion_template.inp"
@@ -48,9 +44,8 @@ MODEL_DIR="$NACL_REPO/models/$MODEL/final_model"
 WORK="$RUN_ROOT/$MODEL/np${N_PAIRS}"
 mkdir -p "$WORK"
 CUBE_DIR="$RUN_ROOT/$MODEL/cubic_1M"
-# tiled base cell is only needed for the digit-style cells (111/211/...);
-# cubeN cells use a pre-built full cubic cell, so skip the base build (and the
-# make_base_cell water frame, which some models e.g. MP2 do not ship)
+# tiled base cell only for digit-style cells (111/211/...); cubeN cells use a
+# pre-built full cubic cell (make_base_cell water frame absent for e.g. MP2)
 COORD="$WORK/base_cell.xyz"
 if [[ " $CELLS " == *[0-9][0-9][0-9]* ]] && [ ! -f "$COORD" ]; then
   PYTHON="${PYTHON:-${SCRATCH_ROOT}/${SCRATCH_USER}/pyenv/bin/python3}"
@@ -99,8 +94,7 @@ for cell in $CELLS; do
       -e "s|__FISTRANKS__|$FIST_RANKS|" \
       "$TEMPLATE" > "$rundir/equil.inp"
 
-  # 6 h walltime survival: if a previous attempt was killed mid-run, continue
-  # from its last checkpoint instead of starting over.
+  # walltime survival: continue a killed run from its last checkpoint
   if grep -q "PROGRAM ENDED" "$rundir/equil.out" 2>/dev/null; then
     echo "cell$cell: MD already finished, staging snapshots"
   else

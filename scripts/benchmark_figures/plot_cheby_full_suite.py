@@ -1,11 +1,8 @@
 #!/usr/bin/env python3
 """Complete chebyshev benchmark figure suite (size / multi-node / core scaling).
-Sources (all CSD3 icelake, H2O-N NNP MD, 76 cores/node):
-  size scaling : chebyshev/master 76x1 (jobs 20-06 / 10-06); native-spline 76x1 (15-05)
-  core scaling : chebyshev + master SAME JOB 30565007 (20-06); native-spline job 30901621
-  multi-node   : chebyshev + master SAME JOB 30565008 (14-06)
-Styled to match scripts/benchmark_figures/thesis_figures.py (Cambridge palette, serif, grid choices).
-"""
+CSD3 icelake, H2O-N NNP MD, 76 cores/node.  Size: cheby/master 76x1 (jobs 20-06 /
+10-06), native-spline (15-05); core: cheby+master same job 30565007, native-spline
+30901621; multi-node: cheby+master same job 30565008.  Styled per thesis_figures.py."""
 import os
 import numpy as np
 import matplotlib
@@ -54,7 +51,6 @@ def branch_handles(branches, ls="-"):
 
 
 def top_legend(fig, handles, ncol, top=0.90):
-    # Thesis-style series legend: single figure-level, top-centre, frameless.
     fig.legend(handles=handles, loc="upper center", bbox_to_anchor=(0.5, 1.00),
                ncol=ncol, frameon=False, fontsize=12, columnspacing=2.0,
                handlelength=2.6, handletextpad=0.6)
@@ -62,7 +58,7 @@ def top_legend(fig, handles, ncol, top=0.90):
 
 
 def panel_letter(ax, letter):
-    # top-left, above the axes, so it never collides with the centred title
+    # above the axes so it clears the centred title
     ax.text(-0.02, 1.07, f"({letter})", transform=ax.transAxes, fontsize=12,
             fontweight="bold", va="bottom", ha="left", color=CAM["slate_4"])
 
@@ -96,7 +92,7 @@ mn = {
            "chebyshev": np.array([0.288730, 0.164613, 0.106697])},
 }
 
-# ===== FIG 5: size scaling (2 panels: t/step + speedup vs master) =====
+# ===== FIG 5: size scaling =====
 fig, (a1, a2) = plt.subplots(1, 2, figsize=(W_TEXT * 1.85, 4.7))
 for b in ("master", "native-spline", "chebyshev"):
     a1.plot(Nsz, sz[b], M[b] + "-", color=C[b])
@@ -117,7 +113,7 @@ a2.grid(True); panel_letter(a2, "b")
 top_legend(fig, branch_handles(("master", "native-spline", "chebyshev")), ncol=3)
 save(fig, "fig5_size_scaling")
 
-# ===== FIG 6: multi-node (t/step + parallel efficiency) =====
+# ===== FIG 6: multi-node =====
 fig, (a1, a2) = plt.subplots(1, 2, figsize=(W_TEXT * 1.85, 4.7))
 for N in (1024, 4096):
     for b in ("master", "chebyshev"):
@@ -147,7 +143,7 @@ mn_handles = [plt.Line2D([0], [0], color=C[b], marker=M[b],
 top_legend(fig, mn_handles, ncol=2, top=0.87)
 save(fig, "fig6_multinode")
 
-# ===== FIG 7: pure-MPI strong scaling (speedup + efficiency), N=1024 =====
+# ===== FIG 7: pure-MPI strong scaling, N=1024 =====
 fig, (a1, a2) = plt.subplots(1, 2, figsize=(W_TEXT * 1.85, 4.7))
 for b in ("master", "native-spline", "chebyshev"):
     a1.plot(cores, cs[b][0] / cs[b], M[b] + "-", color=C[b])

@@ -10,14 +10,9 @@
 #SBATCH --output=/home/crm98/cp2k-benchmarks/logs/rpa_gpu_ext_%A_%a.out
 
 # ROUND 2 P1: extend a completed 80 ps NVE segment to 160 ps on one A100.
-# EXTEND=1 makes run_production.sh continue from the segment's final
-# checkpoint (fail-closed if it is missing - never re-runs from the equil
-# snapshot); the capped-STEPS logic computes the remaining budget, so the
-# 1M overrun segments (125/155 ps banked) top up with only 35/5 ps. CP2K
-# appends pos/stress to the round-1 files; the analyzers monotonic-slice
-# the checkpoint overlap - REFRESH the reduced_traj_e*.npz caches before
-# re-analysis.
-#
+# EXTEND=1: run_production.sh continues from the final checkpoint (fail-closed if
+# missing); capped-STEPS tops up the 1M overrun segments (125/155 ps banked) by 35/5 ps.
+# CP2K appends to round-1 files; REFRESH reduced_traj_e*.npz caches before re-analysis.
 #   p=$(sbatch --parsable -A nikiforakis-csc-funds-sl3-gpu --array=1-5 sbatch_gpu_extend_conc.sh cubic_1M)
 #   sbatch -A nikiforakis-csc-funds-sl3-gpu --array=1-5 --dependency=afterany:$p sbatch_gpu_extend_conc.sh cubic_1M
 set -euo pipefail

@@ -1,14 +1,10 @@
 #!/usr/bin/env python3
 """Yeh-Hummer finite-size plot for NaCl(aq) diffusion (Morawietz-figS4 style).
 
-Reads nacl_summary.csv from aggregate_nacl.py and produces
-nacl_diffusion_replication.png:
-  left panel  - D_PBC vs 1/L per species with linear fits extrapolating to
-                1/L = 0, plus the Yeh-Hummer-corrected D_0 points (which
-                should scatter around a horizontal line if the correction
-                works for every species, since the YH slope
-                -kB*T*xi/(6*pi*eta) is species-independent).
-  right panel - Green-Kubo viscosity vs box size (sanity check).
+Reads nacl_summary.csv from aggregate_nacl.py -> nacl_diffusion_replication.png:
+(a) D_PBC vs 1/L per species with linear fits to 1/L = 0 plus YH-corrected D_0
+points (should sit flat: the YH slope -kB*T*xi/(6*pi*eta) is species-independent);
+(b) Green-Kubo viscosity vs box size (sanity check).
 """
 import argparse
 import csv

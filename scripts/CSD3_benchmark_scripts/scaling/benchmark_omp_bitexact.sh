@@ -1,19 +1,8 @@
 #!/usr/bin/env bash
-# Single-binary benchmark of the bit-exact atom-level OpenMP graft
-# (dhruv-omp-bitexact) on Dhruv's NNP kernel. Runs ONLY the new binary, on the
-# SAME two axes / parameters as the earlier dhruv-vs-mace jobs (31038227 +
-# 31038352), so the CSVs overlay directly onto the existing baselines:
-#   * dhruv-cell-list  (baseline, his fine-grained inner-loop OMP)  -- already measured
-#   * feature-nnp-mace (reference outer-loop OMP)                   -- already measured
-# We do NOT re-run those (unchanged binaries) -> saves node hours.
-#
-# Axis 1 (headline): OMP THREAD scaling, 1 MPI rank, threads {1..76}, N=1024.
-#   -> does the bit-exact outer-loop graft scale where his went flat (~0.8x)?
-# Axis 2: PURE-MPI strong scaling, N=1024, cores {1..76}, 1 OMP.
-#   -> did the per-thread arc-clone / fold refactor cost anything MPI-only?
-# Both: 100 MD steps, 5 timed reps + 1 warm-up, t/step from qs_mol_dyn_low.
-# No thread pinning -> identical conditions to the dhruv-cell-list 0.8x run.
-#
+# Benchmarks ONLY dhruv-omp-bitexact (bit-exact atom-level OMP graft on Dhruv's
+# NNP kernel), same axes/parameters as jobs 31038227 + 31038352 so the CSVs
+# overlay the existing dhruv-cell-list / feature-nnp-mace baselines (not re-run).
+# OMP thread + pure-MPI strong scaling, N=1024, 100 steps, 5 reps + 1 warm-up. No thread pinning — matches the dhruv-cell-list ~0.8x run.
 #SBATCH -J NNP_omp_bitexact
 #SBATCH -A NIKIFORAKIS-CSC-FUNDS-SL3-CPU
 #SBATCH -p icelake

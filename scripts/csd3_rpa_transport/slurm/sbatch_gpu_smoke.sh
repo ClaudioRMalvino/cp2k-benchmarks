@@ -9,23 +9,17 @@
 #SBATCH --mail-type=ALL
 #SBATCH --output=/home/crm98/cp2k-benchmarks/logs/rpa_gpu_smoke_%j.out
 
-# GPU-track smoke for the transport campaign: OUR 1 mol/kg cube3 deck
-# (5064 atoms, 8-net RPA committee MIXED with FIST/SPME, per-step stress)
-# on one A100 with Dhruv's collab/gpu-water-diffusion binary. Verifies the
-# three things his 1008-atom water protocol does not (campaign brief):
-#   1. MIXED force eval runs on this branch at our size,
-#   2. the stress tensor is produced on the GPU path (no stress = no eta),
-#   3. our deck/cell work; record s/step for the cost ladder.
-# Plus the runbook-mandated virial validation: a 20-step USE_GPU ON vs OFF
-# pair through the SAME binary, diffing stress and energies (the GPU virial
-# path is new; expected agreement ~1e-9 relative on energies).
-# Account is passed literally at submit: sbatch -A <gpu-acct> ... (lowercase).
+# GPU-track smoke: our 1 mol/kg cube3 deck (5064 atoms, 8-net RPA committee
+# MIXED with FIST/SPME, per-step stress) on one A100, Dhruv's collab/gpu-water-diffusion
+# binary. Verifies what his 1008-atom water protocol does not: MIXED at our size,
+# stress on the GPU path (no stress = no eta), our deck/cell; records s/step.
+# Plus 20-step USE_GPU ON vs OFF virial diff (expected ~1e-9 rel on energies).
+# Submit: sbatch -A <gpu-acct> ... (lowercase).
 set -uo pipefail
 ADIR=/home/crm98/cp2k-benchmarks/scripts/csd3_nacl_mp2_anchor
 TDIR=/home/crm98/cp2k-benchmarks/scripts/csd3_rpa_transport
 
-# ampere runtime env (modules, BIN, MKL/CUDA/install lib paths) — single
-# source of truth shared with the GPU equil/production wrappers
+# ampere runtime env (modules, BIN, lib paths), shared with GPU equil/production wrappers
 source "$TDIR/env_csd3_gpu.sh"
 
 echo "node: $(hostname)"; nvidia-smi -L 2>/dev/null || echo "(no nvidia-smi)"

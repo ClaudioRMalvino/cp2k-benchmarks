@@ -8,18 +8,12 @@
 #SBATCH --mail-type=ALL
 #SBATCH --output=/home/crm98/cp2k-benchmarks/logs/rpa_smoke_%j.out
 
-# Transport campaign, run 0: smoke test of the campaign engine (Dhruv's
-# PR #5295 binary, dhruv-cell-list) with the campaign model (RPA committee,
-# supervisor decision 2026-07-30 - better dynamics than MP2, identical
-# architecture/cost) on the 1 mol/kg 37.26 A cube3 deck. SL2 = fast queue,
-# tiny cost. Gates every other campaign job (afterok). Verifies:
-#   1. the PR #5295 binary runs the MIXED RPA-committee deck at 5064 atoms,
-#   2. per-step stress file is NONZERO (Green-Kubo viscosity needs it),
-#   3. committee energies + .ener + trajectory streams all land,
-#   4. check_run.py passes on the short run,
-#   5. records s/step -> walltime projections + timings CSV row,
-#   6. prints the step-0 potential energy for the cross-binary check
-#      against the master reference job (same deck, same coordinates).
+# Transport campaign, run 0: smoke of the campaign engine (Dhruv's PR #5295
+# dhruv-cell-list binary) with the RPA committee (supervisor decision 2026-07-30:
+# better dynamics than MP2, identical cost) on the 1 mol/kg 37.26 A cube3 deck.
+# SL2 fast queue; gates every other campaign job (afterok). Checks: MIXED deck at
+# 5064 atoms, NONZERO stress (GK viscosity needs it), committee/ener/traj streams,
+# check_run.py, s/step projections, step-0 E_pot vs master_ref (same coordinates).
 set -euo pipefail
 ADIR=/home/crm98/cp2k-benchmarks/scripts/csd3_nacl_mp2_anchor
 TDIR=/home/crm98/cp2k-benchmarks/scripts/csd3_rpa_transport
@@ -36,14 +30,12 @@ RANKS=$SLURM_NTASKS
 FIST_RANKS=8   # cube3 split-sweep winner from the anchor campaign
 proj="NaCl_${MODEL}_smoke"
 
-# provenance without exec'ing the binary (direct exec aborts in MPI_Init -
-# the PMI gotcha; the binary must only ever be launched via srun)
+# provenance without exec'ing the binary (direct exec aborts in MPI_Init; launch only via srun)
 echo "node: $(hostname)  binary: $BIN  model: $MODEL"
 cat "$BIN_ROOT/$BIN_LABEL/PROVENANCE.txt" 2>/dev/null || true; echo
 mkdir -p "$RUNDIR"; rm -f "$RUNDIR"/smoke.out "$RUNDIR/$proj"*
 
-# energy print every 10 steps (not the template's 100) so check_run.py has
-# enough records on a 200-step run
+# energy print every 10 steps so check_run.py has enough records at 200 steps
 sed -e "s|__PROJECT__|$proj|" \
     -e "s|__STEPS__|$STEPS|" \
     -e "s|__SNAPSTEPS__|100000|" \

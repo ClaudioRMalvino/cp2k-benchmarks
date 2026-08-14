@@ -1,19 +1,12 @@
 #!/usr/bin/env python3
 """Ion-pair association estimate from the seed-averaged Na-Cl g(r) at 1 m.
 
-Two routes, both integrating to the PMF barrier r_b (the CIP/SSIP divide):
-
-  n_CIP = 4 pi rho_Cl  int_0^rb g(r) r^2 dr     direct CIP coordination number
-                                                (= fraction of Na+ with a Cl-
-                                                 contact partner, for n << 1)
-  K_A   = 4 pi N_A     int_0^rb e^{-w/kT} r^2 dr  (L/mol; Bjerrum-style, using
-                                                 the 1 m PMF -- includes
-                                                 screening, so an estimate)
-
-If ions paired ideally (neutral pairs carry no current), the pairing part of
-the Nernst-Einstein deviation would be ~ the paired fraction. Comparing that
-prediction with the measured Na-Cl cross term (fig6) closes the loop between
-the under-paired PMF (fig5) and the transport decomposition.
+Two routes, both integrating to the PMF barrier r_b (CIP/SSIP divide):
+  n_CIP = 4 pi rho_Cl int_0^rb g r^2 dr        (direct CIP coordination number)
+  K_A   = 4 pi N_A int_0^rb e^{-w/kT} r^2 dr   (L/mol, Bjerrum-style estimate)
+Ideal pairing would make the NE deviation ~ the paired fraction; comparing with
+the measured Na-Cl cross term (fig6) links the PMF (fig5) to the transport
+decomposition.
 """
 import glob
 import os

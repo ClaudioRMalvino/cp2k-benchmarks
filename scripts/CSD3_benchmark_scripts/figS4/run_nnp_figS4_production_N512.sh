@@ -7,19 +7,14 @@
 #SBATCH -p icelake
 #SBATCH --nodes=1
 #SBATCH --ntasks=64
-# 64 ranks on purpose, NOT 76: chebyshev core scaling shows 76 ranks is
-# ~20% SLOWER than 64 (0.1245 vs 0.1041 s/step at N=1024) due to the NUMA /
-# memory-bandwidth saturation when both 38-core sockets are filled.
-# 6 h walltime: equil ran 0.0698 s/step at 76 ranks; at 64 (faster) ranks
-# production is ~0.060 s/step => ~3.3 h compute + per-step stress I/O =>
-# ~4-4.5 h projected. The old 4 h was cutting it too close.
+# 64 ranks, NOT 76: 76 is ~20% slower (0.1245 vs 0.1041 s/step at N=1024) from NUMA/bandwidth saturation with both 38-core sockets filled
+# 6 h: equil 0.0698 s/step @76 ranks => ~0.060 @64 => ~3.3 h compute + per-step stress I/O => ~4-4.5 h projected
 #SBATCH --time=06:00:00
 #SBATCH --array=40-44%5
 #SBATCH --mail-type=NONE
 #SBATCH --output=/home/crm98/cp2k-benchmarks/logs/figS4_prod_N512_%A_%a.out
 
-# Source toolchain env BEFORE strict mode: 'setup' references unbound
-# CP_DFLAGS that would trip `set -u`.
+# env before strict mode: 'setup' references unbound CP_DFLAGS (trips set -u)
 . /etc/profile.d/modules.sh
 module purge
 source /home/crm98/cp2k-benchmarks/scripts/CSD3_benchmark_scripts/cp2k_CSD3_env.sh
@@ -49,8 +44,7 @@ esac
 export LD_LIBRARY_PATH="$LIB:${LD_LIBRARY_PATH:-}"
 export OMP_NUM_THREADS=1
 
-# Same rank count for both branches at a given size keeps timing comparable.
-# Smaller sizes use fewer ranks to avoid over-decomposition.
+# same ranks for both branches per size (comparable timing); fewer ranks at small sizes avoids over-decomposition
 declare -A MULT RANKS
 MULT[64]="1 1 1";  MULT[128]="2 1 1"; MULT[256]="2 2 1"
 MULT[512]="2 2 2"; MULT[1024]="4 2 2"

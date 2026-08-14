@@ -2,17 +2,12 @@
 """
 Fit the measured on-the-fly DFT cost ladder and build the full cost table.
 
-Reads results/dft_cost/dft_ladder_timings.csv (measured rungs: 188, 376, 752,
-1504 and 5064 atoms of NaCl(aq) at revPBE-D3, the level the NNP was trained
-to), fits cost per MD step against system size in log-log space, and cross-
-checks that fit against the directly-measured production cell (rung 5).
-
-The output table places that extrapolation alongside the three MEASURED NNP
-rungs (master CP2K, optimised CPU, GPU) and the analytic RI-RPA estimate, and
-converts each into the cost of the round-1 production campaign.
-
-    source ~/.fortran_env/bin/activate
-    python analyze_dft_ladder.py
+Reads results/dft_cost/dft_ladder_timings.csv (rungs 188/376/752/1504/5064 atoms
+of NaCl(aq) at revPBE-D3, the NNP's training level), fits s/step vs N in log-log,
+cross-checks the fit against the directly measured production cell (rung 5), and
+writes dft_cost_summary.csv: that ladder beside the three measured NNP rungs
+(master / optimised CPU / GPU) and the analytic RI-RPA estimate, each converted
+to round-1 campaign cost. Usage: python analyze_dft_ladder.py (fortran_env).
 """
 import csv
 import os
@@ -36,27 +31,22 @@ ICELAKE_TOTAL_RAM_BYTES = 552 * 256_120 * 1024**2
 CELLS = {"cubic_1M": 5064, "cubic_2m": 4952, "cubic_4m": 4748}
 N_PROD = CELLS["cubic_1M"]
 
-# --- measured NNP rungs (this campaign, icelake 1 node / 76 ranks; GPU =
-#     1xA100 + 3 SPME ranks). These are measurements, not estimates. -------
+# measured NNP rungs (icelake 1 node / 76 ranks; GPU = 1xA100 + 3 SPME ranks)
 NNP = {
     "NNP, master CP2K (757bb76a80)": (4.0473, "node"),
     "NNP, optimised CPU (PR #5295)": (0.2554, "node"),
     "NNP, GPU (PR #5295 + nnp_gpu)": (0.1467, "gpu"),
 }
 
-# --- analytic RI-RPA rung ---------------------------------------------------
-# O'Neill's RPA deck: RI-RPA on PBE, cc-TZ + RI_AUX, 20 minimax quadrature
-# points, truncated-Coulomb exact exchange, run on 168-atom cells.
-#   time   scales O(N^4)  (standard RI-RPA)
-#   memory scales O(N^3)  (the (ia|P) three-centre integrals)
-# Both are anchored at the 168-atom training configuration.
+# --- analytic RI-RPA rung: O'Neill's deck (RI-RPA on PBE, cc-TZ + RI_AUX, 20
+# minimax points, truncated-Coulomb HFX, 168-atom cells). time O(N^4), memory
+# O(N^3) ((ia|P) integrals); both anchored at the 168-atom training config.
 RPA_REF_ATOMS = 168
 RPA_TIME_EXPONENT = 4.0
 RPA_MEM_EXPONENT = 3.0
 # RI integral count at the 168-atom reference: N_occ * N_virt * N_aux
 RPA_REF_INTEGRALS = 224 * 3024 * 11_000        # ~7.4e9 doubles ~ 60 GB
-# RI-RPA single point vs a GGA SCF on the same 168-atom cell (order of
-# magnitude; 20 quadrature points each requiring the full RI contraction)
+# RI-RPA single point vs a GGA SCF on the same 168-atom cell (order of magnitude)
 RPA_OVER_DFT_AT_REF = 300.0
 
 

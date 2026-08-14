@@ -11,9 +11,7 @@ CORES_PER_NODE=76
 BIN_ROOT=/rds/user/$USER/hpc-work/cp2k_binaries/csd3
 BENCHMARK_ROOT=/home/crm98/cp2k-benchmarks
 
-# Strict mode relaxed across the sourcing: cp2k_CSD3_env.sh pulls in the
-# toolchain 'setup', which references unbound vars (CP_DFLAGS) that would
-# otherwise trip `set -u`.
+# set -u relaxed across sourcing: the toolchain 'setup' references unbound CP_DFLAGS.
 . /etc/profile.d/modules.sh
 set +u
 source /home/crm98/cp2k-benchmarks/scripts/CSD3_benchmark_scripts/cp2k_CSD3_env.sh
@@ -21,8 +19,7 @@ source "$BIN_ROOT/setup"
 set -u
 
 TARGET_BRANCH=${1:-master}
-# Seconds + job id prevents OUTDIR collisions when two jobs launch in the
-# same minute and would otherwise overwrite each other's CSVs.
+# Seconds + job id prevent OUTDIR collisions between jobs launched the same minute.
 TIMESTAMP=$(date +%d-%m_%H-%M-%S)${SLURM_JOB_ID:+_${SLURM_JOB_ID}}
 
 case "$TARGET_BRANCH" in
@@ -76,16 +73,12 @@ case "$TARGET_BRANCH" in
       ;;
 esac
 
-# Optional override: point at an arbitrary cp2k.psmp (e.g. install/bin) without
-# touching $BIN_ROOT.  Set CP2K_EXE_OVERRIDE (and optionally INSTALL_LIB_OVERRIDE)
-# in the outer SLURM driver.
+# CP2K_EXE_OVERRIDE / INSTALL_LIB_OVERRIDE: benchmark an arbitrary cp2k.psmp without touching $BIN_ROOT.
 if [[ -n "${CP2K_EXE_OVERRIDE:-}" ]]; then
    CP2K_EXE="$CP2K_EXE_OVERRIDE"
    [[ -n "${INSTALL_LIB_OVERRIDE:-}" ]] && INSTALL_LIB="$INSTALL_LIB_OVERRIDE"
 fi
-# Label / data-root / results-dir overrides (mirror run_nnp_omp_thread_scaling),
-# so a one-off binary (e.g. dhruv-omp-bitexact from a worktree) can be benchmarked
-# without adding a case branch.
+# Label/data-root/results-dir overrides: one-off binaries need no new case branch.
 [[ -n "${LABEL_OVERRIDE:-}" ]] && LABEL="$LABEL_OVERRIDE"
 [[ -n "${PROJECT_ROOT_OVERRIDE:-}" ]] && PROJECT_ROOT="$PROJECT_ROOT_OVERRIDE"
 [[ -n "${OUTDIR_PARENT_OVERRIDE:-}" ]] && OUTDIR_PARENT="$OUTDIR_PARENT_OVERRIDE"

@@ -1,20 +1,12 @@
 #!/usr/bin/env python3
 """Paper/supervisor figures for the Madrid-2019 NaCl(aq) transport study.
 
-Reads only finished analysis products + raw .rdf/.vacf files:
-  replicas/analysis/replica_D.npz      (MSD self-diffusion, Yeh-Hummer)
-  vacf_replica/L*_s*/*.vacf            (Green-Kubo D, corrected campaign)
-  conductivity/analysis/kappa_vs_c.npz (Onsager/NE conductivity, 50 runs)
-  conductivity/m*/L*_s*/*.rdf          (Na-Cl g(r) -> PMF)
-
-Outputs PNG (400 dpi, slides) + PDF (vector, paper) per figure into --out.
-
-Experimental anchors (298.15 K), pinned 2026-07-27 from the primary sources:
-kappa at m = 0.25-4 from Chambers, Stokes & Stokes 1956 Table II (the actual
-source behind the Blazquez 2023 compilation = their ref 143); Hittorf t_Na
-from Smits & Duyvis 1966 (their eq 3 + Table I activities). Fig. 4b also
-shows our t_Na transformed to the solvent (Hittorf) frame so the comparison
-is like-for-like (cf. Shao et al. 2022, "Mind the Reference-Frame Gap").
+Reads finished analysis products + raw files: replicas/analysis/replica_D.npz,
+vacf_replica/L*_s*/*.vacf, conductivity/analysis/kappa_vs_c.npz,
+conductivity/m*/L*_s*/*.rdf. Writes PNG (400 dpi) + PDF per figure into --out.
+Experimental anchors (298.15 K) pinned 2026-07-27 from primary sources: kappa
+Chambers, Stokes & Stokes 1956 Table II; Hittorf t_Na Smits & Duyvis 1966.
+Fig. 4b shows t_Na in the solvent (Hittorf) frame (cf. Shao et al. 2022).
 """
 import argparse
 import glob
@@ -39,8 +31,7 @@ ROOT = next(p for p in (
 KT_KCAL = 0.0019872041 * 298.15          # k_B T in kcal/mol at 298.15 K
 
 # Cambridge palette for non-species curves (cf. plots/ CAM dict); two-series
-# figures pair cambridge blue with slate_3 (slate_4 #232830 reads as black
-# at line weight, so the visible mid slate is used for dark series)
+# figures pair cambridge blue with mid slate_3 (slate_4 reads as black)
 CAM_BLUE, SLATE3 = "#00BDB6", "#546072"
 C_NA, C_CL, C_O = CAM_BLUE, "#4DB78C", "#CD3572"   # slots 1-3 (non-species curves)
 INK, INK2, MUTED, GRID = "#0b0b0b", "#52514e", "#898781", "#e1e0d9"
@@ -50,13 +41,10 @@ SPECIES_COLOR = {"Na": "#5366E0", "Cl": "#4DB78C", "O": "#CD3572"}
 MOL_TO_M = {0.25: 0.231, 0.5: 0.491, 1.0: 0.960, 2.0: 1.915, 4.0: 3.666}  # sim c
 
 # --- pinned experimental anchors, 298.15 K ---------------------------------
-# kappa: Chambers, Stokes & Stokes 1956 (J. Phys. Chem. 60, 985), Table II
-# equivalent conductances Lambda(c) (Int-ohm units, stated error <=0.03%);
-# kappa[S/m] = Lambda*c/10. c(m) from experimental densities 997.04/1036.21/
-# 1072.27/1136.91 kg/m^3 at m=0/1/2/4 (expt column, Blazquez 2023 Table 1;
-# m=0.25/0.5 interpolated, <0.1% error in c). Blazquez's own m=2/4 quotes
-# (14.49/22.04) reproduce exactly; their m=1 quote (8.48) sits 0.7% above
-# this like-for-like conversion (8.42).
+# kappa: Chambers, Stokes & Stokes 1956 (J. Phys. Chem. 60, 985) Table II
+# Lambda(c), error <=0.03%; kappa[S/m] = Lambda*c/10, c(m) from expt densities
+# (Blazquez 2023 Table 1; m=0.25/0.5 interpolated, <0.1%). Blazquez m=2/4
+# quotes reproduce exactly; their m=1 (8.48) sits 0.7% above this conversion (8.42).
 EXPT_C     = {0.25: 0.248, 0.5: 0.494, 1.0: 0.979, 2.0: 1.920, 4.0: 3.686}
 EXPT_KAPPA = {0.25: 2.48, 0.5: 4.63, 1.0: 8.42, 2.0: 14.50, 4.0: 22.04}
 
@@ -333,10 +321,8 @@ def fig_tna(out, kap):
     mols = np.array(sorted(set(mol)))
     c = np.array([MOL_TO_M[m] for m in mols])
     _, tNa, tNa_s = pooled(mol, kap["runs_tNa"])
-    # barycentric -> Hittorf (solvent frame), per run. The solvent Onsager
-    # row follows from the mass constraint sum_i M_i L^ij = 0 (Fong 2020
-    # Eq. 130), so with collective slopes s_ij (conductivity prefactors
-    # cancel) and molality in mol/kg, masses in kg/mol:
+    # barycentric -> Hittorf (solvent frame), per run, via the mass constraint
+    # sum_i M_i L^ij = 0 (Fong 2020 Eq. 130):
     #   t^H = t^b + m*[M_Na(s++ - s+-) - M_Cl(s-- - s+-)] / s_sum
     # cf. Shao et al. 2022 (JACS 144, 7583) on the reference-frame gap.
     sNN, sCC, sNC = kap["runs_sNaNa"], kap["runs_sClCl"], kap["runs_sNaCl"]

@@ -1,17 +1,8 @@
 #!/usr/bin/env bash
-# HEAD-TO-HEAD: Dhruv's pristine PR head (8be1dfa50f) vs the SAME head with
-# the bit-exact atom-level OpenMP graft. Both binaries come from the SAME
-# configured CMake build tree (identical flags -O3 -xCORE-AVX2
-# -fp-model=precise -qopenmp, identical toolchain) and run on the SAME node
-# in the SAME job, so the ONLY variable is the graft.
-#
-#   Leg 1 (accuracy): step-0/1 NNP forces on the N=1024 benchmark system,
-#          baseline serial vs graft OMP=1 and vs graft OMP=76.
-#          Claim to support: bit-identical (max abs diff 0.0).
-#   Leg 2: OMP thread scaling, 1 MPI rank, threads {1..76}, N=1024, both.
-#   Leg 3: pure-MPI strong scaling, OMP=1, cores {1..76}, N=1024, both.
-#   100 MD steps, 5 timed reps + 1 warm-up, t/step from qs_mol_dyn_low.
-#
+# Dhruv's pristine PR head (8be1dfa50f) vs the same head + bit-exact atom-level
+# OMP graft: same CMake tree/flags (-O3 -xCORE-AVX2 -fp-model=precise -qopenmp),
+# same node, same job — only variable is the graft. Leg 1: step-0/1 force accuracy
+# (claim: bit-identical). Legs 2/3: OMP thread + pure-MPI strong scaling, N=1024, 100 steps, 5 reps + 1 warm-up.
 #SBATCH -J NNP_omp_h2h
 #SBATCH -A NIKIFORAKIS-CSC-FUNDS-SL3-CPU
 #SBATCH -p icelake

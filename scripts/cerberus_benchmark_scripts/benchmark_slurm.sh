@@ -12,11 +12,8 @@
 
 mkdir -p /home/raid/crm98/cp2k-benchmarks/logs/
 
-# Per-branch binary cache: each branch has its own bin + lib so the run scripts
-# can point LD_LIBRARY_PATH at $BIN_ROOT/<branch>/lib without picking up another
-# branch's libcp2k.so from the scratch install tree (which gets overwritten on
-# the next rebuild). Must live on /local/data/public, not /home: libcp2k.so.*
-# is hundreds of MB per branch and exceeds the home quota.
+# Per-branch bin+lib cache so LD_LIBRARY_PATH never picks up another branch's libcp2k.so.
+# On /local/data/public, not /home: libcp2k.so.* is hundreds of MB per branch (home quota).
 BIN_ROOT=/local/data/public/crm98/cp2k_binaries/phy-cerberus
 mkdir -p "$BIN_ROOT/master/lib"
 mkdir -p "$BIN_ROOT/feature-nnp-verlet-cells/lib"
@@ -25,8 +22,7 @@ mkdir -p "$BIN_ROOT/feature-nnp-native-spline-omp/lib"
 
 CP2K_REPO=/home/raid/crm98/cp2k
 
-# Master is built from a dedicated upstream clone into 'cp2k-buildtree' so it
-# doesn't collide with the feature builds, which use a different scratch tree.
+# Master builds from a dedicated upstream clone ('cp2k-buildtree'), separate from the feature scratch tree.
 cd /home/raid/crm98/cp2k-benchmarks/cp2k_master/cerberus_build_scripts/
 ./cp2k_cerberus_master_build.sh -j 32
 MASTER_INSTALL=/local/data/public/crm98/cp2k-buildtree/install
@@ -37,8 +33,7 @@ cp -P "$MASTER_INSTALL/lib"/libcp2k.so*    "$BIN_ROOT/master/lib/"
 cp /local/data/public/crm98/original_cp2k/tools/toolchain/install/setup \
    "$BIN_ROOT/setup"
 
-# rebuild_cp2k.sh rsyncs /home/raid/crm98/cp2k -> /local/data/public/crm98/original_cp2k,
-# so all feature branches share the same scratch source AND install/{bin,lib}.
+# rebuild_cp2k.sh rsyncs /home/raid/crm98/cp2k -> /local/data/public/crm98/original_cp2k; feature branches share that scratch source and install/{bin,lib}.
 git -C "$CP2K_REPO" stash
 git -C "$CP2K_REPO" checkout feature/nnp-verlet-cells
 cd /home/raid/crm98/cp2k-benchmarks/cp2k_optimized/cerberus_build_scripts/
@@ -64,8 +59,7 @@ cp     "$FEATURE_INSTALL/bin/cp2k.psmp"     "$BIN_ROOT/feature-nnp-native-spline
 cp -P "$FEATURE_INSTALL/lib"/libcp2k.so*    "$BIN_ROOT/feature-nnp-native-spline-omp/lib/"
 git -C "$CP2K_REPO" stash pop
 
-# Matching hashes would mean a rebuild was skipped or the wrong source tree
-# was used.
+# Matching hashes would mean a skipped rebuild or wrong source tree.
 echo "=== BINARY VERIFICATION ==="
 echo "-- cp2k.psmp md5sums --"
 md5sum "$BIN_ROOT/master/cp2k.psmp" \

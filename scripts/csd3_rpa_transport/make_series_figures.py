@@ -1,38 +1,15 @@
 #!/usr/bin/env python3
-"""RPA concentration-series pooling + report figures (fig8-fig14).
+"""RPA concentration-series pooling + report figures (fig8-fig15).
 
-Pools the per-segment CP2K analysis products (written on CSD3 by
-analyze_onsager_cp2k.py / analyze_viscosity_cp2k.py; RPA-series files in
-results/rpa_transport/, MP2 files in results/mp2_transport/) and
-overlays the RPA series on the Madrid-2019 curves of make_figures.py, same
-style and experimental reference values. Headline datasets:
-
-  1 m: rpa_cpu_cube3_5x160_w1040_kappa.npz    + rpa_cpu_cube3_5x160_final_eta.npz
-  2 m: rpa_cpu_cube3_2m_5x160_w1040_kappa.npz + rpa_cpu_cube3_2m_5x160_final_eta.npz
-  4 m: rpa_cpu_cube3_4m_5x160_w1040_kappa.npz + rpa_cpu_cube3_4m_5x160_final_eta.npz
-  MP2 at 1 m, same pipeline: mp2_anchor_cube3_{kappa,eta}.npz
-
-Model encoding across figures: one colour per level everywhere (RPA =
-Cambridge crest orange, Madrid-2019 = cherry, MP2 = blue, experiment =
-slate; user rule 2026-08-06), with Madrid additionally hollow markers +
-solid lines and RPA filled markers + dashed lines (x-offset so error bars
-stay legible). MP2 appears only in state-point panels (fig8,
-the fig13a PMF, the fig12b GK integrals) -- never on a concentration
-axis, where its single 1 m point adds nothing (user rule 2026-08-06).
-RPA molalities sharing a panel use light-to-dark shades of the crest
-orange.
-
-All experimental reference values are pinned from primary sources (2026-08-02):
-kappa Chambers-Stokes 1956, t_Na Smits-Duyvis 1966, eta Kestin-Khalifa-
-Correia 1981, D_w Muller-Hertz 1996 via Blazquez 2023 Table V.
-
-Also prints: fit-window sensitivity (10-30 vs 10-40 ps), the 1 m three-way
-Madrid/MP2/RPA block, the D_w timescale check, and the timings-ledger
-aggregation. Layout convention: figures go to plots/transport_comparison/
-(plots = images, results = data); transport_series_summary.csv stays in
-results/transport_comparison/. fig8 (the 1 m three-way comparison, formerly in
-make_figures.py) lives here since 2026-08-06: every first-principles curve
-is the RPA production cell (cube3), same pipeline as the series.
+Pools per-segment CSD3 products (results/{rpa,mp2}_transport/: per-molality
+*_5x160_w1040_kappa.npz + *_5x160_final_eta.npz, mp2_anchor_cube3_* at 1 m) and
+overlays the RPA series on the Madrid-2019 curves of make_figures.py. Figures ->
+plots/transport_comparison/; transport_series_summary.csv -> results/transport_comparison/.
+Colour law (user rules 2026-08-06/11): one colour per level everywhere -- RPA crest
+orange (light-to-dark per molality), Madrid-2019 green, MP2 blue, experiment slate;
+Madrid hollow markers + solid lines, RPA filled + dashed. MP2 only in state-point
+panels, never on a concentration axis. Also prints fit-window sensitivity, the 1 m
+three-way block, the D_w timescale check, and the timings-ledger aggregation.
 """
 import csv
 import glob
@@ -64,14 +41,10 @@ def res_path(fname):
 CAM_BLUE, SLATE3 = "#00BDB6", "#546072"
 C_NA, C_CL, C_O = CAM_BLUE, "#4DB78C", "#CD3572"
 INK, INK2, MUTED, GRID = "#0b0b0b", "#52514e", "#898781", "#e1e0d9"
-# model colours (user rule 2026-08-06, Madrid recoloured 2026-08-11): in
-# every Madrid/MP2/RPA comparison a level keeps ONE colour, regardless of
-# figure -- RPA = Cambridge crest orange, Madrid-2019 = green (cherry was
-# too close to the darker crest shades), MP2 = blue; experiment stays
-# slate.
+# model colours (user rule 2026-08-06; Madrid recoloured green 2026-08-11 --
+# cherry sat too close to the darker crest shades)
 C_RPA, C_MAD, C_MP2 = "#FD8153", "#4DB78C", "#5366E0"
 RPA_SHADE = {1.0: "#FFBE93", 2.0: "#FD8153", 4.0: "#E2571F"}  # crest ramp
-# (ramp stays orange end to end so no RPA shade reads as Madrid cherry)
 
 MOL_TO_M = {0.25: 0.231, 0.5: 0.491, 1.0: 0.960, 2.0: 1.915, 4.0: 3.666}
 EXPT_C = {0.25: 0.248, 0.5: 0.494, 1.0: 0.979, 2.0: 1.920, 4.0: 3.686}
@@ -85,25 +58,17 @@ E2, KB = (1.602176634e-19) ** 2, 1.380649e-23
 FARADAY, NA = 96485.33212, 6.02214076e23
 CONV = 1.0e-8 * 1e9                      # A^2/ps -> 1e-9 m^2/s
 
-# water self-diffusion (1e-9 m^2/s, 298.15 K), PINNED 2026-08-02:
-# m = 0 from Holz 2000 (PFG-NMR); m = 1/2/4 from the Muller & Hertz 1996
-# NMR dataset (J. Phys. Chem. 100, 1256) as tabulated in Blazquez 2023
-# Table V (J. Chem. Phys. 158, 054505) -- the same chain O'Neill's SI
-# Fig. S10 cites for its experimental curve.
+# water self-D (1e-9 m^2/s, 298.15 K), pinned 2026-08-02: m=0 Holz 2000 (PFG-NMR);
+# m=1/2/4 Muller & Hertz 1996 via Blazquez 2023 Table V (O'Neill SI Fig. S10 chain)
 DW_EXP = {0.0: 2.299, 1.0: 2.17, 2.0: 2.02, 4.0: 1.71}
 
-# eta (mPa s, 25 C, p* = 0.1 MPa), PINNED 2026-08-02 from Kestin, Khalifa
-# & Correia 1981 (J. Phys. Chem. Ref. Data 10, 71; DOI 10.1063/1.555641),
-# Tables 1/3/5/9, stated accuracy +-0.5%; m = 3 for reference: 1.1998.
+# eta (mPa s, 25 C, 0.1 MPa), pinned 2026-08-02: Kestin, Khalifa & Correia 1981
+# (DOI 10.1063/1.555641) Tables 1/3/5/9, accuracy +-0.5%; m=3 reference: 1.1998
 ETA_EXP = {0.0: 0.8901, 1.0: 0.9723, 2.0: 1.0745, 4.0: 1.3504}
 
-# GK plateau window. The pipeline default (2-10 ps, stored in the npz) is
-# biased low at RPA 1 m: the running integral is still rising there, the
-# per-segment late-early difference is +0.31 mPa s at 7.9 sigma. Over
-# 10-18 ps the slope of the segment-mean curve is zero within segment noise
-# for 2 m / 4 m / MP2 and the MP2 value moves by less than its
-# SEM, so 10-18 ps is the headline window for all four datasets; the 2-10 ps
-# value is printed alongside as the sensitivity.
+# GK plateau window: the 2-10 ps pipeline default is biased low at RPA 1 m
+# (integral still rising; late-early +0.31 mPa s at 7.9 sigma). 10-18 ps is flat
+# within noise for 2 m/4 m/MP2, so it is the headline; 2-10 ps printed as sensitivity.
 ETA_WINDOW = (10.0, 18.0)
 
 PAIRING = {1.0: "rpa_cpu_cube3_1M_5x160", 2.0: "rpa_cpu_cube3_2m_5x160",
@@ -113,20 +78,15 @@ KT_KCAL = 0.0019872041 * 298.15
 MADRID_NCIP_1M = 0.026   # report value: coordination integral of the Madrid
                          # g_NaCl at 1 m to the 3.38 A barrier (verified)
 
-# Comparison figures on concentration axes start at 1 mol/kg (user rule
-# 2026-08-11, like-for-like with the RPA series): the Madrid campaign's
-# 0.25/0.5 molalities appear only in the baseline chapter's own figures.
-# Series x-axes use MOLALITY (user rule 2026-08-11): every model ran at the
-# same 1/2/4 mol/kg, so on a molality axis the points align exactly; molar
-# conversions differ per model density and made the points look misaligned.
+# Series figures start at 1 mol/kg and use MOLALITY axes (user rules 2026-08-11):
+# every model ran at 1/2/4 mol/kg so points align exactly (molar conversions differ
+# per model density); Madrid 0.25/0.5 m appear only in the baseline chapter.
 SERIES_MIN_MOL = 1.0
 SERIES_XLIM = (0.8, 4.3)
 SERIES_XLABEL = "m (mol/kg)"
 
-# 160 ps CPU-track products (round 2, complete 2026-08-10): every segment
-# recomputed from the raw trajectories, 5 x 160 ps per molality. The GPU
-# round-2 arrays were cancelled while pending; the *_gpu_*_5x80_* round-1
-# products remain on disk but are superseded.
+# round-2 CPU-track products (complete 2026-08-10), 5 x 160 ps per molality; GPU
+# round-2 was cancelled while pending, so *_gpu_*_5x80_* round-1 products are superseded
 SERIES = {1.0: ("rpa_cpu_cube3_5x160_w1040_kappa.npz", "rpa_cpu_cube3_5x160_final_eta.npz"),
           2.0: ("rpa_cpu_cube3_2m_5x160_w1040_kappa.npz", "rpa_cpu_cube3_2m_5x160_final_eta.npz"),
           4.0: ("rpa_cpu_cube3_4m_5x160_w1040_kappa.npz", "rpa_cpu_cube3_4m_5x160_final_eta.npz")}
@@ -197,10 +157,8 @@ def load_kappa(fname, mol):
     d["tH"] = d["tNa"] + mol * (M_NA * (d["sNaNa"] - d["sNaCl"])
                                 - M_CL * (d["sClCl"] - d["sNaCl"])) / s_sum
     d["rNa"], d["rCl"] = d["DNa"] / d["DO"], d["DCl"] / d["DO"]
-    # Fong-style observables. Lambda = kappa/c; electrophoretic mobilities
-    # from the Hittorf (solvent-fixed) partition sigma_Na = t^H kappa, the
-    # frame experimental mobilities are defined in. u_Cl is the magnitude
-    # (-u for the anion, as Fong plots it).
+    # Fong-style observables: Lambda = kappa/c; mobilities in the Hittorf
+    # (solvent-fixed) frame sigma_Na = t^H kappa; u_Cl is the magnitude.
     d["c_molar"] = int(d["nNa"]) / (NA * float(d["V"]) * 1e-27)
     d["Lambda"] = 10.0 * d["kOns"] / d["c_molar"]
     fc = FARADAY * d["c_molar"] * 1e3
@@ -262,14 +220,10 @@ def load_pairing(tag):
 
 
 def madrid_pairing(mol):
-    """Seed-averaged Madrid pairing observables at one molality, from the
-    conductivity campaign's per-run LAMMPS rdf fixes (compute rdf 200 for
-    Na-Cl; columns: bin, r, g, coord). w(r) extrema use the tab:pmf windows
-    of load_pairing; n_CIP per seed is the LAMMPS running coordination
-    number interpolated at the pooled barrier radius (identical integral to
-    the CSD3 pipeline's 4 pi rho_Cl int g r^2 dr). Returns None when the
-    molality's rdf files are not synced into the repo (they exist on
-    cerberus for every conductivity run; only m1.0 was synced originally)."""
+    """Seed-averaged Madrid pairing at one molality from the conductivity
+    campaign's LAMMPS rdf files (cols: bin, r, g, coord); tab:pmf windows and
+    coordination integral identical to load_pairing. Returns None if the
+    molality's rdf files are not synced from cerberus (only m1.0 originally)."""
     # dir names are m0.25 / m0.5 / m1.0 / m2.0 / m4.0 (mixed precision)
     for pat in (f"m{mol:g}", f"m{mol:.1f}"):
         files = sorted(glob.glob(os.path.join(MADRID_RDF, pat,
@@ -343,11 +297,8 @@ def report_pairing(pair, mad_pair):
 
 
 def fig_three_way_1m(pair, mad_pair, rpa, mp2):
-    """fig8: the 1 m three-way comparison -- pairing PMF + D ratios. Every
-    first-principles curve is the RPA production cell (cube3, 37.26 A),
-    new-pipeline products only; Madrid D ratios use the Yeh-Hummer D_0
-    of the replica campaign. Model colours follow the series figures so
-    a level keeps its colour across the report."""
+    """fig8: 1 m three-way comparison -- pairing PMF + D ratios; first-principles
+    curves from the cube3 production cell, Madrid D ratios use the Yeh-Hummer D_0."""
     rep = np.load(MADRID_REPL, allow_pickle=True)
 
     fig, (a, b) = plt.subplots(1, 2, figsize=(9.8, 4.6))
@@ -376,9 +327,8 @@ def fig_three_way_1m(pair, mad_pair, rpa, mp2):
     mad_O = (rep["free_fits"][0][1], rep["free_fits"][0][2])
     mad = {"Na": ratio((rep["shared_fits"][0][1], rep["shared_fits"][0][2]), mad_O),
            "Cl": ratio((rep["shared_fits"][1][1], rep["shared_fits"][1][2]), mad_O)}
-    # expt infinite dilution: D0_ion from limiting conductivities (Robinson
-    # & Stokes: lambda0 50.10 / 76.35 S cm2/mol -> 1.334 / 2.032e-9 m2/s
-    # via Nernst), water self-D 2.299e-9 (Holz 2000)
+    # expt infinite dilution: lambda0 50.10/76.35 S cm2/mol (Robinson & Stokes)
+    # -> 1.334/2.032e-9 m2/s via Nernst; water self-D 2.299e-9 (Holz 2000)
     expt = {"Na": 1.334 / 2.299, "Cl": 2.032 / 2.299}
     for x, sp in ((0.0, "Na"), (1.0, "Cl")):
         first = sp == "Na"
@@ -519,9 +469,8 @@ def madrid_fong(mad):
 
 
 def expt_fong(mols):
-    """Lambda / uNa / uCl derived from the pinned kappa (Chambers-Stokes
-    1956) and Hittorf t_Na (Smits-Duyvis 1966) reference values -- derived, not
-    independently measured."""
+    """Lambda / uNa / uCl derived from the pinned kappa (Chambers-Stokes 1956)
+    and Hittorf t_Na (Smits-Duyvis 1966) -- derived, not independently measured."""
     mols = np.asarray(mols, float)
     tH = tna_expt_hittorf(mols)
     k = np.array([EXPT_KAPPA[m] for m in mols])
@@ -572,9 +521,8 @@ def fig_fong_series(mad, rpa):
     ax1.errorbar(np.sqrt(cr), y, yerr=ys, fmt="o--", ms=7,
                  color=C_RPA, mew=0, lw=1.3, elinewidth=1.0, capsize=2,
                  label="RPA")
-    # expt: Lambda(c) is Chambers-Stokes primary data; u = t^H kappa / F c
-    # combines Chambers-Stokes kappa with Smits-Duyvis t^H (exact algebra,
-    # same identity as our points -- not independent of fig9/fig11)
+    # expt Lambda(c) is Chambers-Stokes primary data; u combines it with
+    # Smits-Duyvis t^H (same identity as our points -- not independent of fig9/fig11)
     ax1.plot(np.sqrt(mols), lam_e, marker="o", ms=6, ls="", color=SLATE3,
              label="Experiment", zorder=5)
     ax1.set_xlim(0.9, 2.1)
@@ -606,15 +554,11 @@ def fig_fong_series(mad, rpa):
 
 
 def fig_carbon():
-    """fig15: estimated carbon of the series per code branch (report
-    tab->fig swap 2026-08-12). Numbers from TRANSPORT_SUMMARY.md section 8.8
-    (Green Algorithms model, reserved-allocation draws, PUE 1.67, measured
-    national CI 122.0 gCO2e/kWh over the campaign window); hours are the
-    Table 9.4 canon. kWh is proportional to kgCO2e (divide by 0.122), so
-    one quantity per panel suffices."""
+    """fig15: estimated series carbon per code branch (tab->fig swap 2026-08-12).
+    Numbers from TRANSPORT_SUMMARY.md 8.8 (Green Algorithms, reserved-allocation
+    draws, PUE 1.67, measured CI 122.0 gCO2e/kWh); hours = Table 9.4 canon."""
     codes = ["master", "optimised\nCPU", "optimised\nGPU"]
-    # per-code shade ramps, lightest = 1 mol/kg to darkest = 4 mol/kg
-    # (the series splits into equal thirds by concentration: 5 x 160 ps each)
+    # per-code shade ramps, lightest 1 mol/kg -> darkest 4 mol/kg (equal thirds)
     shades = [["#9BA4B2", SLATE3, "#3A4350"],       # master: slate ramp
               ["#66D7D2", CAM_BLUE, "#008B86"],     # CPU: Cambridge-blue ramp
               [RPA_SHADE[1.0], RPA_SHADE[2.0], RPA_SHADE[4.0]]]  # GPU: crest

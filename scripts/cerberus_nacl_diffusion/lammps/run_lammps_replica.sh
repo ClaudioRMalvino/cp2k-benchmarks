@@ -4,9 +4,8 @@ set -euo pipefail
 # Seeds are independent samples: their spread across replicas IS the error bar
 # on D(L), which a single trajectory cannot give you.
 
-# lmp links OpenBLAS, libgomp and threaded FFTW, each defaulting to one thread
-# per core. Unset, every MPI rank spawns $(nproc) threads and the node dies
-# allocating stacks before step 0. One thread per rank; MPI does the work.
+# lmp links OpenBLAS/libgomp/threaded FFTW; unset, every rank spawns $(nproc)
+# threads and the node dies allocating stacks. One thread per rank; MPI does the work.
 export OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 GOTO_NUM_THREADS=1 MKL_NUM_THREADS=1
 
 LD="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -41,8 +40,7 @@ if [ "$rc" -ne 0 ] || ! grep -q "DONE $tag" "$W/prod.log"; then
   exit 1
 fi
 
-# Collapse the position dump into a multi-origin MSD immediately, then drop the
-# dump: it is ~300 MB-1 GB per replica and we only ever need the MSD from it.
+# collapse the dump into a multi-origin MSD, then drop it (~300 MB-1 GB per replica)
 echo "=== $tag: multi-origin MSD ==="
 "$PY" "$LD/msd_multiorigin.py" --dump "$W/${tag}.pos.lammpstrj" \
   --dt-ps 1.0 --out "$W/${tag}.msdmo"

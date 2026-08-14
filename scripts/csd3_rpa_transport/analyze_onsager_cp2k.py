@@ -1,30 +1,13 @@
 #!/usr/bin/env python3
 """Self + collective (Onsager) transport analysis for CP2K NaCl(aq) segments.
 
-Port of cerberus onsager_multiorigin.py + kappa_analysis.py to the CP2K
-campaign layout: the FFT multi-origin machinery is verbatim (validated by
---selftest against brute force); only the trajectory reader changed.
-
-Per segment (an awk fast-path reduces the ~10 GB pos file to ions + O at a
-coarser time grid, with a monotonic step-number slice for walltime-resumed
-segments; the reduced array is cached as reduced_traj.npz in the segdir):
-
-  self MSDs  -> D_Na, D_Cl, D_O   (Einstein fit over the lag window)
-  collective C_ss'(tau) = <[R_s(t+tau)-R_s(t)].[R_s'(t+tau)-R_s'(t)]>
-             for R_s = sum of species positions, ss' in NaNa/ClCl/NaCl
-
-Aggregate over segments (mean +- SEM, each segment one independent sample):
-
-  kappa_NE   = e^2 (N_Na D_Na + N_Cl D_Cl) / (kB T V)        [z = +-1]
-  kappa_Ons  = e^2 slope(C_NaNa + C_ClCl - 2 C_NaCl) / (6 kB T V)
-  Delta_NE   = 1 - kappa_Ons / kappa_NE
-  t_Na       = (slope C_NaNa - slope C_NaCl) / slope(C_sum)
-  channel decomposition kNaNa/kClCl/kNaCl incl. self/distinct split
-
-Usage:
-  analyze_onsager_cp2k.py --segdirs runs/MP2/cubic_1M/production/cube3/seg* \
-      --box-a 37.26 --label mp2_anchor_cube3 [--every 20] [--tmin 10 --tmax 40]
-  analyze_onsager_cp2k.py --selftest
+Port of cerberus onsager_multiorigin.py + kappa_analysis.py (FFT multi-origin
+machinery verbatim, --selftest checks it against brute force); only the reader
+changed. awk-reduces each ~10 GB pos file to ions + O (cached reduced_traj_e{K}.npz),
+fits self MSDs (D_Na/D_Cl/D_O, Einstein) and collective C_ss'(tau) slopes, then
+aggregates kappa_NE / kappa_Ons / Delta_NE / t_Na (mean +- SEM over segments).
+Writes {label}_kappa.csv/.npz to results/{mp2,rpa}_transport/.
+Usage: --segdirs ... --box-a 37.26 --label X [--every 20] [--tmin 10 --tmax 40] | --selftest
 """
 import argparse
 import glob

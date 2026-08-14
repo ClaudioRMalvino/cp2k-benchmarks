@@ -1,17 +1,8 @@
 #!/usr/bin/env bash
-# Fig. S4 gate test for feature/nnp-chebyshev.
-#
-# The May 2026 diagnostics showed single-step PES jumps (>0.1 Ha) and
-# kinetic runaway on the feature branch at N=128 (24.84x12.42x12.42
-# replicated box) while upstream master was smooth, and while N=64 cubic
-# was stable on BOTH.  The cell-list code has since been heavily revised
-# (minimax branch + June optimisation pass).  This re-runs the exact
-# failing configuration with the CURRENT install-tree binaries:
-#
-#   smooth on both  -> blocker gone, proceed to the full Fig. S4 chain
-#   jumps on branch -> the neighbour-list bug survives; debug before S4
-#
-# Submit with:  sbatch diag_n128_chebyshev.sh
+# Fig. S4 gate test: re-run the May 2026 failing N=128 config (PES jumps >0.1 Ha
+# on feature/nnp-chebyshev; master smooth, N=64 stable on both) with current
+# install-tree binaries. Smooth on both -> S4 unblocked; jumps on branch ->
+# neighbour-list bug survives. Submit: sbatch diag_n128_chebyshev.sh
 
 #SBATCH -J figS4_diag_chebyN128
 #SBATCH -A NIKIFORAKIS-CSC-FUNDS-SL3-CPU

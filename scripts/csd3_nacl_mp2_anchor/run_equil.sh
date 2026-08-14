@@ -1,21 +1,12 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# STAGE 1 - NVT (CSVR) equilibration of the cubic 1.0 mol/kg NaCl(aq) anchor
-# cells on CSD3. Port of the cerberus run_equil.sh: 30 ps equilibration +
-# 5 restart snapshots 15 ps apart (shared NVE starting points).
-# Cube cells only:
-#   cube2 = 24.84 A, 1500 atoms,  9 NaCl pairs
-#   cube3 = 37.26 A, 5064 atoms, 30 NaCl pairs
-# Must run inside an sbatch allocation (uses srun) - see slurm/ wrappers.
-#
-# Env:  MODEL=MP2  CELLS="cube2"  TOTAL_RANKS=76  SKIP_DONE=1
-#       STEPS_OVERRIDE (smoke test only)
-#       CONC_DIR=cubic_1M (concentration subdir under runs/$MODEL/; the
-#       transport campaign uses cubic_2m / cubic_4m with their own cube_n3.xyz)
-#       SEED_OVERRIDE (optional int): non-default &GLOBAL SEED, so a redo of
-#       an already-equilibrated cell is statistically independent of the
-#       original run instead of bit-identical to it
+# STAGE 1 - NVT (CSVR) equilibration of the cubic NaCl(aq) anchor cells on CSD3
+# (port of cerberus run_equil.sh): 30 ps equil + 5 restart snapshots 15 ps apart
+# (shared NVE starting points). cube2 = 24.84 A / 1500 atoms / 9 NaCl pairs;
+# cube3 = 37.26 A / 5064 / 30. Needs an sbatch allocation (srun) - see slurm/.
+# Env: MODEL CELLS TOTAL_RANKS SKIP_DONE STEPS_OVERRIDE CONC_DIR (cubic_1M/2m/4m)
+#      SEED_OVERRIDE (int: makes a redo statistically independent of the original)
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 TEMPLATE="$SCRIPT_DIR/nacl_diffusion_template.inp"
@@ -37,9 +28,8 @@ SNAP_SPACING_PS=15
 SNAP_STEPS=$(( SNAP_SPACING_PS * 2000 ))                       # 30000
 TOTAL_STEPS=$(( (EQUIL_PS + N_SNAPSHOTS * SNAP_SPACING_PS) * 2000 ))  # 210000
 
-# NNP/Fist rank split of the MIXED groups. 1 Fist rank (cerberus default)
-# bottlenecks on CSD3's 76 fast ranks -> tune with the split-sweep job and
-# override here. Performance only; the physics is split-independent.
+# NNP/Fist rank split of the MIXED groups: 1 Fist rank (cerberus default)
+# bottlenecks at 76 ranks -> tuned via split-sweep; performance only, physics-neutral
 FIST_RANKS="${FIST_RANKS_OVERRIDE:-1}"
 NNP_RANKS=$(( TOTAL_RANKS - FIST_RANKS ))
 
@@ -92,24 +82,20 @@ for cell in $CELLS; do
     sed -i "s|^  &NNP$|  \&NNP\n    USE_GPU $USE_GPU_OVERRIDE|" "$rundir/equil.inp"
   fi
 
-  # 12 h walltime survival: if a previous attempt was killed mid-run, continue
-  # from its last checkpoint instead of starting over.
+  # walltime survival: continue a killed run from its last checkpoint
   if grep -q "PROGRAM ENDED" "$rundir/equil.out" 2>/dev/null; then
     echo "$cell: MD already finished, staging snapshots"
   else
     INPUT=equil.inp
     if [ -f "$rundir/${proj}-1.restart" ]; then
       INPUT="${proj}-1.restart"
-      # CP2K's MD STEPS is per-invocation (STEP_START_VAL only offsets the
-      # numbering), so a resume running the restart verbatim would do a full
-      # TOTAL_STEPS again, blow the walltime, and never reach the snapshot
-      # staging below. Cap STEPS to the remaining budget.
+      # CP2K's MD STEPS is per-invocation (STEP_START_VAL only offsets numbering):
+      # cap STEPS to the remaining budget or the resume reruns TOTAL_STEPS
       start=$(awk '$1=="STEP_START_VAL"{print $2; exit}' "$rundir/$INPUT")
       remaining=$(( ${STEPS_OVERRIDE:-$TOTAL_STEPS} - ${start:-0} ))
       [ "$remaining" -lt 0 ] && remaining=0
       sed -i "0,/^\( *\)STEPS  *[0-9][0-9]*$/s//\1STEPS $remaining/" "$rundir/$INPUT"
-      # fail-closed: abort (spending nothing) rather than launch MD with an
-      # uncapped STEPS if the rewrite did not take
+      # fail-closed: never launch MD with an uncapped STEPS
       got=$(awk '$1=="STEPS"{print $2; exit}' "$rundir/$INPUT")
       [ "$got" = "$remaining" ] || { echo "$cell: STEPS cap failed ($got != $remaining) - aborting" >&2; exit 99; }
       echo "$cell: continuing from checkpoint $INPUT (step ${start:-0}, $remaining steps remain)"

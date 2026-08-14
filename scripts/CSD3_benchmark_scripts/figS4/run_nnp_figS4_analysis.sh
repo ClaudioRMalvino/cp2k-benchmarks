@@ -5,9 +5,7 @@
 #SBATCH -p icelake
 #SBATCH --nodes=1
 #SBATCH --ntasks=8
-# 1 h (was 30 min): aggregate_figS4.py parses trajectories SERIALLY; the 1.9 GB
-# N512 (and the 3.8 GB N1024 once it lands) FFT-MSD passes need the headroom.
-# ntasks=8 reserves ~27 GB on icelake so the largest trajectory loads safely.
+# 1 h + ntasks=8 (~27 GB on icelake): serial trajectory parsing; 1.9 GB N512 / 3.8 GB N1024 FFT-MSD need the headroom
 #SBATCH --time=01:00:00
 #SBATCH --mail-type=NONE
 #SBATCH --output=/home/crm98/cp2k-benchmarks/logs/figS4_analysis_%j.out
@@ -40,8 +38,7 @@ rsync -a --include='*/' --include='timing.csv' --include='viscosity.csv' \
       "$SCRATCH/production/" "$BENCH/results/figS4/production/"
 
 echo "=== plotting ==="
-# The cluster module python lacks matplotlib/packaging; ~/.fortran_env has them.
-# Subshell so activating the venv does not disturb the numpy/module python above.
+# module python lacks matplotlib; ~/.fortran_env in a subshell leaves the numpy python above intact
 (
    source "$HOME/.fortran_env/bin/activate"
    python3 "$BENCH/scripts/benchmark_figures/plot_figS4.py" \

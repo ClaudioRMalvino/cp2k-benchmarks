@@ -1,15 +1,10 @@
 #!/bin/bash
 set -e
 
-# Rebuild feature/nnp-mace at Dhruv's EXACT AVX-2 benchmark profile, for the
-# head-to-head vs pr/nnp-cpu-cell-list. Identical to cp2k_CSD3_opt_build.sh except:
-#   - flags -> -O3 -xCORE-AVX2 -fp-model=precise -qopenmp  (was -O2 AVX-512 +
-#     -funroll-loops -ftree-vectorize). Matches the Dhruv build flag-for-flag so
-#     the ONLY difference between the two binaries is the NNP source.
-#   - explicit CP2K_BLAS_THREADING=sequential (parity with the Dhruv build)
-#   - stage cp2k.psmp -> cp2k_binaries/csd3/feature-nnp-mace/
-# MACE stays ON (faithful nnp-mace); it is idle on a pure-NNP run, so NNP-path
-# timing equals nnp-chebyshev.
+# Build feature/nnp-mace at Dhruv's exact AVX-2 profile (-O3 -xCORE-AVX2 -fp-model=precise -qopenmp,
+# sequential BLAS) so the head-to-head vs pr/nnp-cpu-cell-list differs only in the NNP source.
+# Stages cp2k.psmp -> cp2k_binaries/csd3/feature-nnp-mace/; MACE stays ON but is idle on pure-NNP
+# runs, so NNP-path timing equals nnp-chebyshev. Otherwise identical to cp2k_CSD3_opt_build.sh.
 
 source /home/crm98/cp2k-benchmarks/scripts/CSD3_benchmark_scripts/cp2k_CSD3_env.sh
 

@@ -127,8 +127,7 @@ PYEOF
 
       if grep -q "PROGRAM ENDED" "${rundir}/cp2k.out" 2>/dev/null; then
          total_wt=$(grep -E "^ CP2K +[0-9]" "${rundir}/cp2k.out" | awk '{print $NF}' | tail -1)
-         # Per-step time = qs_mol_dyn_low total / steps, which drops the SCF
-         # init/shutdown overhead.
+         # per-step = qs_mol_dyn_low total / steps: drops SCF init/shutdown overhead
          md_loop=$(awk '/^ qs_mol_dyn_low/ {print $(NF-1)}' "${rundir}/cp2k.out" | tail -1)
          time_per_step=$(awk -v t="$md_loop" -v s="$STEPS" 'BEGIN{printf "%.6f", t/s}')
          printf "%-12s %-10s %-12s %-15s\n" "$size" "$total_cores" "$time_per_step" "$total_wt"

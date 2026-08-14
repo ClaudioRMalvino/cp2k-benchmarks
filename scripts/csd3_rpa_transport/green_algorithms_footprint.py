@@ -2,15 +2,9 @@
 """Carbon footprint of the RPA NaCl(aq) transport campaign, Green Algorithms
 methodology (Lannelongue, Grealey & Inouye, Adv. Sci. 2021, 8:2100707).
 
-WHY THIS AND NOT THE GreenAlgorithms4HPC TOOL. That tool derives runtime,
-cores and memory per job by parsing sacct. We do not need the derivation:
-report Table 9.4 already carries the authoritative node-hours and GPU-hours.
-More importantly, only the optimised-CPU row ever ran. The `master` row and
-both 200 ns rows are PROJECTIONS from measured s/step, so sacct holds no
-records for them and no sacct-based tool can produce them. The tool is
-installed and configured for CSD3 at
-/rds/user/crm98/hpc-work/GreenAlgorithms4HPC (cluster_info.yaml written from
-the nodes themselves) if a cross-check on the as-run rows is ever wanted.
+Not the GreenAlgorithms4HPC tool: it parses sacct, but the master and 200 ns
+rows are PROJECTIONS with no sacct records; report Table 9.4 holds the hours.
+(Tool installed at /rds/user/crm98/hpc-work/GreenAlgorithms4HPC for cross-checks.)
 
 THE FORMULA (identical to the tool's):
 
@@ -18,16 +12,11 @@ THE FORMULA (identical to the tool's):
                       + mem_GB x 0.3725 W/GB) / 1000 x PUE x PSF
     carbon  = E x CI
 
-Both PUE and CI are pure multipliers on a job-dependent core, so the
-uncertainty in them is trivially propagated: see the sensitivity block at the
-end of the output rather than treating any single number as exact.
+PUE and CI are pure multipliers; see the sensitivity block in the output.
 
-RESERVED, NOT USED. The GPU jobs reserved a quarter of an ampere node each -
-sacct AllocTRES reads `billing=32,cpu=32,gres/gpu=1,mem=250G` - even though
-only ~3 cores carry SPME. Carbon accounting charges what is reserved, because
-those 32 cores and 250 GB cannot be given to anyone else while the job holds
-them. Report Table 9.4's "3 SPME cores" is the right figure for the £ column
-(CSD3 bills GPU-hours) but the wrong one here.
+RESERVED, NOT USED: GPU jobs reserved a quarter ampere node (AllocTRES
+billing=32,cpu=32,gres/gpu=1,mem=250G) though only ~3 cores carry SPME; carbon
+charges what is reserved. Table 9.4's "3 SPME cores" fits the GBP column, not here.
 """
 import argparse
 import json
@@ -42,16 +31,14 @@ CAR_EU_G_PER_KM   = 175.0      # gCO2e/km, average EU passenger car
 FLIGHT_PAR_LON_G  = 50_000.0   # gCO2e, one passenger, Paris-London
 
 # --- hardware, from the nodes (scontrol/lscpu/nvidia-smi, 2026-08-11) ------
-# icelake: 2 x Xeon Platinum 8368Q, 270 W per 38-core socket -> 7.105 W/core.
-# AllocTRES of a production job: billing=76,cpu=76,mem=256120M,node=1
+# icelake: 2 x Xeon 8368Q, 270 W / 38-core socket; AllocTRES billing=76,cpu=76,mem=256120M
 ICELAKE = dict(cores=76, w_per_core=270.0 / 38, gpus=0, w_per_gpu=0.0, mem_gb=256120 / 1024)
-# ampere: AMD EPYC 7763, 280 W per 64-core socket -> 4.375 W/core; A100-SXM4-80GB
-# is 400 W (the 250-300 W figure is the PCIe card, not the SXM4 module).
-# AllocTRES of a production job: billing=32,cpu=32,gres/gpu=1,mem=250G
+# ampere: EPYC 7763, 280 W / 64-core socket; A100-SXM4-80GB 400 W (250-300 W is
+# the PCIe card, not SXM4); AllocTRES billing=32,cpu=32,gres/gpu=1,mem=250G
 AMPERE_QUARTER = dict(cores=32, w_per_core=280.0 / 64, gpus=1, w_per_gpu=400.0, mem_gb=250.0)
 
-# --- the campaign, from report Table 9.4 (node-hour canon after the ---------
-# --- 2026-08-11 factor-2 correction: 340 / 5,396 / 227) --------------------
+# campaign hours from report Table 9.4 (canon after the 2026-08-11 factor-2
+# correction: 340 / 5,396 / 227)
 SCENARIOS = {
     "as run: 2.4 ns (3 conc x 5 x 160 ps, 4.8M steps)": [
         # label,                      hours, profile,          unit
@@ -71,14 +58,9 @@ CI_FALLBACK = 231.12      # Green Algorithms UK value, used only if the API fail
 
 
 def fetch_uk_ci(start, end, postcode=None, verbose=True):
-    """Mean UK grid carbon intensity over [start, end] from the National Grid
-    API. Returns (gCO2e/kWh, description) or (None, reason).
-
-    This is the actual measured intensity for the days the jobs ran, which is
-    strictly better than any annual or global average: UK intensity has roughly
-    halved since the 2021 figure baked into the Green Algorithms defaults, so
-    using the default would overstate the footprint about twofold.
-    """
+    """Mean UK grid CI over [start, end] from the National Grid API; returns
+    (gCO2e/kWh, description) or (None, reason). Measured daily means for the run
+    dates: UK CI has ~halved since the 2021 GA default (would overstate ~2x)."""
     base = "https://api.carbonintensity.org.uk/intensity/stats"
     vals, cur = [], start
     while cur < end:
@@ -157,7 +139,7 @@ def main():
             total_kwh += kwh
             print(f"{label:<26}{hours:>10,}  {unit:<7}{kwh:>12,.0f}{g/1000:>11,.1f}"
                   f"{g/TREE_MONTH_G:>10,.0f}{g/CAR_EU_G_PER_KM:>11,.0f}")
-        # What the optimisation avoided, which is the number the report wants.
+        # avoided vs master (the report's number)
         m_kwh = rows[0][1] * watts(rows[0][2], args.usage) / 1000.0 * args.pue * args.psf
         for label, hours, prof, unit in rows[1:]:
             kwh = hours * watts(prof, args.usage) / 1000.0 * args.pue * args.psf

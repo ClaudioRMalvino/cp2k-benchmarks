@@ -1,10 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Per-branch binary cache populated by benchmark_slurm.sh - each branch has its
-# own cp2k.psmp + lib/ so LD_LIBRARY_PATH cannot pick up another branch's
-# libcp2k.so. Lives on scratch (/local/data/public) - too big for /home
-# (libcp2k.so.* alone is hundreds of MB per branch).
+# Per-branch binary cache populated by benchmark_slurm.sh (isolates each branch's libcp2k.so); on scratch - too big for /home.
 BIN_ROOT=/local/data/public/crm98/cp2k_binaries/phy-cerberus
 
 BENCHMARK_ROOT=/home/raid/crm98/cp2k-benchmarks

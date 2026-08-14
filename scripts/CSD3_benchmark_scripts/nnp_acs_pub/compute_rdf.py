@@ -1,11 +1,6 @@
 #!/usr/bin/env python3
-"""
-Compute O-O / O-H / H-H radial distribution functions from a CP2K NVT
-trajectory of liquid water in a cubic periodic box.
-
-Usage:
-    python3 compute_rdf.py <trajectory.xyz> --box <length_angstrom> --out <rdf.csv>
-"""
+"""O-O/O-H/H-H RDFs from a CP2K NVT water trajectory in a cubic periodic box.
+Usage: compute_rdf.py <trajectory.xyz> --box <length_angstrom> --out <rdf.csv>"""
 import argparse
 import sys
 

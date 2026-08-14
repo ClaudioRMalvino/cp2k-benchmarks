@@ -9,14 +9,10 @@
 #SBATCH --array=0-3
 #SBATCH --output=/home/raid/crm98/cp2k-benchmarks/logs/nacl_equil_%A_%a.out
 
-# Submit from athena (the CSC head node). csc-mphil = phy-cerberus4/5/6:
-# 48 cores + 248 GB each, 6 h max; nodes are shared between up to 4 jobs
-# unless all 48 cores are requested (we do, for exclusive access).
-#
-# One array task = one box size. Idempotent: finished cells are skipped and
-# walltime-killed cells continue from their last checkpoint, so if a task
-# hits the 6 h limit (only cell222 should) just resubmit this script.
-#
+# Submit from athena (CSC head node). csc-mphil = phy-cerberus4/5/6: 48 cores +
+# 248 GB each, 6 h max; requesting all 48 cores gives exclusive access.
+# One array task = one box size. Idempotent: finished cells skipped, killed ones
+# resume from checkpoint (only cell222 should hit the 6 h limit; resubmit).
 # Concentration series: sbatch --export=ALL,N_PAIRS=2 sbatch_equil.sh
 set -euo pipefail
 mkdir -p /home/raid/crm98/cp2k-benchmarks/logs

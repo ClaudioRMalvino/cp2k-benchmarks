@@ -10,10 +10,8 @@
 #SBATCH --output=/home/crm98/cp2k-benchmarks/logs/rpa_gpu_prod_%A_%a.out
 
 # GPU-track production: one 80 ps NVE segment per array task on one A100
-# (USE_GPU ON, 1 NNP device rank + 3 CPU SPME ranks), from the GPU-track
-# equil snapshots in runs_gpu/. Same run_production.sh, same checkpoints,
-# same RESTART_COUNTERS resume logic.
-#
+# (1 NNP device rank + 3 CPU SPME ranks), from GPU-track equil snapshots in
+# runs_gpu/; same run_production.sh checkpoint/resume logic as the CPU track.
 #   p=$(sbatch --parsable -A <SL3-GPU> --array=1-5 sbatch_gpu_production_conc.sh cubic_1M)
 #   sbatch -A <SL3-GPU> --array=1-5 --dependency=afterany:$p sbatch_gpu_production_conc.sh cubic_1M
 # Adjust --time at submit once the smoke's measured s/step is known.

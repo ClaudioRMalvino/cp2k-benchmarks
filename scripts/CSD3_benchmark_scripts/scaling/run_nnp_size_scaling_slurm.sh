@@ -10,8 +10,7 @@ CORES_PER_NODE=76
 BIN_ROOT=/rds/user/$USER/hpc-work/cp2k_binaries/csd3
 BENCHMARK_ROOT=/home/crm98/cp2k-benchmarks
 
-# Strict mode relaxed across the sourcing: cp2k_CSD3_env.sh pulls in the
-# toolchain 'setup' which references unbound CP_DFLAGS - trips `set -u`.
+# set -u relaxed across sourcing: the toolchain 'setup' references unbound CP_DFLAGS.
 . /etc/profile.d/modules.sh
 set +u
 source /home/crm98/cp2k-benchmarks/scripts/CSD3_benchmark_scripts/cp2k_CSD3_env.sh
@@ -72,16 +71,13 @@ case "$TARGET_BRANCH" in
       ;;
 esac
 
-# Optional override: point at an arbitrary cp2k.psmp (e.g. install/bin) without
-# touching $BIN_ROOT.  Set CP2K_EXE_OVERRIDE (and optionally INSTALL_LIB_OVERRIDE)
-# in the outer SLURM driver.
+# CP2K_EXE_OVERRIDE / INSTALL_LIB_OVERRIDE: benchmark an arbitrary cp2k.psmp without touching $BIN_ROOT.
 if [[ -n "${CP2K_EXE_OVERRIDE:-}" ]]; then
    CP2K_EXE="$CP2K_EXE_OVERRIDE"
    [[ -n "${INSTALL_LIB_OVERRIDE:-}" ]] && INSTALL_LIB="$INSTALL_LIB_OVERRIDE"
 fi
 
-# OMP branch uses OMP=2, so MPI ranks are halved to keep total cores =
-# CORES_PER_NODE.
+# OMP branch uses OMP=2: MPI ranks halved to keep total cores = CORES_PER_NODE.
 MPI_RANKS=$(( CORES_PER_NODE / OMP_THREADS ))
 
 N_REPS=${N_REPS:-5}

@@ -3,10 +3,7 @@ set -e
 
 source /home/crm98/cp2k-benchmarks/scripts/CSD3_benchmark_scripts/cp2k_CSD3_env.sh
 
-# --- MACE (symmetrix) backend ----------------------------------------------
-# Rebuild reuses the symmetrix prefix staged by the full build; re-stage it
-# here if it is missing so an incremental rebuild (or a triggered reconfigure)
-# can still find the headers/libs. Ignored on branches without MACE support.
+# Re-stage the symmetrix prefix if missing so an incremental rebuild/reconfigure still finds MACE headers/libs.
 CP2K_USE_MACE=${CP2K_USE_MACE:-ON}
 SYMMETRIX_SRC=${SYMMETRIX_SRC:-$HOME/symmetrix/libsymmetrix}
 SYMMETRIX_PREFIX=${SYMMETRIX_PREFIX:-$HOME/symmetrix/cp2k_prefix}
