@@ -1,8 +1,11 @@
 #!/usr/bin/env python3
-"""Head-to-head: Dhruv's PR head (8be1dfa50f) vs same head + bit-exact atom-level
-OpenMP graft (omp-atom-bitexact-v2); same CMake tree, same icelake node, job
-31837144. H2O-1024 NNP MD, 100 steps, 5 reps + warm-up, t/step from
-qs_mol_dyn_low; forces bit-identical at OMP=1/76. Styled per thesis_figures.py."""
+"""Head-to-head: cp2k master (45eee6b54d, #5295 merged) vs the same commit +
+the bit-exact atom-level OpenMP patch; same CMake tree, same icelake node, job
+33519897. Re-pinned 2026-08-12 from 8be1dfa50f (#5295's pre-merge head, job
+31837144) so the PR need not hedge about its baseline. H2O-1024 NNP MD, 100
+steps, 5 reps + warm-up, t/step from qs_mol_dyn_low; forces bit-identical at
+OMP=1/76 (accuracy leg rerun as job 33554324, each run's reported source
+revision asserted). Styled per thesis_figures.py."""
 import glob
 import os
 import numpy as np
@@ -44,7 +47,7 @@ def panel_letter(ax, letter):
     ax.text(-0.02, 1.07, f"({letter})", transform=ax.transAxes, fontsize=12,
             fontweight="bold", va="bottom", ha="left", color=CAM["slate_4"])
 
-BASE, OMP = "dhruv-head-8be1dfa", "dhruv-omp-bitexact-v2"
+BASE, OMP = "master-45eee6b", "nnp-omp-atom-loop-45eee6b"
 
 
 def load(kind, label):
@@ -65,10 +68,10 @@ mpi_b, mpi_g = load("core", BASE), load("core", OMP)
 # Colours per thesis_figures.py BRANCH_STYLE: reference = slate "o",
 # optimised = warm blue "^"; linestyle: OMP solid, pure MPI dotted.
 SER = {
-    "base_omp": (omp_b, CAM["slate_3"], "o", "-", "PR head, OMP (1 rank)"),
-    "graft_omp": (omp_g, CAM["blue_warm"], "^", "-", "PR head + graft, OMP (1 rank)"),
-    "base_mpi": (mpi_b, CAM["slate_3"], "o", ":", "PR head, pure MPI"),
-    "graft_mpi": (mpi_g, CAM["blue_warm"], "^", ":", "PR head + graft, pure MPI"),
+    "base_omp": (omp_b, CAM["slate_3"], "o", "-", "master, OMP (1 rank)"),
+    "graft_omp": (omp_g, CAM["blue_warm"], "^", "-", "master + this PR, OMP (1 rank)"),
+    "base_mpi": (mpi_b, CAM["slate_3"], "o", ":", "master, pure MPI"),
+    "graft_mpi": (mpi_g, CAM["blue_warm"], "^", ":", "master + this PR, pure MPI"),
 }
 
 fig, ax = plt.subplots(1, 2, figsize=(W_TEXT * 1.85, 4.7))
@@ -117,9 +120,9 @@ def row(a, i):
     return a[i, 4], a[i, 5], a[i, 10], a[i, 11]
 
 print("### Head-to-head, N = 1024 H2O (3072 atoms), 100 MD steps, "
-      "icelake, job 31837144\n")
-print("| cores | head OMP t/step [s] | graft OMP t/step [s] | OMP ratio "
-      "| head MPI t/step [s] | graft MPI t/step [s] |")
+      "icelake, job 33519897\n")
+print("| cores | master OMP t/step [s] | PR OMP t/step [s] | OMP ratio "
+      "| master MPI t/step [s] | PR MPI t/step [s] |")
 print("|---:|---:|---:|---:|---:|---:|")
 for i in range(omp_b.shape[0]):
     n = int(omp_b[i, 2])
@@ -130,8 +133,19 @@ for i in range(omp_b.shape[0]):
     print(f"| {n} | {tb:.4f} ± {sb:.4f} | {tg:.4f} ± {sg:.4f} "
           f"| {tb/tg:.2f}× | {mb:.4f} | {mg:.4f} |")
 
-print(f"graft OMP-76 vs best full-node baseline (head, 76 MPI): "
-      f"{mpi_b[-1, 4] / omp_g[-1, 4]:.2f}x")
-print(f"serial overhead of graft (OMP=1): "
+# Best MPI = the fastest point on EITHER MPI curve, not master's 76-rank
+# point. Quoting the slower of the two would flatter the PR by crediting it
+# with an MPI difference it does not claim, and quoting only the 76-rank point
+# would miss it if MPI peaked earlier (it does not here, but that is a
+# measurement, not an assumption).
+i_b, i_g = int(np.argmin(mpi_b[:, 4])), int(np.argmin(mpi_g[:, 4]))
+best_mpi = min(mpi_b[i_b, 4], mpi_g[i_g, 4])
+best_at = int(mpi_b[i_b, 2] if mpi_b[i_b, 4] <= mpi_g[i_g, 4] else mpi_g[i_g, 2])
+print(f"PR OMP-76 vs best MPI anywhere ({best_mpi:.4f} s at {best_at} ranks): "
+      f"{best_mpi / omp_g[-1, 4]:.2f}x")
+print(f"PR self-speedup 1 -> 76 threads: {omp_g[0, 4] / omp_g[-1, 4]:.1f}x "
+      f"({omp_g[0, 4] / omp_g[-1, 4] / 76 * 100:.1f}% parallel efficiency)")
+print(f"master self-speedup 1 -> 76 threads: {omp_b[0, 4] / omp_b[-1, 4]:.2f}x")
+print(f"serial overhead of the patch (OMP=1): "
       f"{(omp_g[0, 4] / omp_b[0, 4] - 1) * 100:+.1f}%")
 print(f"wrote {OUT}/omp_headtohead_scaling.[png|pdf]")

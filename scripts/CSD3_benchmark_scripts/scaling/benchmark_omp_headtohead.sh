@@ -1,8 +1,13 @@
 #!/usr/bin/env bash
-# Dhruv's pristine PR head (8be1dfa50f) vs the same head + bit-exact atom-level
-# OMP graft: same CMake tree/flags (-O3 -xCORE-AVX2 -fp-model=precise -qopenmp),
-# same node, same job — only variable is the graft. Leg 1: step-0/1 force accuracy
-# (claim: bit-identical). Legs 2/3: OMP thread + pure-MPI strong scaling, N=1024, 100 steps, 5 reps + 1 warm-up.
+# cp2k master (45eee6b54d, #5295 merged as 6908c592bf) vs the same commit +
+# the bit-exact atom-level OMP patch: same CMake tree/flags (-O3 -xCORE-AVX2
+# -fp-model=precise -qopenmp), same node, same job — only variable is the patch.
+# Re-pinned 2026-08-12 from 8be1dfa50f, #5295's pre-merge head; that differed
+# from merged master across four NNP files, so measuring against master itself
+# drops the hedge. The rebase left the patch byte-identical (md5 c4bdc768661c).
+# Leg 1: step-0/1 force accuracy (claim: bit-identical). Legs 2/3: OMP thread +
+# pure-MPI strong scaling, N=1024, 100 steps, 5 reps + 1 warm-up. LEGS=1 (etc.)
+# reruns one leg alone.
 #SBATCH -J NNP_omp_h2h
 #SBATCH -A NIKIFORAKIS-CSC-FUNDS-SL3-CPU
 #SBATCH -p icelake
@@ -25,8 +30,8 @@ PROOT=/rds/user/$USER/hpc-work/cp2k_dhruv_omp_worktree
 OPARENT=cp2k_omp_headtohead
 LIST_R1="1 2 4 8 16 19 32 38 76"       # report-1 NUMA-aware set
 
-LABEL_BASE=dhruv-head-8be1dfa          # pristine PR head
-LABEL_OMP=dhruv-omp-bitexact-v2        # head + graft
+LABEL_BASE=master-45eee6b              # cp2k/cp2k master, #5295 merged
+LABEL_OMP=nnp-omp-atom-loop-45eee6b    # master + atom-level OMP patch
 EXE_BASE="$BIN_ROOT/$LABEL_BASE/cp2k.psmp"
 EXE_OMP="$BIN_ROOT/$LABEL_OMP/cp2k.psmp"
 
@@ -35,7 +40,22 @@ for e in "$EXE_BASE" "$EXE_OMP"; do
    [[ -x "$e" ]] || { echo "!! missing $e"; exit 1; }
    md5sum "$e"
 done
-export LD_LIBRARY_PATH="$BIN_ROOT/$LABEL_OMP/lib:${LD_LIBRARY_PATH:-}"
+# DO NOT export one build's lib globally. Current master builds cp2k as a
+# SHARED library, so cp2k.psmp is a 1.5 MB shell and essentially all the
+# science lives in libcp2k.so.2026.2 - whichever copy the loader finds is the
+# code that actually runs. In job 33519897 this line pointed at the OMP
+# build's lib and leg 1 then ran EXE_BASE under it, so the "baseline" executed
+# the PATCHED library: every accuracy run reported `source code revision
+# 7358205d5c` (the PR commit) and the 0.000e+00 force difference was the patch
+# compared against itself. Legs 2 and 3 were unaffected because their scripts
+# set INSTALL_LIB per binary and PREPEND it.
+# Keep the inherited path only as a tail; each run prepends its own build.
+BASE_LD="${LD_LIBRARY_PATH:-}"
+# Expected source revisions, from the build's own PROVENANCE (CP2K prints 10 chars).
+REV_BASE=$(awk '/^commit:/{print substr($2,1,10)}' "$BIN_ROOT/$LABEL_BASE/PROVENANCE.txt" 2>/dev/null)
+REV_OMP=$(awk  '/^commit:/{print substr($2,1,10)}' "$BIN_ROOT/$LABEL_OMP/PROVENANCE.txt"  2>/dev/null)
+echo "expected revisions: base=$REV_BASE  omp=$REV_OMP"
+LEGS="${LEGS:-123}"     # which legs to run, e.g. LEGS=1 for accuracy only
 
 ############################################################################
 echo ""
@@ -65,18 +85,30 @@ open(dst, 'w').write(t)
 PY
 }
 
-acc_run() {  # $1 = name, $2 = exe, $3 = omp
+acc_run() {  # $1 = name, $2 = exe, $3 = omp, $4 = expected source revision
    local d="$ACC/$1"; mkdir -p "$d"
    prep_input "$d"
    ln -sfn "$PROOT/data/NNP" "$d/NNP"
-   ( cd "$d" && OMP_NUM_THREADS=$3 srun --ntasks=1 --cpus-per-task=$3 \
+   # Prepend THIS binary's own lib so it loads its own libcp2k.so.
+   ( cd "$d" && OMP_NUM_THREADS=$3 LD_LIBRARY_PATH="$(dirname "$2")/lib:$BASE_LD" \
+        srun --ntasks=1 --cpus-per-task=$3 \
         --hint=nomultithread "$2" -i run.inp > run.out 2>&1 ) || true
    grep -q "PROGRAM ENDED" "$d/run.out" || echo "!! accuracy run $1 FAILED"
+   # Assert the binary ran the code we think it did. A bit-exactness claim is
+   # worthless if both sides silently loaded the same shared library, and that
+   # is exactly what happened in job 33519897.
+   local got
+   got=$(grep -m1 "source code revision" "$d/run.out" | awk '{print $NF}')
+   if [[ -n "$4" && "$got" != "$4" ]]; then
+      echo "!! FATAL: $1 ran revision '$got', expected '$4' - wrong libcp2k.so loaded"
+      exit 9
+   fi
+   echo "    $1: revision $got (expected $4) OK"
 }
 
-acc_run base_omp1  "$EXE_BASE" 1
-acc_run graft_omp1 "$EXE_OMP"  1
-acc_run graft_omp76 "$EXE_OMP" 76
+acc_run base_omp1   "$EXE_BASE" 1  "$REV_BASE"
+acc_run graft_omp1  "$EXE_OMP"  1  "$REV_OMP"
+acc_run graft_omp76 "$EXE_OMP"  76 "$REV_OMP"
 
 python3 - "$ACC" <<'PY'
 import sys, glob, os
@@ -123,6 +155,7 @@ PY
 ############################################################################
 echo ""
 echo "########## LEG 2: OMP THREAD SCALING (1 MPI rank, N=1024) ##########"
+if [[ "$LEGS" == *2* ]]; then
 cd "$SCALING"
 for L in "$LABEL_BASE" "$LABEL_OMP"; do
    echo ""; echo "--- $L ---"
@@ -132,10 +165,12 @@ for L in "$LABEL_BASE" "$LABEL_OMP"; do
    MPI_RANKS=1 N_MOLECULES=1024 STEPS=100 N_REPS=5 OMP_LIST="$LIST_R1" \
       ./run_nnp_omp_thread_scaling_slurm.sh
 done
+else echo "(leg 2 skipped, LEGS=$LEGS)"; fi
 
 ############################################################################
 echo ""
 echo "########## LEG 3: PURE-MPI STRONG SCALING (OMP=1, N=1024) ##########"
+if [[ "$LEGS" == *3* ]]; then
 for L in "$LABEL_BASE" "$LABEL_OMP"; do
    echo ""; echo "--- $L ---"
    CP2K_EXE_OVERRIDE="$BIN_ROOT/$L/cp2k.psmp" \
@@ -146,6 +181,7 @@ for L in "$LABEL_BASE" "$LABEL_OMP"; do
    N_MOLECULES=1024 STEPS=100 N_REPS=5 CORE_LIST="$LIST_R1" \
       ./run_nnp_core_scaling_slurm.sh "$L"
 done
+else echo "(leg 3 skipped, LEGS=$LEGS)"; fi
 
 # Mirror CSVs (only) from scratch into the in-repo results tree.
 SCRATCH=/rds/user/$USER/hpc-work/cp2k-benchmarks/results
