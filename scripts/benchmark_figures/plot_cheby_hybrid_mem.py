@@ -107,20 +107,29 @@ ax.set_xlabel(r"Time per MD step (s) $\longleftarrow$ faster")
 ax.set_ylabel(r"Aggregate node memory (MiB) $\longleftarrow$ lower")
 ax.set_title("Speed vs node memory, 1024 H$_2$O, 1 node")
 ax.grid(True, which="both")
-ax.legend(title="Branch", title_fontsize=9, frameon=True, framealpha=0.93)
-fig.tight_layout(); save(fig, "fig2_speed_vs_memory_N1024")
+# Thesis-style series legend: figure-level, top-centre, frameless.
+fig.legend(loc="upper center", bbox_to_anchor=(0.5, 1.00), ncol=3,
+           frameon=False, fontsize=10.5, columnspacing=1.2,
+           handlelength=2.0, handletextpad=0.5)
+fig.tight_layout(rect=[0, 0, 1, 0.91])
+save(fig, "fig2_speed_vs_memory_N1024")
 
 # ===== FIG 3: chebyshev OMP scaling ladder =====
 fig, ax = plt.subplots(figsize=(W_TEXT, 4.4))
 speedup = omp_tps[0] / omp_tps
 ax.plot(omp_threads, speedup, M["chebyshev"] + "-", color=C["chebyshev"],
-        label="feature/nnp-chebyshev (measured)")
+        label="feature/nnp-chebyshev")
 ax.plot(omp_threads, omp_threads, "--", color=CAM["slate_3"], lw=1.0, label="Ideal (linear)")
 ax.set_xlabel("OpenMP threads (1 MPI rank)")
 ax.set_ylabel(r"Speedup vs 1 thread")
 ax.set_title("Chebyshev centre-level OpenMP scaling, 1024 H$_2$O")
-ax.grid(True); ax.legend(frameon=True, framealpha=0.93)
-fig.tight_layout(); save(fig, "fig3_cheby_omp_scaling")
+ax.grid(True)
+# Thesis-style series legend: figure-level, top-centre, frameless.
+fig.legend(loc="upper center", bbox_to_anchor=(0.5, 1.00), ncol=2,
+           frameon=False, fontsize=11, columnspacing=1.6,
+           handlelength=2.2, handletextpad=0.5)
+fig.tight_layout(rect=[0, 0, 1, 0.91])
+save(fig, "fig3_cheby_omp_scaling")
 
 # ===== FIG 4: speedup vs master bar chart (pure MPI 76x1, both sizes) =====
 fig, ax = plt.subplots(figsize=(W_TEXT, 4.4))
