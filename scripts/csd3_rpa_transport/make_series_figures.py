@@ -379,8 +379,8 @@ def fig_pairing_series(pair, mad_pair):
     ax1.legend(frameon=False, fontsize=12, labelcolor=INK2, ncol=2,
                loc="lower center", bbox_to_anchor=(0.5, 1.0),
                columnspacing=1.0, handlelength=1.6, handletextpad=0.4)
-    style(ax1, r"$r_{\mathrm{NaCl}}$ (Å)", r"$w(r)$ (kcal/mol)", fs=15)
-    ax1.set_title("(a)", color=INK, fontsize=15, pad=76)
+    style(ax1, r"$r_{\mathrm{NaCl}}$ (Å)", r"$w(r)$ (kcal/mol)", fs=13)
+    ax1.set_title("(a)", color=INK, fontsize=14, pad=76)
     cr = [1.0, 2.0, 4.0]
     y = [pair[m]["n_CIP"] for m in (1.0, 2.0, 4.0)]
     ys = [pair[m]["n_CIP_sem"] for m in (1.0, 2.0, 4.0)]
@@ -398,8 +398,8 @@ def fig_pairing_series(pair, mad_pair):
     ax2.set_xticks([1, 2, 3, 4])
     ax2.legend(frameon=False, fontsize=12, labelcolor=INK2, ncol=2,
                loc="lower center", bbox_to_anchor=(0.5, 1.0))
-    style(ax2, SERIES_XLABEL, r"$n_{\mathrm{CIP}}$ (contact Cl per Na)", fs=15)
-    ax2.set_title("(b)", color=INK, fontsize=15, pad=76)
+    style(ax2, SERIES_XLABEL, r"$n_{\mathrm{CIP}}$ (contact Cl per Na)", fs=13)
+    ax2.set_title("(b)", color=INK, fontsize=14, pad=76)
     fig.tight_layout(w_pad=4)
     savefig(fig, "fig13_pairing_series")
 
