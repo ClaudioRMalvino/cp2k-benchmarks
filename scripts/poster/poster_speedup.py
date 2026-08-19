@@ -21,7 +21,7 @@ def main():
     data, _ = tf.load_all_data()
     m = data["upstream master"]["size"]
 
-    fig, ax = plt.subplots(figsize=(7.0, 4.0))
+    fig, ax = plt.subplots(figsize=(7.0, 3.0))
     for name in ("native-spline", "native-spline-omp"):
         d = data[name]
         merged = pd.merge(m[["n_molecules", "tps_mean"]],
